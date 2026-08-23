@@ -16,9 +16,12 @@
 
   /* ---------- 错误边界：解锁页面（幂等） ---------- */
   let recovered = false;
+  let stopPreloaderAnim = () => {}; // 数学画布动画的清理钩子（下方赋值）
+  let preloaderProgress = 0;        // 预加载真实进度(0..1)，供画布充能特效读取
   const recover = () => {
     if (recovered) return;
     recovered = true;
+    stopPreloaderAnim(); // 页面解锁即停掉逐帧动画，避免无谓功耗
     if (preloader) preloader.remove();
     const slat = document.querySelector('.preloader-slat');
     if (slat) slat.remove();
@@ -588,8 +591,356 @@
       gsap.ticker.lagSmoothing(0);
     }
 
+    /* ---------- 预加载：莫比乌斯环画布（透视线框 + 深度光影） ----------
+       单侧曲面、一个边界 —— 数学里最优雅的"悖论之美"。
+       配合下方欧拉恒等式，构成"数学美感"的收束意象；只画干净的线框，无叠加爆白。 */
+    const mathCanvas = $('#preloaderCanvas');
+    const startMathPreloader = (canvas) => {
+      if (!canvas) return () => {};
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return () => {};
+      let w = 0, h = 0, dpr = 1;
+      let off = document.createElement('canvas'), octx = null, offW = 0, offH = 0;
+
+      const resize = () => {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = canvas.clientWidth || window.innerWidth;
+        h = canvas.clientHeight || window.innerHeight;
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        offW = canvas.width;
+        offH = canvas.height;
+        off.width = offW;
+        off.height = offH;
+        octx = off.getContext('2d');
+        octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // 注意：不要在 resize 里调用 seedDust —— resize 在 dust 声明前就会执行(init)，会触发暂时性死区
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2c43f5';
+      const rgba = (a) => {
+        if (accent[0] !== '#') return accent;
+        return `rgba(${parseInt(accent.slice(1, 3), 16)},${parseInt(accent.slice(3, 5), 16)},${parseInt(accent.slice(5, 7), 16)},${a})`;
+      };
+
+      /* ---------- 加载动态特效状态：鼠标视差 + 环境尘埃 + 充能环 + 点亮脉冲 ---------- */
+      let mcx = 0, mcy = 0, mtx = 0, mty = 0;  // 鼠标（目标/平滑）
+      const onMove = (e) => {
+        mtx = (e.clientX / (window.innerWidth || 1) - 0.5) * 2;
+        mty = (e.clientY / (window.innerHeight || 1) - 0.5) * 2;
+      };
+      window.addEventListener('pointermove', onMove);
+
+      const GLYPHS = ['π', '∞', 'Σ', '∫', 'φ', '∇', 'λ', 'θ'];
+      let dust = [];
+      function seedDust() {
+        const n = 30;
+        dust = [];
+        for (let i = 0; i < n; i++) {
+          const isGlyph = i % 3 === 0;
+          dust.push({
+            x: Math.random(), y: Math.random(),            // 相对坐标 0..1
+            r: 8 + Math.random() * 24,                     // 像素尺寸(字形/点)
+            vx: (Math.random() - 0.5) * 0.00003,           // 水平漂移
+            vy: -(0.00004 + Math.random() * 0.00008),      // 缓慢上浮
+            ph: Math.random() * Math.PI * 2,               // 闪烁相位
+            glyph: isGlyph ? GLYPHS[(Math.random() * GLYPHS.length) | 0] : null,
+            emerald: Math.random() < 0.6
+          });
+        }
+      }
+      seedDust();
+      let pulseStart = -1;  // 点亮脉冲起始时间(未有则 -1)
+
+      /* ---------- 莫比乌斯环（青绿玻璃 · ∞ 实体厚带 · 椭圆截面扫掠 · 深度排序 + 菲涅尔 + 双高光） ----------
+         参数化：t 沿 ∞（figure-8）中心线走一周 [0,2π]，s 绕椭圆截面一周（闭合成封闭实体）。
+         宽度方向 W 带半扭转(θ=t/2) → 绕一圈 180°，构成 Möbius 的翻转；
+         截面为椭圆：长轴沿 W(带宽)、短轴沿厚度方向 U3=T×W，扫出圆润有体积的厚玻璃带。 */
+      const U = 180, V = 34;                 // 沿 ∞ / 绕截面一周的采样
+      const A = 1.10, B = 0.50;              // ∞ 半宽 / 半高（更宽更扁）
+      const HALF = 0.30, TH = 0.16;          // 半带宽(截面长轴) / 半厚(截面短轴)
+      const verts = [];
+      for (let i = 0; i <= U; i++) {
+        const t = (i / U) * Math.PI * 2;
+        const cxr = A * Math.sin(t);
+        const cyr = B * Math.sin(2 * t);
+        // 切线 T（未归一）
+        const tx = A * Math.cos(t), ty = 2 * B * Math.cos(2 * t);
+        const tl = Math.hypot(tx, ty) || 1;
+        const Txn = tx / tl, Tyn = ty / tl;
+        // 面内法线(⊥T)
+        const nx = -Tyn, ny = Txn;
+        // 宽度方向 W（带半扭转，绕一圈翻转 180°）
+        const th = t / 2;
+        const Wx = nx * Math.sin(th), Wy = ny * Math.sin(th), Wz = Math.cos(th);
+        // 厚度方向 U3 = T × W（两正交单位向量叉积，仍近单位）
+        let u3x = Tyn * Wz, u3y = -Txn * Wz, u3z = Txn * Wy - Tyn * Wx;
+        const u3l = Math.hypot(u3x, u3y, u3z) || 1;
+        u3x /= u3l; u3y /= u3l; u3z /= u3l;
+        const row = [];
+        for (let j = 0; j < V; j++) {
+          const s = (j / V) * Math.PI * 2;
+          const ow = HALF * Math.cos(s);
+          const ot = TH * Math.sin(s);
+          row.push({
+            x: cxr + Wx * ow + u3x * ot,
+            y: cyr + Wy * ow + u3y * ot,
+            z: Wz * ow + u3z * ot
+          });
+        }
+        verts.push(row);
+      }
+      // 预构建 quad（局部坐标 + 局部法线；截面闭合：j 环绕成封闭实体）每帧只做旋转/投影/反射
+      const quads = [];
+      for (let i = 0; i < U; i++) {
+        for (let j = 0; j < V; j++) {
+          const jn = (j + 1) % V;
+          const a = verts[i][j], b = verts[i + 1][j], d = verts[i][jn];
+          const e1x = b.x - a.x, e1y = b.y - a.y, e1z = b.z - a.z;
+          const e2x = d.x - a.x, e2y = d.y - a.y, e2z = d.z - a.z;
+          let nxq = e1y * e2z - e1z * e2y;
+          let nyq = e1z * e2x - e1x * e2z;
+          let nzq = e1x * e2y - e1y * e2x;
+          const nl = Math.hypot(nxq, nyq, nzq) || 1;
+          quads.push({ i, j, nx: nxq / nl, ny: nyq / nl, nz: nzq / nl });
+        }
+      }
+
+      /* 玻璃材质常量：tint 为通透翡翠绿基色，env 暗/亮两档（影棚），L1 主光高光 / L2 侧向宽光泽 */
+      const tintR = 30, tintG = 160, tintB = 132;   // 翡翠玻璃（亮且饱和，接近参考的通透绿）
+      const envDR = 22, envDG = 120, envDB = 104;   // 反射暗部(深绿)
+      const envLR = 248, envLG = 254, envLB = 251;  // 反射亮部(近白)
+      const norm3 = (x, y, z) => {
+        const l = Math.hypot(x, y, z) || 1;
+        return [x / l, y / l, z / l];
+      };
+      const L1 = norm3(0.34, 0.46, 0.82);           // 上前方主光 → 圆管上表面接住宽高光
+      const L2 = norm3(-0.62, -0.40, 0.62);         // 侧向宽光泽
+      const LER = (c1, c2, t) => c1 + (c2 - c1) * t;
+      const CL = (v, a, b) => v < a ? a : (v > b ? b : v);
+
+      const TILT = 0.30; // 绕 X 轴后仰角：压小俯角让 ∞ 卧得更平（更扁平）
+      const draw = (now) => {
+        ctx.clearRect(0, 0, w, h);
+        const cx = w / 2, baseCy = h / 2;
+        const bob = Math.sin(now * 0.0013) * Math.min(w, h) * 0.012; // 浮沉
+        const cy = baseCy + bob;
+        const scale = Math.min(w, h) * 0.17;   // 整体缩至原一半（比例不变）
+        const dist = 4.0;
+        // 鼠标平滑视差：拖动时环朝光标方向轻旋
+        mcx += (mtx - mcx) * 0.07;
+        mcy += (mty - mcy) * 0.07;
+        const a = Math.sin(now * 0.00045) * 0.30 + mcx * 0.24; // 基础轻摆(±17°) + 鼠标偏航
+        const cosA = Math.cos(a), sinA = Math.sin(a);
+        const pitch = TILT + mcy * 0.12;                       // 俯仰随鼠标微调
+        const cosT = Math.cos(pitch), sinT = Math.sin(pitch);
+
+        // 影棚背景：顶部提亮、底部略压暗偏青，让玻璃有对比
+        const bgG = ctx.createLinearGradient(0, 0, 0, h);
+        bgG.addColorStop(0, 'rgba(255,255,255,0.28)');
+        bgG.addColorStop(0.55, 'rgba(255,255,255,0.02)');
+        bgG.addColorStop(1, 'rgba(150,175,165,0.14)');
+        ctx.fillStyle = bgG;
+        ctx.fillRect(0, 0, w, h);
+
+        const rotPt = (p) => {
+          const y1 = p.y * cosT - p.z * sinT;
+          const z1 = p.y * sinT + p.z * cosT;
+          return { x: p.x * cosA + z1 * sinA, y: y1, z: -p.x * sinA + z1 * cosA };
+        };
+        const proj = (v) => {
+          const s = dist / (dist - v.z); // z 越大越近（近大远小）
+          return { x: cx + v.x * scale * s, y: cy - v.y * scale * s, z: v.z };
+        };
+
+        // 地面：柔影 + 青光（浮得越高影越小越淡）
+        const ground = baseCy + scale * 1.18;
+        const sway = bob / (Math.min(w, h) * 0.012); // -1..1
+        const shadowR = scale * (1.55 - 0.22 * sway);
+        ctx.save();
+        ctx.translate(cx, ground);
+        ctx.scale(1, 0.22);
+        const sh = ctx.createRadialGradient(0, 0, 0, 0, 0, shadowR);
+        sh.addColorStop(0, 'rgba(40,90,80,0.30)');
+        sh.addColorStop(0.6, 'rgba(40,90,80,0.10)');
+        sh.addColorStop(1, 'rgba(40,90,80,0)');
+        ctx.fillStyle = sh;
+        ctx.fillRect(-shadowR, -shadowR, shadowR * 2, shadowR * 2);
+        ctx.restore();
+        const glowR = scale * 1.5;
+        const fg = ctx.createRadialGradient(cx, ground, 0, cx, ground, glowR);
+        fg.addColorStop(0, 'rgba(40,200,165,0.28)');
+        fg.addColorStop(1, 'rgba(40,200,165,0)');
+        ctx.fillStyle = fg;
+        ctx.fillRect(cx - glowR, ground - glowR, glowR * 2, glowR * 2);
+
+        // 投影全部网格顶点（保留视空间 z 用于深度排序；截面闭合 j<V）
+        const P = [];
+        for (let i = 0; i <= U; i++) {
+          const row = [];
+          for (let j = 0; j < V; j++) row.push(proj(rotPt(verts[i][j])));
+          P.push(row);
+        }
+
+        // 逐面（远→近）：玻璃反射模型
+        const faces = [];
+        for (const q of quads) {
+          const jn = (q.j + 1) % V;
+          const a2 = P[q.i][q.j], b2 = P[q.i + 1][q.j], c2 = P[q.i + 1][jn], d2 = P[q.i][jn];
+          const z = (a2.z + b2.z + c2.z + d2.z) / 4;
+          const n1z = q.ny * sinT + q.nz * cosT;
+          const n1y = q.ny * cosT - q.nz * sinT;
+          let nx = q.nx * cosA + n1z * sinA;
+          let nz = -q.nx * sinA + n1z * cosA;
+          let ny = n1y;
+
+          const nza = Math.abs(nz);
+          const f = (1 - nza) * (1 - nza);                 // 菲涅尔：边缘反射更强
+          // 影棚垂直渐变反射：朝上/朝相机的面被照亮，朝下的面没入阴影 → 光滑的明暗过渡
+          const e = CL(0.42 + 0.58 * (0.42 * ny - 0.10 * nz), 0, 1);
+          const envR = LER(envDR, envLR, e);
+          const envG = LER(envDG, envLG, e);
+          const envB = LER(envDB, envLB, e);
+
+          const s1 = Math.max(0, nx * L1[0] + ny * L1[1] + nz * L1[2]);
+          const spec1 = Math.pow(s1, 18);               // 加宽的高光带（圆管上表面接住整条亮反光）
+          const s2 = Math.abs(nx * L2[0] + ny * L2[1] + nz * L2[2]);
+          const spec2 = Math.pow(s2, 8) * 0.35;         // 宽幅光泽
+
+          const refl = CL(0.10 + f * 0.64 + spec1 * 0.60, 0, 1);
+          const rt = refl * 0.85;                       // 高反射占比：让玻璃的明亮反射顶起
+          let r = LER(tintR, envR, rt);
+          let g = LER(tintG, envG, rt);
+          let b = LER(tintB, envB, rt);
+          const glint = CL(spec1 * 1.4 + spec2 * 0.35, 0, 1); // 白色高光拉丝（更亮的玻璃反光）
+          r += (255 - r) * glint;
+          g += (255 - g) * glint;
+          b += (255 - b) * glint;
+          const alpha = CL(0.84 + f * 0.08 + spec1 * 0.05, 0.68, 0.96); // 薄透玻璃，留一点光透过
+
+          faces.push({
+            a2, b2, c2, d2,
+            r: Math.round(r), g: Math.round(g), b: Math.round(b), alpha, z
+          });
+        }
+        faces.sort((p, q2) => p.z - q2.z); // 远(z 小)先画 → 近(z 大)后画
+        octx.clearRect(0, 0, w, h);
+        for (const f of faces) {
+          octx.fillStyle = `rgba(${f.r},${f.g},${f.b},${f.alpha.toFixed(3)})`;
+          octx.beginPath();
+          octx.moveTo(f.a2.x, f.a2.y);
+          octx.lineTo(f.b2.x, f.b2.y);
+          octx.lineTo(f.c2.x, f.c2.y);
+          octx.lineTo(f.d2.x, f.d2.y);
+          octx.closePath();
+          octx.fill();
+        }
+
+        // 带面轻微模糊后贴回主画布：熔掉分面过渡，玻璃显得光洁顺滑
+        ctx.save();
+        ctx.filter = 'blur(1.6px)';
+        ctx.drawImage(off, 0, 0, offW, offH, 0, 0, w, h);
+        ctx.restore();
+
+        // 游走高光（沿带面环绕）—— 点睛
+        const qi = Math.floor((now * 0.012) % U);
+        const q = P[qi][0];
+        const gr = Math.max(6, scale * 0.085);
+        const glow = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, gr);
+        glow.addColorStop(0, 'rgba(255,255,255,0.55)');
+        glow.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(q.x, q.y, gr, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(1, scale * 0.018), 0, Math.PI * 2); ctx.fill();
+
+        // —— 环境尘埃：缓慢上浮、闪烁的几何字形 / 微光点（低透明度，增加纵深与生气）——
+        const minWH = Math.min(w, h);
+        for (const d of dust) {
+          d.x += d.vx * 60 + mcx * 0.00002;
+          d.y += d.vy * 60;
+          if (d.y < -0.06) { d.y = 1.06; d.x = Math.random(); }
+          if (d.x < -0.06) d.x = 1.06; else if (d.x > 1.06) d.x = -0.06;
+          const px = d.x * w + mcx * d.r * 0.6;
+          const py = d.y * h + mcy * d.r * 0.6;
+          const tw = 0.5 + 0.5 * Math.sin(now * 0.0009 + d.ph);
+          const alpha = 0.06 + tw * 0.17;
+          if (d.glyph) {
+            ctx.font = Math.round(d.r) + 'px Georgia, "Times New Roman", serif';
+            ctx.fillStyle = d.emerald ? 'rgba(40,170,145,' + alpha.toFixed(3) + ')' : rgba(alpha * 0.8);
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(d.glyph, px, py);
+          } else {
+            ctx.fillStyle = d.emerald ? 'rgba(60,200,170,' + alpha.toFixed(3) + ')' : 'rgba(255,255,255,' + (alpha * 0.7).toFixed(3) + ')';
+            ctx.beginPath(); ctx.arc(px, py, d.r * 0.14, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+
+        // —— 充能环：环绕 ∞ 的椭圆能量弧，随真实加载进度点亮（品牌克莱因蓝 + 领头光点）——
+        const prog = Math.max(0, Math.min(1, preloaderProgress));
+        const ringR = scale * 1.62, ringRy = scale * 0.94;
+        ctx.save();
+        ctx.strokeStyle = rgba(0.10);
+        ctx.lineWidth = Math.max(1.2, scale * 0.014);
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, ringR, ringRy, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        if (prog > 0.001) {
+          const startA = -Math.PI / 2;
+          const endA = startA + prog * Math.PI * 2;
+          ctx.strokeStyle = rgba(0.42 + 0.35 * prog);
+          ctx.lineWidth = Math.max(1.2, scale * 0.02);
+          ctx.shadowColor = rgba(0.9);
+          ctx.shadowBlur = 16;
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, ringR, ringRy, 0, startA, endA);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          const tx2 = cx + Math.cos(endA) * ringR;
+          const ty2 = cy + Math.sin(endA) * ringRy;
+          const tipR = Math.max(3, scale * 0.045);
+          const tip = ctx.createRadialGradient(tx2, ty2, 0, tx2, ty2, tipR);
+          tip.addColorStop(0, 'rgba(150,172,255,0.95)');
+          tip.addColorStop(1, 'rgba(150,172,255,0)');
+          ctx.fillStyle = tip;
+          ctx.beginPath(); ctx.arc(tx2, ty2, tipR, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+
+        // —— 点亮脉冲：进度到位瞬间，环后爆发一圈扩张光环，点燃进入的一刻 ——
+        if (prog >= 0.999) {
+          if (pulseStart < 0) pulseStart = now;
+          const pt = (now - pulseStart) / 900; // 0..1 / 900ms
+          if (pt < 1) {
+            const ease = 1 - Math.pow(1 - pt, 3);
+            const prad = ringR * (0.4 + ease * 1.15);
+            const pAlpha = (1 - pt) * 0.5;
+            ctx.strokeStyle = 'rgba(255,255,255,' + pAlpha.toFixed(3) + ')';
+            ctx.lineWidth = Math.max(2, scale * 0.05 * (1 - pt * 0.6));
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, prad, prad * (ringRy / ringR), 0, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+      };
+
+      let raf = 0;
+      const loop = (now) => { draw(now); raf = requestAnimationFrame(loop); };
+      raf = requestAnimationFrame(loop);
+
+      return () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener('resize', resize);
+        window.removeEventListener('pointermove', onMove);
+      };
+    };
+    stopPreloaderAnim = startMathPreloader(mathCanvas);
+
     /* ---------- 预加载：真实进度 + 双层幕布 + 首屏重叠交接 ---------- */
-    const countEl = $('#preloaderCount');
+    const formulaEl = $('#preloaderFormula');
     const barEl = $('.preloader__bar');
     const slatEl = $('.preloader-slat');
     const counter = { v: 0 };
@@ -609,9 +960,15 @@
 
     (async () => {
       // 计数走到 90 后等真实就绪（或超时/跳过），再收尾到 100
+      let formulaShown = false;
       const updateHud = () => {
-        if (countEl) countEl.textContent = String(Math.round(counter.v)).padStart(3, '0');
         if (barEl) barEl.style.transform = 'scaleX(' + (counter.v / 100) + ')';
+        preloaderProgress = counter.v / 100; // 供画布充能环读取
+        // 进度过半，数学公式淡入 —— 与画布并作"美在至简"的收束点
+        if (!formulaShown && counter.v >= 42 && formulaEl) {
+          gsap.to(formulaEl, { autoAlpha: 1, duration: .7, ease: 'power2.out' });
+          formulaShown = true;
+        }
       };
       await tween(counter, { v: 90, duration: 1.1, ease: 'power2.inOut', onUpdate: updateHud });
       for (let i = 0; i < 30 && !pageReady; i++) await wait(120);
@@ -622,10 +979,7 @@
         onComplete: () => { recover(); gotoInitialHash(true); }
       });
       tl.to('.preloader__brand', { y: -26, autoAlpha: 0, duration: .4, ease: 'power2.in' }, 0)
-        .to(countEl, {
-          y: -26, autoAlpha: 0, scale: .92, filter: 'blur(8px)',
-          transformOrigin: '100% 100%', duration: .45, ease: 'power2.in'
-        }, 0)
+        .to(formulaEl, { y: -22, autoAlpha: 0, duration: .4, ease: 'power2.in' }, 0)
         .to(barEl, { autoAlpha: 0, duration: .3 }, 0)
         .to(preloader, { yPercent: -100, duration: .85, ease: 'power4.inOut' }, .15)
         .to(slatEl, { yPercent: -100, duration: .85, ease: 'power4.inOut' }, .26)

@@ -223,69 +223,75 @@ html.has-anim [data-line].is-in::after { transform: scaleX(1); }
 .cursor.is-label .cursor__label { opacity: 1; }
 @media (hover: none), (pointer: coarse) { .cursor { display: none; } }
 
-/* ---------- 预加载 ---------- */
+/* ---------- 预加载：数学之美 ---------- */
 .preloader {
   position: fixed;
   inset: 0;
   z-index: 500;
   background: var(--bg);
+  overflow: hidden; /* 数学画布满幅，但不遮蔽品牌/公式/计数 */
 }
 .preloader__brand {
   position: absolute;
   top: 1.2rem;
   left: var(--pad-x);
+  z-index: 3;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: .85rem;
   letter-spacing: .1em;
 }
-.preloader__mark {
+/* 数学画布：黄金比例螺旋 + 利萨如光轨（JS 逐帧绘制，用 --accent 便于主题过渡） */
+.preloader__canvas {
   position: absolute;
-  top: 50%;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.preloader__formula {
+  position: absolute;
   left: 50%;
-  width: 128px;
-  height: 128px;
-  transform: translate(-50%, -50%);
+  bottom: clamp(7rem, 18vh, 13rem);
+  transform: translateX(-50%);
+  z-index: 2;
+  text-align: center;
+  opacity: 0; /* 加载进行到中段时由 JS 淡入 */
+  pointer-events: none;
 }
-.mark { width: 100%; height: 100%; overflow: visible; }
-.mark__line {
-  stroke: var(--accent);
-  stroke-width: 48;
-  stroke-linecap: round;
-  stroke-dasharray: 317;
-  stroke-dashoffset: 317;
-  animation: mark-draw .8s cubic-bezier(.2, .75, .34, .94) .15s forwards;
+.preloader__formula .formula {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 5.8vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: .02em;
+  white-space: nowrap;
 }
-.mark__dot {
-  fill: var(--ink);
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: scale(0);
-  animation: mark-pop .55s cubic-bezier(.51, .99, .58, 1) forwards;
-}
-.mark__dot--tl { animation-delay: .78s; }
-.mark__dot--br { animation-delay: .96s; }
-@keyframes mark-draw { to { stroke-dashoffset: 0; } }
-@keyframes mark-pop {
-  0% { transform: scale(0); }
-  70% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-.preloader__count {
-  position: absolute;
-  right: var(--pad-x);
-  bottom: 3vh;
+.preloader__formula .formula em { font-style: italic; }
+.preloader__formula .formula sup {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(5rem, 16vw, 13rem);
-  line-height: .8;
-  letter-spacing: -.02em;
+  font-size: .42em;
+  color: var(--accent);
+  margin-left: .06em;
+}
+.preloader__formula .formula__cap {
+  display: block;
+  margin-top: .95rem;
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  letter-spacing: .32em;
+  text-indent: .32em;
+  color: var(--muted);
 }
 .preloader__bar {
   position: absolute;
   left: 0; bottom: 0;
   height: 3px;
   width: 100%;
+  z-index: 3;
   background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
@@ -902,7 +908,12 @@ html.has-anim .marquee__track { animation: none; }
   right: 1rem;
   bottom: 1rem;
   display: flex;
+  align-items: center;
   gap: .55rem;
+  padding: .35rem .5rem;
+  border: 1px solid var(--lab-line, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
 }
 .play-btn {
   font-family: var(--font-mono);

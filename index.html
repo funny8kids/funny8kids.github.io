@@ -82,17 +82,14 @@
   </div>
   <div class="sys-hud" aria-hidden="true"><span id="xyReadout">X 0000 · Y 0000</span><span id="visitorCity"></span> · <span id="scrollPct">SCROLL 00%</span></div>
 
-  <!-- 预加载动画 -->
+  <!-- 预加载动画：莫比乌斯环 · 欧拉恒等式（数学之美） -->
   <div class="preloader" id="preloader" aria-hidden="true">
     <div class="preloader__brand">F8K<sup>®</sup> — PORTFOLIO</div>
-    <div class="preloader__mark" aria-hidden="true">
-      <svg class="mark" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <line class="mark__line" x1="144" y1="368" x2="368" y2="144"/>
-        <circle class="mark__dot mark__dot--tl" cx="168" cy="168" r="48"/>
-        <circle class="mark__dot mark__dot--br" cx="344" cy="344" r="48"/>
-      </svg>
+    <canvas class="preloader__canvas" id="preloaderCanvas" aria-hidden="true"></canvas>
+    <div class="preloader__formula" id="preloaderFormula" aria-hidden="true">
+      <span class="formula"><em>e</em><sup>iπ</sup> + 1 = 0</span>
+      <span class="formula__cap">EULER&rsquo;S IDENTITY · 至简至美</span>
     </div>
-    <div class="preloader__count" id="preloaderCount">000</div>
     <div class="preloader__bar" aria-hidden="true"></div>
   </div>
   <!-- 双层幕布：主底上滑后，克莱因蓝薄板延迟跟随露出页面 -->
