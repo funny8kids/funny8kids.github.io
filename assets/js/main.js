@@ -100,6 +100,7 @@
     applyTheme(doc.dataset.theme || 'light', false);
     themeBtn.addEventListener('click', () => {
       applyTheme(doc.dataset.theme === 'dark' ? 'light' : 'dark', true);
+      if (window.__f8kSound) window.__f8kSound(560, .14, 'sine');
     });
   }
 
@@ -138,6 +139,8 @@
       o.start();
       o.stop(ctx.currentTime + dur);
     };
+    // 暴露给其它模块（彩蛋/主题/关卡）使用：blip 内部已用 enabled 门控
+    window.__f8kSound = blip;
     let lastTick = 0;
     document.addEventListener('mouseover', (e) => {
       if (!e.target.closest('a, button, [data-hover]')) return;
@@ -147,6 +150,21 @@
       blip(1180, .05, 'sine');
     }, { passive: true });
     document.addEventListener('pointerdown', () => blip(340, .09, 'triangle'), { passive: true });
+    // 分区进入：轻微的低音 accent（进入视口顶部时触发一次，被 enabled 门控，避免连串）
+    let lastSec = 0;
+    if (!reduced && 'IntersectionObserver' in window) {
+      const secObs = new IntersectionObserver((ents) => {
+        const now = performance.now();
+        for (const en of ents) {
+          if (!en.isIntersecting) continue;
+          if (now - lastSec < 400) break; // 快速滚过多区时只响一声
+          lastSec = now;
+          blip(196, .1, 'sine');
+          break;
+        }
+      }, { threshold: .18 });
+      document.querySelectorAll('.section, .footer').forEach((s) => secObs.observe(s));
+    }
     btn.addEventListener('click', () => {
       enabled = !enabled;
       try { localStorage.setItem('f8k-sound', enabled ? 'on' : 'off'); } catch (e) { /* 隐私模式 */ }
@@ -170,6 +188,8 @@
         row.setAttribute('aria-label', '已解锁项目');
         row.querySelector('.more-list__name').textContent = 'SECRET LAB — 秘密项目';
         row.querySelector('.more-list__meta').textContent = '已解锁 · 2026';
+        if (window.__f8kSound) window.__f8kSound(660, .16, 'triangle');
+        document.dispatchEvent(new CustomEvent('f8k-unlock'));
       } else if (pass !== null) {
         row.classList.remove('is-wrong');
         void row.offsetWidth; // 重启抖动

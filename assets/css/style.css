@@ -1653,3 +1653,220 @@ html.is-vt *::after {
   .glass-hello__panel::after { display: none; }
   .glass-hello__panel::before { display: none; }
 }
+
+/* ---------- 秘密关卡（口令 2026 解锁后显示） ---------- */
+section.secret { display: none; }
+section.secret.is-open { display: block; }
+.secret__stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1.4rem;
+  padding: clamp(2rem, 5vw, 3rem) clamp(1.25rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background:
+    radial-gradient(520px 340px at 18% 20%, rgba(44, 67, 245, .10), transparent 60%),
+    radial-gradient(420px 320px at 88% 86%, rgba(18, 183, 126, .10), transparent 58%),
+    var(--bg);
+}
+.secret__lead { max-width: 36rem; text-align: center; color: var(--muted); line-height: 1.9; }
+.secret__lead b { color: var(--ink); font-weight: 600; }
+.secret__gate { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.secret__pad {
+  --pad: var(--accent);
+  display: grid;
+  place-items: center;
+  gap: .55rem;
+  width: 98px;
+  padding: 1.05rem .5rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  letter-spacing: .18em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform .3s var(--ease-out), border-color .3s, background-color .4s var(--ease-out), color .3s;
+}
+.secret__pad::before {
+  content: '';
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pad);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--pad) 14%, transparent);
+  transition: box-shadow .3s;
+}
+.secret__pad--mint { --pad: var(--accent-mint); }
+.secret__pad--sun { --pad: var(--accent-sun); }
+.secret__pad--blue { --pad: var(--accent); }
+.secret__pad:hover { transform: translateY(-3px); border-color: var(--pad); }
+.secret__pad.is-lit { color: var(--ink); border-color: var(--pad); background: color-mix(in srgb, var(--pad) 12%, var(--bg)); }
+.secret__pad.is-lit::before { box-shadow: 0 0 0 10px color-mix(in srgb, var(--pad) 18%, transparent), 0 0 22px var(--pad); }
+.secret__gate.is-wrong { animation: shake .4s; }
+.secret__gate.is-done .secret__pad:not(.is-lit) { opacity: .25; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.secret__msg {
+  max-width: 32rem;
+  text-align: center;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  color: var(--ink);
+  line-height: 1.95;
+  transition: max-height .6s var(--ease-out), opacity .5s;
+}
+.secret__msg.is-on { max-height: 220px; opacity: 1; }
+.secret__msg .serif { font-size: 1.15em; }
+.secret-spark {
+  position: absolute;
+  z-index: 2;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: secret-fly .9s cubic-bezier(.2, .75, .34, .94) forwards;
+}
+@keyframes secret-fly {
+  from { opacity: 1; transform: translate(-50%, -50%) rotate(var(--r)) scale(1); }
+  to { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--r)) scale(.3); }
+}
+
+/* ---------- AI 分身（LLM 对话） ---------- */
+.chat-launcher {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  letter-spacing: .16em;
+  padding: .62rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition: color .3s, border-color .3s, background-color .5s var(--ease-out), transform .3s var(--ease-out);
+}
+.chat-launcher:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+.chat-launcher__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-mint);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-mint) 18%, transparent);
+  transition: background-color .3s, box-shadow .3s;
+}
+.chat-launcher.is-on .chat-launcher__dot { background: var(--accent); box-shadow: 0 0 0 4px rgba(44, 67, 245, .18); }
+.chat-panel {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: calc(clamp(1rem, 3vw, 2rem) + 3.2rem);
+  z-index: 700;
+  width: min(360px, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(23, 21, 18, .18), 0 4px 16px rgba(23, 21, 18, .08);
+  overflow: hidden;
+}
+.chat-panel[hidden] { display: none; }
+.chat-panel.is-in { animation: chat-in .35s cubic-bezier(.22, 1, .36, 1); }
+@keyframes chat-in { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+.chat-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .7rem 1rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+}
+.chat-panel__title { font-weight: 600; color: var(--ink); }
+.chat-panel__close { cursor: pointer; font-size: 1.05rem; line-height: 1; color: var(--muted); padding: .2rem .35rem; transition: color .3s; }
+.chat-panel__close:hover { color: var(--accent); }
+.chat-panel__log {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+  min-height: 160px;
+  padding: .8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.chat-line { max-width: 86%; padding: .5rem .7rem; border-radius: 12px; font-size: .82rem; line-height: 1.6; white-space: pre-wrap; }
+.chat-line--user { align-self: flex-end; background: var(--accent); color: var(--paper); border-bottom-right-radius: 4px; }
+.chat-line--bot { align-self: flex-start; background: var(--tint-blue); color: var(--ink); border-bottom-left-radius: 4px; }
+.chat-panel__form { display: flex; gap: .5rem; padding: .7rem; border-top: 1px solid var(--line); }
+.chat-panel__input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: .55rem .9rem;
+  font-size: .82rem;
+  color: var(--ink);
+}
+.chat-panel__input:focus { outline: none; border-color: var(--accent); }
+.chat-panel__send {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--accent);
+  cursor: pointer;
+  transition: background-color .3s, color .3s, border-color .3s;
+}
+.chat-panel__send:hover { background: var(--accent); color: var(--paper); border-color: var(--accent); }
+
+/* ---------- Live2D 吉祥物（默认隐藏，加载成功才显示） ---------- */
+.mascot {
+  position: fixed;
+  left: clamp(1rem, 3vw, 2rem);
+  bottom: 0;
+  z-index: 690;
+  width: 180px;
+  height: 220px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .5s, transform .5s;
+}
+.mascot.is-live { opacity: 1; pointer-events: auto; transform: none; }
+#mascotCanvas { width: 100%; height: 100%; display: block; }
+.mascot__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .9rem;
+  line-height: 1;
+  transition: color .3s, border-color .3s;
+}
+.mascot__close:hover { color: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 640px) {
+  .chat-panel { width: calc(100vw - 2rem); }
+  .mascot { width: 142px; height: 178px; }
+}
+
