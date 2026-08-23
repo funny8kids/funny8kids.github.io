@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DESIGN Preview</title>
+    <meta name="color-scheme" content="light" />
+    <style>
+      :root {
+        --page-bg: #fafafa;
+        --page-bg-muted: rgb(253, 253, 253);
+        --surface-bg: #ffffff;
+        --surface-bg-muted: rgb(253, 253, 253);
+        --surface-border: #ebebeb;
+        --surface-border-strong: rgb(218, 218, 218);
+        --surface-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 2px rgba(0, 0, 0, 0.04), 0 8px 8px -8px rgba(0, 0, 0, 0.04);
+        --surface-shadow-soft: 0 0 0 1px #ebebeb;
+        --ink: #171717;
+        --muted: #4d4d4d;
+        --subtle: rgb(146, 146, 146);
+        --accent: #0072f5;
+        --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, monospace;
+        --body-size: 18px;
+        --body-line: 24px;
+        --body-weight: 700;
+        --label-size: 14px;
+        --label-line: 20px;
+        --label-track: 0.04em;
+        --title-size: 32px;
+        --title-line: 32px;
+        --title-track: -0.03em;
+        --section-size: 32px;
+        --section-line: 32px;
+        --section-track: -0.02em;
+        --source-size: 13px;
+        --source-line: 22px;
+        --space-1: 8px;
+        --space-2: 12px;
+        --space-3: 16px;
+        --space-4: 24px;
+        --space-5: 32px;
+        --space-6: 40px;
+        --radius-panel: 8px;
+        --radius-card: 8px;
+        --radius-micro: 6px;
+        --radius-pill: 999px;
+        --button-height: 40px;
+        --button-font-size: 14px;
+        --button-weight: 500;
+        --button-radius: 999px;
+        --secondary-button-radius: 999px;
+        --layout-gap: 24px;
+        --page-padding: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: var(--body-size);
+        font-weight: var(--body-weight);
+        line-height: var(--body-line);
+        background:
+          radial-gradient(circle at top, color-mix(in srgb, var(--accent) 8%, transparent), transparent 30%),
+          linear-gradient(180deg, var(--page-bg) 0%, var(--page-bg-muted) 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image:
+          linear-gradient(color-mix(in srgb, var(--surface-border) 56%, transparent) 1px, transparent 1px),
+          linear-gradient(90deg, color-mix(in srgb, var(--surface-border) 56%, transparent) 1px, transparent 1px);
+        background-size: 100% calc(48px), calc(48px) 100%;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 88%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .shell {
+        width: min(1440px, calc(100vw - (var(--page-padding) * 2)));
+        margin: 0 auto;
+        padding: var(--page-padding) 0 calc(var(--page-padding) * 1.2);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(340px, 0.92fr) minmax(420px, 1fr);
+        gap: var(--layout-gap);
+        align-items: start;
+      }
+
+      .stack {
+        display: grid;
+        gap: var(--space-4);
+      }
+
+      .panel {
+        overflow: hidden;
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-panel);
+        background: linear-gradient(180deg, color-mix(in srgb, var(--surface-bg) 88%, white) 0%, var(--surface-bg) 100%);
+        box-shadow: var(--surface-shadow);
+      }
+
+      .panel-inner {
+        padding: var(--space-4);
+      }
+
+      .hero-card {
+        position: relative;
+      }
+
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        left: var(--space-4);
+        right: var(--space-4);
+        top: 0;
+        height: 3px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #FBFAF4 0%, #0F1111 33%, #000000 67%, #0066DC 100%);
+      }
+
+      .eyebrow {
+        margin-bottom: var(--space-2);
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .site-title,
+      .section-title {
+        margin: 0;
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 600;
+      }
+
+      .site-title {
+        font-size: var(--title-size);
+        line-height: var(--title-line);
+        letter-spacing: var(--title-track);
+      }
+
+      .descriptor {
+        margin: var(--space-2) 0 0;
+        max-width: 42ch;
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .summary {
+        margin: var(--space-3) 0 0;
+        max-width: 56ch;
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin: var(--space-3) 0 0;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: calc(8px * 3);
+        padding: 0 var(--space-2);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-pill);
+        background: var(--surface-bg);
+        color: var(--ink);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .observed-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--surface-border);
+        color: var(--muted);
+        font-size: var(--label-size);
+        overflow-wrap: anywhere;
+      }
+
+      .observed-link::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+      }
+
+      .section-title {
+        font-size: var(--section-size);
+        line-height: var(--section-line);
+        letter-spacing: var(--section-track);
+      }
+
+      .section-subtitle {
+        margin: var(--space-2) 0 var(--space-4);
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .palette-grid,
+      .theme-mode-grid,
+      .type-list,
+      .component-card,
+      .prompt-list,
+      .mini-grid,
+      .token-table {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .palette-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .palette-row.neutral-row {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .theme-mode-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
+      }
+
+      .theme-mode-card {
+        display: grid;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-card);
+        background: color-mix(in srgb, var(--surface-bg) 92%, white);
+      }
+
+      .theme-mode-card.is-dark {
+        background: #111111;
+        color: #f4f4f4;
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .theme-mode-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .theme-mode-label {
+        color: var(--subtle);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .theme-mode-card.is-dark .theme-mode-label {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .theme-mode-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: calc(var(--body-size) - 1px);
+        line-height: calc(var(--body-line) - 4px);
+      }
+
+      .theme-mode-card.is-dark .theme-mode-note {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .theme-swatch-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .theme-swatch {
+        display: grid;
+        gap: 6px;
+      }
+
+      .theme-swatch-box {
+        height: 72px;
+        border-radius: calc(var(--radius-card) - 4px);
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 75%, transparent);
+      }
+
+      .theme-mode-card.is-dark .theme-swatch-box {
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .theme-swatch-name {
+        color: inherit;
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .theme-swatch-value {
+        color: var(--subtle);
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .theme-mode-card.is-dark .theme-swatch-value {
+        color: rgba(255, 255, 255, 0.62);
+      }
+
+      .swatch {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .swatch-box {
+        min-height: calc(8px * 12);
+        border-radius: var(--radius-card);
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 75%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 4%, transparent);
+      }
+
+      .swatch-label,
+      .token-heading,
+      .prompt-card strong,
+      .card-preview h4 {
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        font-weight: 600;
+      }
+
+      .swatch-meta,
+      .type-metrics,
+      .mini-label,
+      .copy-state,
+      .file-tab,
+      .ghost-button,
+      .segmented button {
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr) auto;
+        gap: var(--space-2);
+        align-items: baseline;
+        padding: var(--space-2) 0;
+        border-top: 1px solid var(--surface-border);
+      }
+
+      .type-row:first-child,
+      .mini-row:first-child,
+      .token-row:first-child {
+        border-top: 0;
+        padding-top: 0;
+      }
+
+      .type-role {
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .type-sample {
+        color: var(--ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .split-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4);
+      }
+
+      .token-row,
+      .mini-row {
+        display: grid;
+        gap: var(--space-2);
+        align-items: start;
+        padding-top: var(--space-2);
+        border-top: 1px solid var(--surface-border);
+      }
+
+      .token-row {
+        grid-template-columns: 1fr auto;
+      }
+
+      .mini-row {
+        grid-template-columns: 88px minmax(0, 1fr);
+      }
+
+      .mini-content,
+      .prompt-card p,
+      .card-preview p {
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .radius-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .radius-card,
+      .prompt-card {
+        padding: var(--space-3);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-card);
+        background: var(--surface-bg-muted);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .radius-demo {
+        aspect-ratio: 1;
+        width: 100%;
+        border: 1px solid var(--surface-border-strong);
+        background: var(--surface-bg);
+      }
+
+      .radius-name {
+        margin-top: var(--space-2);
+        color: var(--ink);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        font-weight: 600;
+      }
+
+      .radius-value {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: var(--label-size);
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: var(--button-height);
+        padding: 0 var(--space-3);
+        border-radius: var(--button-radius);
+        font-family: var(--font-body);
+        font-size: var(--button-font-size);
+        font-weight: var(--button-weight);
+        line-height: 1;
+        letter-spacing: normal;
+      }
+
+      .cta-primary {
+        border: 1px solid transparent;
+        background: #171717;
+        color: #ffffff;
+        border-radius: 999px;
+      }
+
+      .cta-secondary {
+        border: 1px solid #171717;
+        background: #ffffff;
+        color: #171717;
+        border-radius: 999px;
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .card-preview {
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 72%, transparent);
+        background: var(--surface-bg);
+        color: var(--ink);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 2px rgba(0, 0, 0, 0.04), 0 8px 8px -8px rgba(0, 0, 0, 0.04);
+      }
+
+      .card-preview h4 {
+        margin: 0 0 var(--space-1);
+      }
+
+      .source-shell {
+        position: sticky;
+        top: var(--page-padding);
+      }
+
+      .source-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-4) var(--space-2);
+        border-bottom: 1px solid var(--surface-border);
+      }
+
+      .file-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px var(--space-3);
+      }
+
+      .file-tab {
+        padding: 0 0 var(--space-2);
+        border-bottom: 2px solid transparent;
+      }
+
+      .file-tab.active {
+        color: var(--ink);
+        border-bottom-color: var(--ink);
+        font-weight: 600;
+      }
+
+      .source-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        border-bottom: 1px solid var(--surface-border);
+      }
+
+      .segmented {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-pill);
+        background: var(--surface-bg-muted);
+      }
+
+      .segmented button {
+        border: 0;
+        border-radius: var(--radius-pill);
+        background: transparent;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+
+      .segmented button.is-active {
+        background: var(--surface-bg);
+        color: var(--ink);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-left: auto;
+      }
+
+      .ghost-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: 1px solid var(--surface-border);
+        border-radius: 6px;
+        background: var(--surface-bg);
+        box-shadow: var(--surface-shadow-soft);
+        cursor: pointer;
+      }
+
+      .source-body {
+        max-height: calc(100vh - (var(--page-padding) * 2) - 120px);
+        overflow: auto;
+      }
+
+      .source-view,
+      .rendered-view {
+        margin: 0;
+        padding: var(--space-4);
+      }
+
+      .source-view {
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: var(--source-size);
+        line-height: var(--source-line);
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--surface-bg);
+      }
+
+      .rendered-view {
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        background: var(--surface-bg);
+      }
+
+      .rendered-view[hidden],
+      .source-view[hidden] {
+        display: none;
+      }
+
+      .rendered-view h2,
+      .rendered-view h3 {
+        margin: var(--space-4) 0 var(--space-2);
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 600;
+      }
+
+      .rendered-view h2 {
+        font-size: var(--section-size);
+        line-height: var(--section-line);
+        letter-spacing: var(--section-track);
+      }
+
+      .rendered-view h2:first-child {
+        margin-top: 0;
+      }
+
+      .rendered-view h3 {
+        color: var(--muted);
+        font-size: calc(32px - 4px);
+        line-height: calc(32px - 4px);
+      }
+
+      .rendered-view p,
+      .rendered-view li {
+        color: var(--muted);
+      }
+
+      .rendered-view ul,
+      .rendered-view ol {
+        margin: 0 0 var(--space-3) 20px;
+        padding: 0;
+      }
+
+      .rendered-view table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: var(--space-2) 0 var(--space-4);
+      }
+
+      .rendered-view th,
+      .rendered-view td {
+        padding: var(--space-2) var(--space-2);
+        border: 1px solid var(--surface-border);
+        text-align: left;
+        vertical-align: top;
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+      }
+
+      .rendered-view th {
+        color: var(--ink);
+        background: var(--surface-bg-muted);
+      }
+
+      .rendered-view code {
+        padding: 0.14em 0.4em;
+        border-radius: 6px;
+        background: var(--surface-bg-muted);
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: 0.92em;
+      }
+
+      @media (max-width: 1120px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .source-shell {
+          position: relative;
+          top: 0;
+        }
+
+        .source-body {
+          max-height: none;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          width: min(100vw - (12px * 2), 100%);
+          padding-top: 12px;
+        }
+
+        .panel-inner,
+        .source-view,
+        .rendered-view {
+          padding-left: var(--space-3);
+          padding-right: var(--space-3);
+        }
+
+        .palette-row,
+        .palette-row.neutral-row,
+        .theme-mode-grid,
+        .theme-swatch-row,
+        .split-card,
+        .radius-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .type-row,
+        .mini-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="layout">
+        <section class="stack">
+          <article class="panel hero-card">
+            <div class="panel-inner">
+              <div class="eyebrow">Design Preview</div>
+              <h1 class="site-title">DESIGN</h1>
+              <p class="descriptor">暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐...</p>
+              <div class="chip-row"><span class="chip">暖白纸底 #FBFAF4 + 纯黑文字，近黑 #0F1111 暗...</span><span class="chip">文字优先：项目是&quot;前缀标签 + 名称 + 年份&quot;的大文字块，不是...</span><span class="chip">系统注记无处不在：时区时钟、气温、X/Y 光标坐标、[A]/[-...</span><span class="chip">几何无衬线（tiktok 字体）承担全部正文与大字，等宽字体（t...</span><span class="chip">全大写标签文化：链接 700 字重全大写，项目前缀 &quot;CODIN...</span><span class="chip">双语内容策略：英文为主、中文为辅（如&quot;阿里云盘&quot;），™ 与 ©...</span></div>
+              <p class="summary">暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐标读数，主题与声音都有方括号开关（THEME[A]、SOUND[-]），营造出&quot;系统 HUD&quot;式的冷静氛围。克制的双色主题（暖白 ↔ 近黑）配纯黑文字，唯一的彩色是外链蓝；公司名用实心方块 ■■■■■■ 打码，反而成为个性签名。整体气质：克制、精密、工程师的幽默感。</p>
+              <a class="observed-link" href="https://haoqi.design/" target="_blank" rel="noreferrer">https://haoqi.design/</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Palette</h2>
+              <p class="section-subtitle">Roles and neutrals rendered using the extracted design system rather than a separate display theme.</p>
+              <div class="palette-grid"><div class="palette-row"><div class="swatch">
+    <div class="swatch-box" style="background:#FBFAF4;"></div>
+    <div class="swatch-label">undefined</div>
+    <div class="swatch-meta">
+      <span>#FBFAF4 rgb(251,250,244)</span>
+      <span>背景 · 亮色</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#0F1111;"></div>
+    <div class="swatch-label">undefined</div>
+    <div class="swatch-meta">
+      <span>#0F1111 rgb(15,17,17)</span>
+      <span>背景 · 暗色</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#000000;"></div>
+    <div class="swatch-label">undefined</div>
+    <div class="swatch-meta">
+      <span>#000000</span>
+      <span>前景</span>
+    </div>
+  </div></div><div class="palette-row neutral-row"><div class="swatch">
+    <div class="swatch-box" style="background:#0066DC;"></div>
+    <div class="swatch-label">undefined</div>
+    <div class="swatch-meta">
+      <span>#0066DC / #007BFF / #3C93FF</span>
+      <span>外链蓝</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#292D39;"></div>
+    <div class="swatch-label">undefined</div>
+    <div class="swatch-meta">
+      <span>#292D39 / #181C20 / #373C4B</span>
+      <span>暗色面板</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#000;"></div>
+    <div class="swatch-label">undefined</div>
+    <div class="swatch-meta">
+      <span>#000 实心</span>
+      <span>打码块</span>
+    </div>
+  </div></div></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Theme Modes</h2>
+              <p class="section-subtitle">If the product supports light and dark themes, both modes should stay visible in the exported design system and preview.</p>
+              <div class="prompt-card"><strong>Single mode detected</strong><p>No explicit <code>Theme Modes</code> section was detected in the markdown. If the product supports both light and dark themes, document both so the preview can render them side by side.</p></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Typography</h2>
+              <p class="section-subtitle">The preview shell itself now uses the extracted typography stack, sizes, line heights, and tracking.</p>
+              <div class="type-list"><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:48px; line-height:67px; font-weight:700; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">85.5px（≈6.8vw） • 700 • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:48px; line-height:67px; font-weight:700; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">75.5px（≈6vw） • 700 • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:48px; line-height:67px; font-weight:400; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">52.8px（≈4.2vw） • 400 • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:30px; line-height:42px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">30px • 500 • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:16px; line-height:22px; font-weight:400; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">16px • 400 • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:16px; line-height:22px; font-weight:400; letter-spacing:normal; font-family:ui-monospace, &quot;SFMono-Regular&quot;, &quot;SF Mono&quot;, Menlo, monospace;"
+        >
+          const preview = true;
+        </div>
+        <div class="type-metrics">16px • 400 • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:16px; line-height:22px; font-weight:700; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">16px • 700 • undefined</div>
+      </div></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Spacing &amp; Shape</h2>
+              <p class="section-subtitle">Spacing, panel padding, and radius tokens are mapped directly from the layout rules in the markdown.</p>
+              <div class="split-card">
+    <div>
+      <h3 class="token-heading">Spacing</h3>
+      <div class="token-table"><div class="token-row">
+        <span>Base unit</span>
+        <span>8px</span>
+      </div><div class="token-row">
+        <span>Step 2</span>
+        <span>12px</span>
+      </div><div class="token-row">
+        <span>Step 3</span>
+        <span>16px</span>
+      </div><div class="token-row">
+        <span>Step 4</span>
+        <span>24px</span>
+      </div><div class="token-row">
+        <span>Step 5</span>
+        <span>32px</span>
+      </div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Border Radius</h3>
+      <div class="radius-grid"><div class="radius-card">
+        <div class="radius-demo" style="border-radius:6px;"></div>
+        <div class="radius-name">Micro utility</div>
+        <div class="radius-value">6px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:8px;"></div>
+        <div class="radius-name">Standard module</div>
+        <div class="radius-value">8px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:999px;"></div>
+        <div class="radius-name">Category rail</div>
+        <div class="radius-value">999px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:999px;"></div>
+        <div class="radius-name">CTA pill</div>
+        <div class="radius-value">999px</div>
+      </div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Components</h2>
+              <p class="section-subtitle">Buttons and cards use the documented height, weight, radius, colors, and surface treatment.</p>
+              <div class="component-card">
+    <div class="button-row">
+      <span class="cta cta-primary">Start Deploying</span>
+      <span class="cta cta-secondary">Get a Demo</span>
+    </div>
+    <div class="card-preview">
+      <h4>System Card Preview</h4>
+      <p>White framed module with restrained shadow and precise spacing.</p>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">System Notes</h2>
+              <p class="section-subtitle">Responsive behavior and depth rules stay visible while keeping the overall proportions calm and readable.</p>
+              <div class="split-card">
+    <div>
+      <h3 class="token-heading">Breakpoints</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Responsive</div><div class="mini-content">No breakpoint table detected.</div></div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Elevation</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Depth</div><div class="mini-content">No depth table detected.</div></div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Prompt Guide</h2>
+              <p class="section-subtitle">Prompt snippets are shown in the same typography and spacing language as the extracted design system.</p>
+              <div class="prompt-list"><div class="prompt-card"><strong>Prompt guide</strong><p>No example prompts detected.</p></div></div>
+              <div class="split-card" style="margin-top:var(--space-4);">
+    <div>
+      <h3 class="token-heading">Do</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Not detected.</div></div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Don't</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Not detected.</div></div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="source-shell">
+          <article class="panel">
+            <div class="source-header">
+              <div class="file-tabs">
+                <span class="file-tab">design-system.md</span>
+                <span class="file-tab active">DESIGN.md</span>
+                <span class="file-tab">Design JSON</span>
+                <span class="file-tab">CSS Variables</span>
+                <span class="file-tab">Design Tokens</span>
+              </div>
+            </div>
+            <div class="source-toolbar">
+              <div class="segmented" role="tablist" aria-label="View Switcher">
+                <button class="is-active" data-view="source" type="button">Source</button>
+                <button data-view="preview" type="button">Preview</button>
+              </div>
+              <div class="toolbar-actions">
+                <button class="ghost-button" id="copyButton" type="button">Copy</button>
+                <a class="ghost-button" href="DESIGN.md" download>Open .md</a>
+                <span class="copy-state" id="copyState"></span>
+              </div>
+            </div>
+            <div class="source-body">
+              <pre class="source-view" id="sourceView"># haoqi.design 设计系统（DESIGN.md）
+
+&gt; 来源：agent-browser 对 https://haoqi.design 的深度检查（桌面端 1258px 视口）。
+&gt; 目标：让任何 agent 不看原站也能复刻其设计语言、内容语气与交互质感。
+
+## Visual Theme &amp; Atmosphere
+
+暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐标读数，主题与声音都有方括号开关（`THEME[A]`、`SOUND[-]`），营造出&quot;系统 HUD&quot;式的冷静氛围。克制的双色主题（暖白 ↔ 近黑）配纯黑文字，唯一的彩色是外链蓝；公司名用实心方块 ■■■■■■ 打码，反而成为个性签名。整体气质：克制、精密、工程师的幽默感。
+
+### Key Characteristics
+
+- 暖白纸底 `#FBFAF4` + 纯黑文字，近黑 `#0F1111` 暗色主题，切换为慢速交叉淡化（&gt;1.6s）
+- 文字优先：项目是&quot;前缀标签 + 名称 + 年份&quot;的大文字块，不是图片卡片
+- 系统注记无处不在：时区时钟、气温、X/Y 光标坐标、`[A]`/`[-]` 方括号开关状态
+- 几何无衬线（tiktok 字体）承担全部正文与大字，等宽字体（tronica-mono）只做 HUD 注记
+- 全大写标签文化：链接 700 字重全大写，项目前缀 &quot;CODING PROJECT&quot;、页脚 &quot;INNOVATE WITH PURPOSE&quot;
+- 双语内容策略：英文为主、中文为辅（如&quot;阿里云盘&quot;），™ 与 © 上标频繁出现
+- 自定义光标；交互可选音效（SOUND 开关）
+- 动效曲线保守而精确，含一条戏剧性的快起慢收曲线 `cubic-bezier(.66,0,.01,1)`
+
+## Color Palette &amp; Roles
+
+| Role | Value | Usage |
+| --- | --- | --- |
+| 背景 · 亮色 | `#FBFAF4` `rgb(251,250,244)` | 亮色主题的全局背景（暖白纸） |
+| 背景 · 暗色 | `#0F1111` `rgb(15,17,17)` | 暗色主题的全局背景 |
+| 前景 | `#000000` | 亮色主题下所有文字与图形 |
+| 外链蓝 | `#0066DC` / `#007BFF` / `#3C93FF` | 样式表中的链接色阶（推断：外链与强调） |
+| 暗色面板 | `#292D39` / `#181C20` / `#373C4B` | 样式表中的暗色表面色阶（推断：暗色主题表面） |
+| 打码块 | `#000` 实心 | 敏感信息的 ■■■■■■ 方块 |
+
+配色哲学：一个背景 + 一个前景 + 透明度阶梯。不使用品牌强调色，靠字重、字号与留白制造层级。
+
+### Theme Modes
+
+- 亮色（默认观测态）：`#FBFAF4` 底 / `#000` 字。暗色：`#0F1111` 底 / 亮字（具体前景色未采样到，推断为近白）。
+- 切换控件是文本按钮 `THEME[A]` ↔ `THEME[D]`，方括号内字母即当前状态；切换伴随 &gt;1.6s 的慢速交叉淡化。
+- 两套主题共享同一套版式与字号，只有背景/前景翻转，无第二套彩色。
+
+## Typography Rules
+
+| Level | Font | Size | Weight | Style | 用途 |
+| --- | --- | --- | --- | --- | --- |
+| Display | tiktok | 85.5px（≈6.8vw） | 700 | uppercase | 页脚 CTA &quot;INNOVATE…&quot; |
+| Statement | tiktok | 75.5px（≈6vw） | 700 | uppercase | 宣言行 &quot;I BRING CRAFT &amp; TASTE TO DIGITAL WORK&quot; |
+| Lead | tiktok | 52.8px（≈4.2vw） | 400 | normal | 首屏大号正文段落（标志性手法） |
+| Eyebrow | tiktok | 30px | 500 | normal | 首屏眉题 &quot;Design &amp; Engineering&quot; |
+| Base | tiktok | 16px | 400 | — | 正文，行高 24px（1.5） |
+| HUD | tronica-mono | 16px | 400 | uppercase | 开关、时钟、坐标、按钮 |
+| Link | tiktok | 16px | 700 | uppercase | 导航与页脚链接 |
+
+- 字体观测：`font-family: tiktok, sans-serif`（几何无衬线，疑似自托管 TikTok Sans）；`tronica-mono, monospace` 用于全部技术注记。@font-face 规则未在可读样式表中（推断：next/font 内联注入）。
+- 行高纪律：大字 1.0–1.25，正文 1.5，无 letter-spacing 调整（normal）。
+- 层级完全靠&quot;字号 × 字重 × 大写&quot;三维驱动，不靠颜色。
+
+## Component Stylings
+
+### Header（系统 HUD）
+
+左：`HAOQI.DESIGN` 文字 logo（链接回首页）。中/右：`WORK` `CONTACT` 大写按钮；`THEME[A]` `SOUND[-]` 等宽字体状态开关；`GMT+8 CN 19:18 28°C` 实时时钟与气温；`0629 X 0283 Y` 光标坐标实时读数。所有注记等宽、大写、同字号（16px），像仪表盘读数排成一行。
+
+### 项目行（Project Rows）
+
+`&lt;a&gt;` 块级元素（观测约 764×469px，padding 8px），文案格式：`[类型前缀] [名称™] [年份区间]`，如 `CODING PROJECT REUNIMOS™ 2024-2026`、`ADRIVE 阿里云盘 2020-2022`、`FOF: SEE HEAR TOUCH 2022 EVENT ↗`。外链项尾部带 `↗`。无图片、无边框分隔，靠间距与换行分组。悬停态采样无颜色/内边距变化（推断：动效由 JS 驱动或作用于子元素）。
+
+### 页脚 CTA
+
+`INNOVATE WITH PURPOSE`（85px 大写）+ `LET&#39;S CREATE SOMETHING EXTRAORDINARY` + 超大 `CURIOSITY.WEN@GMAIL.COM` 邮箱链接 + `TWITTER/X` `FIGMA` `GITHUB` 大写等宽/粗体链接列。
+
+### 链接与按钮
+
+全部 `text-transform: uppercase`；导航链接 700 字重；按钮用等宽字体 400 字重大写。无圆角、无阴影、无填充底色的文本控件风格。
+
+## Layout Principles
+
+- 全幅布局：主容器 padding 0、max-width none，内容直接贴合视口（观测 mainPad 0px / mainMaxW none）。
+- 项目块两列排布（推断：764px 宽块在 1258px 视口下约为两列网格）。
+- 留白替代分隔线：段落与项目组之间用大间距分组，未观测到装饰性边框。
+- HUD 信息行横贯页头，仪表读数与导航混排一行。
+
+## Depth &amp; Elevation
+
+- 零阴影、零圆角卡片、零渐变。层级只存在于排版维度。
+- 主题切换的交叉淡化是唯一的&quot;深度&quot;表达；其余全部平面。
+- 透明度阶梯（rgba(var(--label)) 类 token）用于次级信息，而非灰色块。
+
+## Do&#39;s and Don&#39;ts
+
+**Do**
+
+- 用等宽字体的&quot;仪表读数&quot;制造系统感：时钟、坐标、方括号状态开关
+- 让正文段落成为首屏主角（52.8px 的 Lead 段落）
+- 项目列表用&quot;前缀 + 名称 + 年份&quot;的文案结构，外链加 ↗
+- 双语混排（英文骨架 + 中文点睛），™/© 上标做细节装饰
+- 主题切换做慢速交叉淡化（&gt;1.6s）
+
+**Don&#39;t**
+
+- 不要加品牌强调色、渐变、阴影、圆角卡片——它的美来自克制
+- 不要用图片轰炸；文字与排版就是画面
+- 不要给大字加 letter-spacing；层级靠字号与字重
+- 不要把 HUD 注记做成装饰性图形——它们必须输出真实数据（真实时间、真实坐标）
+
+## Responsive Behavior
+
+- 观测仅覆盖桌面端 1258×566 视口（证据缺口）。
+- 推断（未验证）：HUD 行在小屏折叠或隐藏坐标读数；项目块两列降为单列；大字按 vw 缩放（85px ≈ 6.8vw、75px ≈ 6vw 均为流式）。
+
+## Agent Prompt Guide
+
+- 复刻首屏：&quot;暖白纸底 #FBFAF4，纯黑几何无衬线。首屏眉题 30px &#39;Design &amp; Engineering Thinking in systems.&#39;，下方 52.8px/400 的两行大号正文段落占满视口，页头一行等宽大写 HUD：logo、WORK、CONTACT、THEME[A]、SOUND[-]、GMT+8 时钟与气温、X/Y 光标坐标。&quot;
+- 复刻项目列表：&quot;无图片项目块，文案格式 &#39;CODING PROJECT 名称™ 年份&#39;，大写前缀标签 + 名称 + 年份，外链尾部 ↗，两列网格，间距分组不用边框。&quot;
+- 复刻页脚：&quot;85px/700 大写 CTA &#39;INNOVATE WITH PURPOSE&#39;，下方超大邮箱链接与 TWITTER/X、FIGMA、GITHUB 大写链接列。&quot;
+- 迭代规则：先调字号与字重，再动间距；禁止引入新颜色。
+
+## Observed Pages
+
+- https://haoqi.design/ （首页，Next.js App Router + Vercel 部署，观测时标题 HAOQI©2026）
+
+## Evidence Notes
+
+- 直接观测：body 计算样式、代表性元素字号/字重/大写、主题切换前后背景色、项目块几何、页头与页脚文案、样式表色值与贝塞尔曲线、自定义光标存在性。
+- 推断（已标注）：暗色主题前景色、项目两列网格、字体注入方式（next/font）、悬停动效实现方式。
+- 缺口：移动端断点行为、暗色主题完整 token、音效行为未实际听到、单项目详情页未访问。
+- 工具：agent-browser 0.27.0（DOM 与计算样式为主证据，未使用截图）。
+</pre>
+              <article class="rendered-view" id="previewView" hidden><section><h2>Visual Theme &amp; Atmosphere</h2><p>暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐标读数，主题与声音都有方括号开关（<code>THEME[A]</code>、<code>SOUND[-]</code>），营造出&quot;系统 HUD&quot;式的冷静氛围。克制的双色主题（暖白 ↔ 近黑）配纯黑文字，唯一的彩色是外链蓝；公司名用实心方块 ■■■■■■ 打码，反而成为个性签名。整体气质：克制、精密、工程师的幽默感。</p><h3>Key Characteristics</h3><ul><li>暖白纸底 <code>#FBFAF4</code> + 纯黑文字，近黑 <code>#0F1111</code> 暗色主题，切换为慢速交叉淡化（&gt;1.6s）</li><li>文字优先：项目是&quot;前缀标签 + 名称 + 年份&quot;的大文字块，不是图片卡片</li><li>系统注记无处不在：时区时钟、气温、X/Y 光标坐标、<code>[A]</code>/<code>[-]</code> 方括号开关状态</li><li>几何无衬线（tiktok 字体）承担全部正文与大字，等宽字体（tronica-mono）只做 HUD 注记</li><li>全大写标签文化：链接 700 字重全大写，项目前缀 &quot;CODING PROJECT&quot;、页脚 &quot;INNOVATE WITH PURPOSE&quot;</li><li>双语内容策略：英文为主、中文为辅（如&quot;阿里云盘&quot;），™ 与 © 上标频繁出现</li><li>自定义光标；交互可选音效（SOUND 开关）</li><li>动效曲线保守而精确，含一条戏剧性的快起慢收曲线 <code>cubic-bezier(.66,0,.01,1)</code></li></ul></section><section><h2>Color Palette &amp; Roles</h2><table><thead><tr><th>Role</th><th>Value</th><th>Usage</th></tr></thead><tbody><tr><td>背景 · 亮色</td><td><code>#FBFAF4</code> <code>rgb(251,250,244)</code></td><td>亮色主题的全局背景（暖白纸）</td></tr><tr><td>背景 · 暗色</td><td><code>#0F1111</code> <code>rgb(15,17,17)</code></td><td>暗色主题的全局背景</td></tr><tr><td>前景</td><td><code>#000000</code></td><td>亮色主题下所有文字与图形</td></tr><tr><td>外链蓝</td><td><code>#0066DC</code> / <code>#007BFF</code> / <code>#3C93FF</code></td><td>样式表中的链接色阶（推断：外链与强调）</td></tr><tr><td>暗色面板</td><td><code>#292D39</code> / <code>#181C20</code> / <code>#373C4B</code></td><td>样式表中的暗色表面色阶（推断：暗色主题表面）</td></tr><tr><td>打码块</td><td><code>#000</code> 实心</td><td>敏感信息的 ■■■■■■ 方块</td></tr></tbody></table><p>配色哲学：一个背景 + 一个前景 + 透明度阶梯。不使用品牌强调色，靠字重、字号与留白制造层级。</p><h3>Theme Modes</h3><ul><li>亮色（默认观测态）：<code>#FBFAF4</code> 底 / <code>#000</code> 字。暗色：<code>#0F1111</code> 底 / 亮字（具体前景色未采样到，推断为近白）。</li><li>切换控件是文本按钮 <code>THEME[A]</code> ↔ <code>THEME[D]</code>，方括号内字母即当前状态；切换伴随 &gt;1.6s 的慢速交叉淡化。</li><li>两套主题共享同一套版式与字号，只有背景/前景翻转，无第二套彩色。</li></ul></section><section><h2>Typography Rules</h2><table><thead><tr><th>Level</th><th>Font</th><th>Size</th><th>Weight</th><th>Style</th><th>用途</th></tr></thead><tbody><tr><td>Display</td><td>tiktok</td><td>85.5px（≈6.8vw）</td><td>700</td><td>uppercase</td><td>页脚 CTA &quot;INNOVATE…&quot;</td></tr><tr><td>Statement</td><td>tiktok</td><td>75.5px（≈6vw）</td><td>700</td><td>uppercase</td><td>宣言行 &quot;I BRING CRAFT &amp; TASTE TO DIGITAL WORK&quot;</td></tr><tr><td>Lead</td><td>tiktok</td><td>52.8px（≈4.2vw）</td><td>400</td><td>normal</td><td>首屏大号正文段落（标志性手法）</td></tr><tr><td>Eyebrow</td><td>tiktok</td><td>30px</td><td>500</td><td>normal</td><td>首屏眉题 &quot;Design &amp; Engineering&quot;</td></tr><tr><td>Base</td><td>tiktok</td><td>16px</td><td>400</td><td>—</td><td>正文，行高 24px（1.5）</td></tr><tr><td>HUD</td><td>tronica-mono</td><td>16px</td><td>400</td><td>uppercase</td><td>开关、时钟、坐标、按钮</td></tr><tr><td>Link</td><td>tiktok</td><td>16px</td><td>700</td><td>uppercase</td><td>导航与页脚链接</td></tr></tbody></table><ul><li>字体观测：<code>font-family: tiktok, sans-serif</code>（几何无衬线，疑似自托管 TikTok Sans）；<code>tronica-mono, monospace</code> 用于全部技术注记。@font-face 规则未在可读样式表中（推断：next/font 内联注入）。</li><li>行高纪律：大字 1.0–1.25，正文 1.5，无 letter-spacing 调整（normal）。</li><li>层级完全靠&quot;字号 × 字重 × 大写&quot;三维驱动，不靠颜色。</li></ul></section><section><h2>Component Stylings</h2><h3>Header（系统 HUD）</h3><p>左：<code>HAOQI.DESIGN</code> 文字 logo（链接回首页）。中/右：<code>WORK</code> <code>CONTACT</code> 大写按钮；<code>THEME[A]</code> <code>SOUND[-]</code> 等宽字体状态开关；<code>GMT+8 CN 19:18 28°C</code> 实时时钟与气温；<code>0629 X 0283 Y</code> 光标坐标实时读数。所有注记等宽、大写、同字号（16px），像仪表盘读数排成一行。</p><h3>项目行（Project Rows）</h3><p><code>&lt;a&gt;</code> 块级元素（观测约 764×469px，padding 8px），文案格式：<code>[类型前缀] [名称™] [年份区间]</code>，如 <code>CODING PROJECT REUNIMOS™ 2024-2026</code>、<code>ADRIVE 阿里云盘 2020-2022</code>、<code>FOF: SEE HEAR TOUCH 2022 EVENT ↗</code>。外链项尾部带 <code>↗</code>。无图片、无边框分隔，靠间距与换行分组。悬停态采样无颜色/内边距变化（推断：动效由 JS 驱动或作用于子元素）。</p><h3>页脚 CTA</h3><p><code>INNOVATE WITH PURPOSE</code>（85px 大写）+ <code>LET&#39;S CREATE SOMETHING EXTRAORDINARY</code> + 超大 <code>CURIOSITY.WEN@GMAIL.COM</code> 邮箱链接 + <code>TWITTER/X</code> <code>FIGMA</code> <code>GITHUB</code> 大写等宽/粗体链接列。</p><h3>链接与按钮</h3><p>全部 <code>text-transform: uppercase</code>；导航链接 700 字重；按钮用等宽字体 400 字重大写。无圆角、无阴影、无填充底色的文本控件风格。</p></section><section><h2>Layout Principles</h2><ul><li>全幅布局：主容器 padding 0、max-width none，内容直接贴合视口（观测 mainPad 0px / mainMaxW none）。</li><li>项目块两列排布（推断：764px 宽块在 1258px 视口下约为两列网格）。</li><li>留白替代分隔线：段落与项目组之间用大间距分组，未观测到装饰性边框。</li><li>HUD 信息行横贯页头，仪表读数与导航混排一行。</li></ul></section><section><h2>Depth &amp; Elevation</h2><ul><li>零阴影、零圆角卡片、零渐变。层级只存在于排版维度。</li><li>主题切换的交叉淡化是唯一的&quot;深度&quot;表达；其余全部平面。</li><li>透明度阶梯（rgba(var(--label)) 类 token）用于次级信息，而非灰色块。</li></ul></section><section><h2>Do&#39;s and Don&#39;ts</h2><p><strong>Do</strong></p><ul><li>用等宽字体的&quot;仪表读数&quot;制造系统感：时钟、坐标、方括号状态开关</li><li>让正文段落成为首屏主角（52.8px 的 Lead 段落）</li><li>项目列表用&quot;前缀 + 名称 + 年份&quot;的文案结构，外链加 ↗</li><li>双语混排（英文骨架 + 中文点睛），™/© 上标做细节装饰</li><li>主题切换做慢速交叉淡化（&gt;1.6s）</li></ul><p><strong>Don&#39;t</strong></p><ul><li>不要加品牌强调色、渐变、阴影、圆角卡片——它的美来自克制</li><li>不要用图片轰炸；文字与排版就是画面</li><li>不要给大字加 letter-spacing；层级靠字号与字重</li><li>不要把 HUD 注记做成装饰性图形——它们必须输出真实数据（真实时间、真实坐标）</li></ul></section><section><h2>Responsive Behavior</h2><ul><li>观测仅覆盖桌面端 1258×566 视口（证据缺口）。</li><li>推断（未验证）：HUD 行在小屏折叠或隐藏坐标读数；项目块两列降为单列；大字按 vw 缩放（85px ≈ 6.8vw、75px ≈ 6vw 均为流式）。</li></ul></section><section><h2>Agent Prompt Guide</h2><ul><li>复刻首屏：&quot;暖白纸底 #FBFAF4，纯黑几何无衬线。首屏眉题 30px &#39;Design &amp; Engineering Thinking in systems.&#39;，下方 52.8px/400 的两行大号正文段落占满视口，页头一行等宽大写 HUD：logo、WORK、CONTACT、THEME[A]、SOUND[-]、GMT+8 时钟与气温、X/Y 光标坐标。&quot;</li><li>复刻项目列表：&quot;无图片项目块，文案格式 &#39;CODING PROJECT 名称™ 年份&#39;，大写前缀标签 + 名称 + 年份，外链尾部 ↗，两列网格，间距分组不用边框。&quot;</li><li>复刻页脚：&quot;85px/700 大写 CTA &#39;INNOVATE WITH PURPOSE&#39;，下方超大邮箱链接与 TWITTER/X、FIGMA、GITHUB 大写链接列。&quot;</li><li>迭代规则：先调字号与字重，再动间距；禁止引入新颜色。</li></ul></section><section><h2>Observed Pages</h2><ul><li>https://haoqi.design/ （首页，Next.js App Router + Vercel 部署，观测时标题 HAOQI©2026）</li></ul></section><section><h2>Evidence Notes</h2><ul><li>直接观测：body 计算样式、代表性元素字号/字重/大写、主题切换前后背景色、项目块几何、页头与页脚文案、样式表色值与贝塞尔曲线、自定义光标存在性。</li><li>推断（已标注）：暗色主题前景色、项目两列网格、字体注入方式（next/font）、悬停动效实现方式。</li><li>缺口：移动端断点行为、暗色主题完整 token、音效行为未实际听到、单项目详情页未访问。</li><li>工具：agent-browser 0.27.0（DOM 与计算样式为主证据，未使用截图）。</li></ul></section></article>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const sourceView = document.getElementById("sourceView");
+      const previewView = document.getElementById("previewView");
+      const copyButton = document.getElementById("copyButton");
+      const copyState = document.getElementById("copyState");
+      const viewButtons = document.querySelectorAll("[data-view]");
+
+      function setActiveView(view) {
+        const showSource = view === "source";
+        sourceView.hidden = !showSource;
+        previewView.hidden = showSource;
+        viewButtons.forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.view === view);
+        });
+      }
+
+      viewButtons.forEach((button) => {
+        button.addEventListener("click", () => setActiveView(button.dataset.view));
+      });
+
+      copyButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(sourceView.textContent || "");
+          copyState.textContent = "Copied";
+        } catch (error) {
+          copyState.textContent = "Clipboard unavailable";
+        }
+
+        setTimeout(() => {
+          copyState.textContent = "";
+        }, 1400);
+      });
+    </script>
+  </body>
+</html>

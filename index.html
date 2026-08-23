@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="loading">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- TODO(你)：把「张三」等占位信息替换为你的真实姓名与头衔 -->
+  <title>张三 — 前端开发者 / Creative Developer</title>
+  <meta name="description" content="张三，前端开发者。专注交互体验、动效与创意编码，把想法做成会呼吸的界面。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="张三 — 前端开发者 / Creative Developer">
+  <meta property="og:description" content="把想法做成会呼吸的界面。">
+  <meta property="og:url" content="https://funny8kids.github.io/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <!-- 关键字体预加载：避免首屏大字先闪后备字体（FOUT） -->
+  <link rel="preload" href="assets/fonts/ClashDisplay-600.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- 社交分享卡片 -->
+  <meta property="og:image" content="https://funny8kids.github.io/assets/img/og-cover.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="张三 — 前端开发者 / Creative Developer">
+  <meta name="twitter:description" content="把想法做成会呼吸的界面。">
+  <meta name="twitter:image" content="https://funny8kids.github.io/assets/img/og-cover.png">
+  <!-- 简历站结构化数据（TODO(你)：替换成真实信息） -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "张三",
+    "jobTitle": "前端开发者",
+    "url": "https://funny8kids.github.io/",
+    "email": "mailto:hi@funny8kids.dev",
+    "sameAs": ["https://github.com/funny8kids"],
+    "knowsAbout": ["TypeScript", "React", "Vue", "GSAP", "Three.js", "WebGL", "性能优化"]
+  }
+  </script>
+  <script>
+    /* 提前应用主题（默认明亮；v2 存储键确保老访客的暗色残留不生效） */
+    try {
+      var t = localStorage.getItem('f8k-theme:v2') || 'light';
+      document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css?v=12">
+  <noscript><style>.preloader,.preloader-slat,.scene-aura,.scroll-progress,.chapter-hud{display:none}html.loading{overflow:auto}</style></noscript>
+</head>
+<body>
+
+  <!-- 液态玻璃折射滤镜定义（Apple 风格 liquid glass；不支持的浏览器静默回退为普通磨砂） -->
+  <svg class="glass-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <filter id="liquidGlass" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.012" numOctaves="2" seed="7" result="n"/>
+      <feGaussianBlur in="n" stdDeviation="2.2" result="nb"/>
+      <feDisplacementMap in="SourceGraphic" in2="nb" scale="46" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+  <!-- 噪点颗粒质感层 -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- 滚动光晕场景层（haoqi.design 持久背景场景的轻量适配：品牌色光晕随章节流转） -->
+  <div class="scene-aura" aria-hidden="true">
+    <i class="aura aura--1"></i>
+    <i class="aura aura--2"></i>
+    <i class="aura aura--3"></i>
+  </div>
+
+  <!-- 自定义光标 -->
+  <div class="cursor" aria-hidden="true">
+    <div class="cursor__ring"><span class="cursor__label"></span></div>
+    <div class="cursor__dot"></div>
+  </div>
+
+  <!-- 滚动 HUD：顶部进度线 + 左下角章节读数 + 右下角系统仪表（haoqi 式） -->
+  <div class="scroll-progress" aria-hidden="true"></div>
+  <div class="chapter-hud" aria-hidden="true">
+    <span class="chapter-hud__num" id="chapterNum">00</span>
+    <span class="chapter-hud__name" id="chapterName">HELLO</span>
+  </div>
+  <div class="sys-hud" aria-hidden="true"><span id="xyReadout">X 0000 · Y 0000</span><span id="visitorCity"></span> · <span id="scrollPct">SCROLL 00%</span></div>
+
+  <!-- 预加载动画 -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__brand">F8K<sup>®</sup> — PORTFOLIO</div>
+    <div class="preloader__mark" aria-hidden="true">
+      <svg class="mark" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <line class="mark__line" x1="144" y1="368" x2="368" y2="144"/>
+        <circle class="mark__dot mark__dot--tl" cx="168" cy="168" r="48"/>
+        <circle class="mark__dot mark__dot--br" cx="344" cy="344" r="48"/>
+      </svg>
+    </div>
+    <div class="preloader__count" id="preloaderCount">000</div>
+    <div class="preloader__bar" aria-hidden="true"></div>
+  </div>
+  <!-- 双层幕布：主底上滑后，克莱因蓝薄板延迟跟随露出页面 -->
+  <div class="preloader-slat" aria-hidden="true"></div>
+
+  <!-- 顶部导航 -->
+  <header class="header">
+    <a class="header__logo" href="#top" data-hover>F8K<sup>®</sup></a>
+    <nav class="header__nav" aria-label="主导航">
+      <a href="#about" data-hover>关于</a>
+      <a href="#skills" data-hover>技能</a>
+      <a href="#work" data-hover>作品</a>
+      <a href="#contact" data-hover>联系</a>
+      <i class="nav-ink" aria-hidden="true"></i>
+    </nav>
+    <div class="header__right">
+      <div class="header__meta">GMT+8 CN · <span id="clock">--:--</span></div>
+      <button class="header__sound" id="soundToggle" data-hover aria-label="切换交互音效" aria-pressed="false">SOUND<i>[|]</i></button>
+      <button class="header__theme" id="themeToggle" data-hover aria-label="切换明暗主题" aria-pressed="false">THEME<i>[A]</i></button>
+    </div>
+    <button class="header__burger" id="burger" aria-label="打开菜单" aria-expanded="false" data-hover>
+      <span></span><span></span>
+    </button>
+  </header>
+
+  <!-- 移动端全屏菜单 -->
+  <div class="menu" id="menu" aria-hidden="true">
+    <nav class="menu__nav" aria-label="移动端导航">
+      <a class="menu__link" href="#about"><i>01</i>关于<em>About</em></a>
+      <a class="menu__link" href="#skills"><i>02</i>技能<em>Skills</em></a>
+      <a class="menu__link" href="#work"><i>03</i>作品<em>Work</em></a>
+      <a class="menu__link" href="#contact"><i>04</i>联系<em>Contact</em></a>
+    </nav>
+    <div class="menu__foot">hi@funny8kids.dev</div>
+  </div>
+
+  <main id="top">
+
+    <!-- ① 首屏 -->
+    <section class="hero">
+      <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+      <div class="hero__inner">
+        <p class="hero__status shiny" data-hero-fade><span class="dot"></span>可供合作 — OPEN TO WORK</p>
+        <!-- 液态玻璃 HELLO（Apple 风格：折射 + 跟随高光 + 3D 倾斜悬浮） -->
+        <div class="glass-hello" id="glassHello" data-hero-fade aria-hidden="true">
+          <div class="glass-hello__panel">
+            <span class="glass-hello__hi">HI · 你好 · BONJOUR</span>
+            <span class="glass-hello__word"><em class="serif">hello</em><sup>®</sup></span>
+          </div>
+        </div>
+        <h1 class="hero__title">
+          <span class="line"><span>CREATIVE</span></span>
+          <span class="line line--indent"><span><em class="serif">front-end</em> DEVELOPER<sup>®</sup></span></span>
+        </h1>
+        <div class="hero__row" data-hero-fade>
+          <div class="hero__left">
+            <p class="hero__sub">前端开发者 · 张三</p>
+            <p class="hero__rotate-wrap">FOCUS — <span class="hero__rotate"><span id="heroRotate">创意编码</span></span></p>
+          </div>
+          <p class="hero__desc">我用代码把想法变成<em class="serif">会呼吸</em>的界面 —— 关注动效、性能，以及每一个像素的细节。</p>
+        </div>
+      </div>
+      <div class="hero__foot" data-hero-fade>
+        <span class="hero__scroll">向下滚动 ↓</span>
+        <span class="hero__loc">SHANGHAI, CN · UTC+8</span>
+      </div>
+    </section>
+
+    <!-- 跑马灯分隔带 -->
+    <aside class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <div class="marquee__set">
+          <span>前端开发</span><i>✦</i><span>CREATIVE CODING</span><i>✦</i><span>交互设计</span><i>✦</i><span>MOTION</span><i>✦</i><span>WEBGL</span><i>✦</i><span>设计工程</span><i>✦</i><span>TYPESCRIPT</span><i>✦</i>
+        </div>
+        <div class="marquee__set">
+          <span>前端开发</span><i>✦</i><span>CREATIVE CODING</span><i>✦</i><span>交互设计</span><i>✦</i><span>MOTION</span><i>✦</i><span>WEBGL</span><i>✦</i><span>设计工程</span><i>✦</i><span>TYPESCRIPT</span><i>✦</i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ② 关于 -->
+    <section class="section" id="about">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">01</span>
+        <div class="sec-head__labels"><h2>关于</h2><span>ABOUT ME</span></div>
+      </div>
+      <!-- TODO(你)：换成你的自我介绍 -->
+      <p class="about__text" data-split>我是一名前端开发者，热衷于<em class="hl">创意编码</em>与<em class="hl">交互动效</em>。我相信好的网站不止是信息的容器，更是一场被精心编排的体验 —— 每一次滚动、每一次悬停，都值得被认真设计。</p>
+      <ul class="about__stats" data-reveal="stagger-clip">
+        <li class="stat" data-line><strong>04+</strong><span>年开发经验</span></li>
+        <li class="stat" data-line><strong>20+</strong><span>交付项目</span></li>
+        <li class="stat" data-line><strong>06</strong><span>开源仓库</span></li>
+        <li class="stat" data-line><strong>∞</strong><span>好奇心</span></li>
+      </ul>
+    </section>
+
+    <!-- ③ 服务 -->
+    <section class="section" id="services">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">02</span>
+        <div class="sec-head__labels"><h2>服务</h2><span>WHAT I DO</span></div>
+      </div>
+      <!-- TODO(你)：按你的真实方向调整服务内容 -->
+      <div class="services__grid" data-reveal="stagger">
+        <div class="service" data-line>
+          <span class="service__idx">01</span>
+          <h3>网站开发</h3>
+          <p>从设计稿到上线完整交付：响应式、无障碍、SEO 友好，在性能预算内做到打开即惊艳。</p>
+        </div>
+        <div class="service" data-line>
+          <span class="service__idx">02</span>
+          <h3>交互动效</h3>
+          <p>GSAP / Three.js / WebGL：滚动叙事、微交互、加载编排 —— 动效服务内容，而非炫技。</p>
+        </div>
+        <div class="service" data-line>
+          <span class="service__idx">03</span>
+          <h3>性能与工程</h3>
+          <p>性能审计、构建优化、设计系统与组件库搭建，让页面快、让团队跑得更快。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ④ 技能 -->
+    <section class="section" id="skills">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">03</span>
+        <div class="sec-head__labels"><h2>技能</h2><span>SKILLS</span></div>
+      </div>
+      <!-- TODO(你)：按你的真实技能调整 -->
+      <div class="skills__grid">
+        <div class="skill-col" data-reveal="side" data-side="left">
+          <div class="skill-widget" data-shape="hex" data-color="accent" data-cursor-label="甩动"><canvas class="skill-canvas" aria-hidden="true"></canvas></div>
+          <h3>开发 <em>DEVELOPMENT</em></h3>
+          <ul class="skill-list">
+            <li data-line="b"><span class="idx">01</span><span class="name">TypeScript</span><span class="note">日常主语言</span></li>
+            <li data-line="b"><span class="idx">02</span><span class="name">React</span><span class="note">深度使用</span></li>
+            <li data-line="b"><span class="idx">03</span><span class="name">Vue 3</span><span class="note">熟练</span></li>
+            <li data-line="b"><span class="idx">04</span><span class="name">Node.js</span><span class="note">服务端</span></li>
+            <li data-line="b"><span class="idx">05</span><span class="name">GSAP · Motion</span><span class="note">动效</span></li>
+            <li data-line="b"><span class="idx">06</span><span class="name">Three.js</span><span class="note">WebGL</span></li>
+          </ul>
+        </div>
+        <div class="skill-col" data-reveal="side" data-side="right">
+          <div class="skill-widget" data-shape="tri" data-color="mint" data-cursor-label="甩动"><canvas class="skill-canvas" aria-hidden="true"></canvas></div>
+          <h3>设计 <em>DESIGN</em></h3>
+          <ul class="skill-list">
+            <li data-line="b"><span class="idx">01</span><span class="name">Figma</span><span class="note">设计协作</span></li>
+            <li data-line="b"><span class="idx">02</span><span class="name">设计系统</span><span class="note">组件与规范</span></li>
+            <li data-line="b"><span class="idx">03</span><span class="name">动效设计</span><span class="note">Motion Design</span></li>
+            <li data-line="b"><span class="idx">04</span><span class="name">交互原型</span><span class="note">Prototyping</span></li>
+          </ul>
+        </div>
+        <div class="skill-col" data-reveal="side" data-side="left">
+          <div class="skill-widget" data-shape="sqr" data-color="sun" data-cursor-label="甩动"><canvas class="skill-canvas" aria-hidden="true"></canvas></div>
+          <h3>工具 <em>TOOLING</em></h3>
+          <ul class="skill-list">
+            <li data-line="b"><span class="idx">01</span><span class="name">Vite</span><span class="note">构建</span></li>
+            <li data-line="b"><span class="idx">02</span><span class="name">Git</span><span class="note">版本管理</span></li>
+            <li data-line="b"><span class="idx">03</span><span class="name">Docker</span><span class="note">容器</span></li>
+            <li data-line="b"><span class="idx">04</span><span class="name">Linux · CI/CD</span><span class="note">部署</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑤ 精选作品 -->
+    <section class="section" id="work">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">04</span>
+        <div class="sec-head__labels"><h2>精选作品</h2><span>SELECTED WORK · 2023 — 2026</span></div>
+      </div>
+      <!-- TODO(你)：封面为内置 SVG 插画（assets/img/），可直接替换为项目截图（放入 assets/img/ 并改 src） -->
+            <!-- 项目展示：横滑叠放卡组（学习 pxpush.com 的胶片流叠放，修正其跟手延迟：拖拽 1:1、惯性只在松手后） -->
+      <div class="deck" id="deck" data-reveal="fan" data-cursor-label="拖动">
+        <div class="deck__strip" id="deckStrip">
+          <a class="deck-card" href="#" data-hover>
+            <div class="deck-card__media"><img src="assets/img/orbit.svg" alt="星舟 ORBIT 项目封面" loading="lazy" decoding="async"></div>
+            <div class="deck-card__meta"><h3>星舟 <em>ORBIT</em></h3><span class="deck-card__year">2025 · VUE 3 / D3</span></div>
+          </a>
+          <a class="deck-card" href="#" data-hover>
+            <div class="deck-card__media"><img src="assets/img/lumen.svg" alt="LUMEN 项目封面" loading="lazy" decoding="async"></div>
+            <div class="deck-card__meta"><h3>LUMEN <em>电商</em></h3><span class="deck-card__year">2024 · NEXT.JS / GSAP</span></div>
+          </a>
+          <a class="deck-card" href="#" data-hover>
+            <div class="deck-card__media"><img src="assets/img/mood.svg" alt="MOOD 项目封面" loading="lazy" decoding="async"></div>
+            <div class="deck-card__meta"><h3>MOOD <em>AI 日记</em></h3><span class="deck-card__year">2024 · RN / LLM</span></div>
+          </a>
+          <a class="deck-card" href="#" data-hover>
+            <div class="deck-card__media"><img src="assets/img/pulse.svg" alt="PULSE 项目封面" loading="lazy" decoding="async"></div>
+            <div class="deck-card__meta"><h3>PULSE <em>音乐可视化</em></h3><span class="deck-card__year">2023 · WEBGL / AUDIO</span></div>
+          </a>
+          <a class="deck-card deck-card--cta" href="#" data-hover>
+            <div class="deck-card__meta deck-card__meta--cta"><h3 class="shiny--light">全部项目</h3><span class="deck-card__year">MORE ↗</span></div>
+          </a>
+        </div>
+        <div class="deck__foot">
+          <span class="deck__hint">按住拖动 — HOLD TO SKIM</span>
+          <span class="deck__idx" id="deckIdx">01 / 05</span>
+        </div>
+      </div>
+
+      <!-- 更多项目：轻量文字列表，灵感来自 haoqi.design -->
+      <p class="more-head" data-reveal>MORE — 更多项目与产出</p>
+      <!-- TODO(你)：换成你的真实链接 -->
+      <ul class="more-list" data-reveal="stagger">
+        <!-- ■■■■■■ 受保护行：口令解锁彩蛋（haoqi.design 打码块签名），口令见 main.js -->
+        <li><a href="#" class="is-locked" data-hover data-cursor-label="解锁" aria-label="受保护项目，点击输入口令解锁"><span class="more-list__name">■■■■■■</span><span class="more-list__meta">未公开 · 2026</span><span class="more-list__arrow">↗</span></a></li>
+        <li><a href="#" data-hover data-line><span class="more-list__name">VECTOR SYMBOLS</span><span class="more-list__meta">FIGMA 插件 · 2023</span><span class="more-list__arrow">↗</span></a></li>
+        <li><a href="#" data-hover data-line><span class="more-list__name">COLOR LAB</span><span class="more-list__meta">在线工具 · 2024</span><span class="more-list__arrow">↗</span></a></li>
+        <li><a href="#" data-hover data-line><span class="more-list__name">MOTION 备忘</span><span class="more-list__meta">图文教程 · 2023</span><span class="more-list__arrow">↗</span></a></li>
+        <li><a href="#" data-hover data-line><span class="more-list__name">CLI WEATHER</span><span class="more-list__meta">终端玩具 · 2022</span><span class="more-list__arrow">↗</span></a></li>
+        <li><a href="#" data-hover data-line><span class="more-list__name">个人博客</span><span class="more-list__meta">写作 · 2020 — 至今</span><span class="more-list__arrow">↗</span></a></li>
+        <li><a href="#" data-hover data-line><span class="more-list__name">RESUME SITE 本站</span><span class="more-list__meta">设计与开发 · 2026</span><span class="more-list__arrow">↗</span></a></li>
+      </ul>
+    </section>
+
+    <!-- ⑥ 经历 -->
+    <section class="section" id="exp">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">05</span>
+        <div class="sec-head__labels"><h2>经历</h2><span>EXPERIENCE</span></div>
+      </div>
+      <!-- TODO(你)：替换为你的真实经历 -->
+      <ul class="exp-list" data-reveal="exp">
+        <li class="exp-row" data-line>
+          <span class="exp-row__time">2024 — 至今</span>
+          <div class="exp-row__main"><h3>高级前端工程师</h3><p>星舟科技 · Starship Tech</p></div>
+          <span class="exp-row__loc">上海</span>
+        </li>
+        <li class="exp-row" data-line>
+          <span class="exp-row__time">2022 — 2024</span>
+          <div class="exp-row__main"><h3>前端工程师</h3><p>光年工作室 · Lightyear Studio</p></div>
+          <span class="exp-row__loc">远程</span>
+        </li>
+        <li class="exp-row" data-line>
+          <span class="exp-row__time">2018 — 2022</span>
+          <div class="exp-row__main"><h3>计算机科学与技术 · 本科</h3><p>某大学 · University</p></div>
+          <span class="exp-row__loc">上海</span>
+        </li>
+      </ul>
+    </section>
+    <!-- ⑦ 评价 -->
+    <section class="section" id="voices">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">06</span>
+        <div class="sec-head__labels"><h2>评价</h2><span>KIND WORDS</span></div>
+      </div>
+      <!-- TODO(你)：换成真实合作方的反馈 -->
+      <div class="quotes__grid" data-reveal="stagger-rot">
+        <blockquote class="quote">
+          <p>「交付的官网打开即惊艳，动效细腻但一点不拖沓，性能数据也很漂亮。」</p>
+          <footer>—— 某创业公司 CEO · LUMEN 项目</footer>
+        </blockquote>
+        <blockquote class="quote">
+          <p>「罕见的既懂设计又懂工程的合作者，设计系统交付后团队效率肉眼可见地提升。」</p>
+          <footer>—— 设计负责人 · 光年工作室</footer>
+        </blockquote>
+        <blockquote class="quote">
+          <p>「开源仓库的代码质量堪比商业项目，issue 响应速度感人。」</p>
+          <footer>—— 开源社区用户</footer>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- ⑦ 实验室：3D 金属罐（借鉴 ciaoenergy.com 金属质感 + jiejoe.com 甩动手感） -->
+    <section class="section" id="lab">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">07</span>
+        <div class="sec-head__labels"><h2>实验室</h2><span>3D LAB</span></div>
+      </div>
+      <div class="lab__grid">
+        <div class="lab__stage" data-reveal="iris" data-cursor-label="旋转">
+          <canvas id="labCanvas" aria-hidden="true"></canvas>
+          <div class="lab__badge" aria-hidden="true">
+            <svg class="lab__badge-rot" viewBox="0 0 120 120">
+              <defs><path id="labCirc" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs>
+              <text><textPath href="#labCirc">F8K® LAB · DRAG TO SPIN · THREE.JS · MOTION ·</textPath></text>
+            </svg>
+            <span class="lab__badge-dot"></span>
+          </div>
+          <div class="lab__hint">按住拖动旋转 — DRAG TO SPIN</div>
+        </div>
+        <div class="lab__info">
+          <p class="lab__kicker" data-reveal>METAL CAN · PBR · WEBGL</p>
+          <h3 class="lab__title" data-reveal>一个<em class="serif">会转</em>的金属罐</h3>
+          <p class="lab__copy" data-reveal>借鉴 ciaoenergy 的金属罐质感 —— MeshPhysicalMaterial 的金属度、粗糙度、清漆与光泽层，配明亮影棚三点布光。按住拖动旋转，松手带惯性滑行；离屏即暂停，隔帧 30fps 渲染省一半 GPU。</p>
+          <ul class="lab__facts">
+            <li data-reveal data-line><span class="idx">01</span><span class="name">金属质感 PBR</span><span class="note">metalness / sheen / clearcoat</span></li>
+            <li data-reveal data-line data-delay=".08"><span class="idx">02</span><span class="name">拖拽惯性</span><span class="note">跟手 1:1 · 松手滑行</span></li>
+            <li data-reveal data-line data-delay=".16"><span class="idx">03</span><span class="name">离屏节能</span><span class="note">30fps · 后台暂停</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑧ 彩蛋：物理游乐场（Matter.js 官方 Constraints 演示 · 1:1 完全复刻） -->
+    <section class="section" id="play">
+      <div class="sec-head" data-reveal data-line="b">
+        <span class="sec-head__num">08</span>
+        <div class="sec-head__labels"><h2>彩蛋</h2><span>PHYSICS PLAYGROUND</span></div>
+      </div>
+      <p class="play-hint" data-reveal>完整复刻 Matter.js 官方 Constraints 演示：8 组约束设施（刚性 / 软性 / 阻尼软性全局约束、转动约束与多体约束）逐项同参，官方色板渲染、约束锚点、角度指示线与睡眠半透明一一对应；拖拽刚体会旋转（angularStiffness:0），试试「样式[线]」切换官方线框模式，或「添加[+]」抛入随机多边形。</p>
+      <div class="play-stage" data-reveal="zoom" data-cursor-label="拖动">
+        <canvas id="playCanvas"></canvas>
+        <div class="play-hud">
+          <button class="play-btn" id="playStyle" data-hover>样式[线]</button>
+          <button class="play-btn" id="playGravity" data-hover>重力[↓]</button>
+          <button class="play-btn" id="playAdd" data-hover>添加[+]</button>
+          <button class="play-btn" id="playReset" data-hover>重置[↺]</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ⑥ 联系（深色收尾） -->
+  <footer class="footer" id="contact">
+    <div class="footer__inner">
+      <p class="footer__kicker" data-reveal>09 — 联系 · LET&rsquo;S BUILD SOMETHING EXTRAORDINARY</p>
+      <h2 class="footer__title" id="footerTitle">
+        <span class="line"><span>有项目想聊？</span></span>
+        <span class="line line--indent"><span><em class="serif">let&rsquo;s talk</em> ↗</span></span>
+      </h2>
+      <!-- TODO(你)：换成你的真实邮箱 -->
+      <div class="footer__row" data-reveal>
+        <a class="btn-mail star" href="mailto:hi@funny8kids.dev" data-magnetic data-hover>hi@funny8kids.dev</a>
+        <div class="footer__mark" id="footerMark" aria-hidden="true"></div>
+      </div>
+      <ul class="footer__socials" data-reveal>
+        <li><a href="https://github.com/funny8kids" target="_blank" rel="noopener" data-hover>GITHUB ↗</a></li>
+        <li><a href="#" data-hover>BILIBILI ↗</a></li>
+        <li><a href="#" data-hover>掘金 ↗</a></li>
+      </ul>
+      <!-- 一言 hitokoto：每日一句（JS 懒加载填充，失败回退静态句） -->
+      <p class="footer__quote" id="hitokoto" data-reveal>「把想法做成会呼吸的界面。」 —— 本站</p>
+      <div class="footer__bottom" data-reveal>
+        <span>© <span id="year">2026</span> 张三 — F8K<sup>®</sup></span>
+        <!-- 不蒜子访问量：数据到达前整行隐藏，服务不可用时优雅降级 -->
+        <span id="busuanzi_container_site_pv" style="display:none">本站访问 <span id="busuanzi_value_site_pv"></span> 次</span>
+        <span>用代码与热爱构建 · BUILT WITH CARE</span>
+        <a href="#top" data-hover>回到顶部 ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 依赖全部本地化（assets/vendor），无外部单点故障；?v= 为缓存版本号，发版时递增 -->
+  <script defer src="assets/vendor/gsap.min.js?v=12"></script>
+  <script defer src="assets/vendor/ScrollTrigger.min.js?v=12"></script>
+  <script defer src="assets/vendor/lenis.min.js?v=12"></script>
+  <script defer src="assets/js/hero3d.js?v=12"></script>
+  <script defer src="assets/js/lab3d.js?v=12"></script>
+  <script defer src="assets/js/playground.js?v=12"></script>
+  <script defer src="assets/js/pendulums.js?v=12"></script>
+  <script defer src="assets/js/main.js?v=12"></script>
+  <!-- 不蒜子访问量统计：唯一的外部脚本依赖（用户主动接入），失败时容器保持隐藏 -->
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+</body>
+</html>

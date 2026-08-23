@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REFERENCE-JIEJOE-CIAO — 设计看板预览</title>
+<style>
+  :root { --bg:#f7f5ee; --ink:#171512; --muted:#6f6c63; --line:rgba(23,21,18,.14); --accent:#2c43f5; --mint:#12b77e; --sun:#f2a93b; --mono:'SFMono-Regular',ui-monospace,Consolas,monospace; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink); font:15px/1.65 -apple-system,'PingFang SC','Microsoft YaHei',sans-serif; padding:2.5rem clamp(1.25rem,4vw,3.5rem); }
+  h1 { font-size:1.6rem; letter-spacing:.02em; }
+  h2 { font-size:.8rem; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); font-family:var(--mono); margin:2.6rem 0 1rem; }
+  .sub { color:var(--muted); margin-top:.4rem; max-width:52rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:1rem; }
+  .sw { border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .sw i { display:block; height:72px; }
+  .sw b { display:block; font-size:.78rem; padding:.5rem .7rem .1rem; font-family:var(--mono); }
+  .sw span { display:block; font-size:.7rem; color:var(--muted); padding:0 .7rem .6rem; }
+  .row { display:flex; flex-wrap:wrap; gap:.8rem; }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:.45rem .95rem; font-size:.8rem; }
+  .chip b { font-family:var(--mono); color:var(--accent); }
+  table { border-collapse:collapse; width:100%; font-size:.88rem; }
+  th, td { text-align:left; border-bottom:1px solid var(--line); padding:.6rem .4rem; vertical-align:top; }
+  th { font-family:var(--mono); font-size:.7rem; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+  code { font-family:var(--mono); font-size:.82em; background:rgba(23,21,18,.06); padding:.1em .35em; border-radius:4px; }
+  .note { border-left:3px solid var(--sun); background:rgba(242,169,59,.08); padding:.7rem 1rem; border-radius:0 8px 8px 0; font-size:.85rem; color:var(--muted); }
+  details { margin-top:2.6rem; border:1px solid var(--line); border-radius:10px; }
+  summary { cursor:pointer; padding:.8rem 1rem; font-family:var(--mono); font-size:.78rem; letter-spacing:.2em; }
+  pre { background:#14151f; color:#ececd1; padding:1.2rem; overflow:auto; font-size:.72rem; line-height:1.6; border-radius:0 0 10px 10px; }
+</style>
+</head>
+<body>
+  <h1>JIEJOE × CIAO ENERGY — 参考设计看板</h1>
+  <p class="sub">两个站点给本站的礼物：<b>滚动驱动的 2D 物理语法</b>（jiejoe）与<b>明亮金属 3D 材质配方</b>（ciao）。下方规则均已落地到本站（playground / pendulums / lab3d / lottie 页脚徽标）。</p>
+
+  <h2>Palette · 色板</h2>
+  <div class="grid">
+    <div class="sw"><i style="background:#171717"></i><b>#171717</b><span>jiejoe 物理盒底 · 近黑</span></div>
+    <div class="sw"><i style="background:#f19648"></i><b>#f19648</b><span>官方 bodyColorPalette 橙</span></div>
+    <div class="sw"><i style="background:#f5d259"></i><b>#f5d259</b><span>官方色板 黄</span></div>
+    <div class="sw"><i style="background:#f55a3c"></i><b>#f55a3c</b><span>官方色板 红</span></div>
+    <div class="sw"><i style="background:#063e7b"></i><b>#063e7b</b><span>官方色板 深蓝</span></div>
+    <div class="sw"><i style="background:#ececd1"></i><b>#ececd1</b><span>官方色板 奶油</span></div>
+    <div class="sw"><i style="background:linear-gradient(135deg,#2c43f5,#12b77e)"></i><b>accent → mint</b><span>本站明亮主色 / ciao 青柠绿</span></div>
+    <div class="sw"><i style="background:linear-gradient(135deg,#f2a93b,#f7bd5e)"></i><b>sun</b><span>暖阳黄 · ciao 柠檬</span></div>
+  </div>
+
+  <h2>Interaction Patterns · 交互语法</h2>
+  <table>
+    <tr><th>语法</th><th>来源</th><th>本站落地</th></tr>
+    <tr><td>滚动方向 → <code>applyForce</code> 施加到全部刚体（下滚上抛）</td><td>jiejoe 台灯阵</td><td>文档化；保留在参考库，站点以拖拽 + 重力反转替代</td></tr>
+    <tr><td><code>Query.point</code> 命中 → 换贴图 / 击碎计数 → 页面级状态（全碎去色）</td><td>jiejoe 台灯阵</td><td>彩蛋「添加」抛入随机多边形可继续扩展击碎玩法</td></tr>
+    <tr><td>软绳挂件 <code>stiffness:0.1</code>，拖拽松手荡回</td><td>jiejoe 技能挂件</td><td>技能钟摆（pendulums.js）1:1 手感</td></tr>
+    <tr><td>mousedown 测速 → mouseup 达标反馈</td><td>jiejoe 电话</td><td>甩速 &gt; 阈值 → 火花粒子 + 微抖</td></tr>
+    <tr><td>拖拽旋转 + 松手惯性滑行</td><td>ciao 罐（推断）+ 本站</td><td>lab3d.js：vel ×= 0.94 衰减</td></tr>
+    <tr><td>引擎降配 <code>constraintIterations:1</code>、进出视口启停、全静止休眠</td><td>jiejoe</td><td>全部 canvas 场景统一采用</td></tr>
+    <tr><td>Lottie logo 视口进出 play/pause</td><td>jiejoe</td><td>页脚 F8K 徽标（lottie_light 懒加载）</td></tr>
+  </table>
+
+  <h2>Metallic 3D Recipe · 金属材质配方</h2>
+  <div class="row">
+    <span class="chip"><b>metalness</b> 0.9–0.92</span>
+    <span class="chip"><b>roughness</b> 0.2–0.3</span>
+    <span class="chip"><b>sheen</b> 0.6–0.8 · sheenColor #fff</span>
+    <span class="chip"><b>clearcoat</b> 0.6–1 · rough .1–.3</span>
+    <span class="chip"><b>envMapIntensity</b> 1–3</span>
+    <span class="chip"><b>倾斜</b> 45° 常驻</span>
+    <span class="chip"><b>布光</b> 白键光 + 薄荷轮廓 + 暖阳补光</span>
+  </div>
+  <p class="sub" style="margin-top:.8rem">本站「实验室」段：程序化 F8K 罐（柱体 + 标签带 + 双环 + 轨道环 + 三卫星），<code>MeshPhysicalMaterial</code> 同款参数，透明背景 + 明亮渐变舞台。</p>
+
+  <h2>Typography Cues · 字体语气</h2>
+  <table>
+    <tr><th>用法</th><th>规则</th></tr>
+    <tr><td>游戏提示文案</td><td>把性能骄傲写进文案："Scroll carefully, it's smooth" / 本站「离屏即暂停 · 隔帧 30fps 省一半 GPU」</td></tr>
+    <tr><td>怪趣标题</td><td>小写短句 + 情绪词："be wild! creative! and cool!" / 本站「一个<em>会转</em>的金属罐」</td></tr>
+    <tr><td>HUD 注记</td><td>等宽小字 + 方括号状态：本站「样式[线] / 重力[↓] / 添加[+] / 重置[↺]」</td></tr>
+  </table>
+
+  <div class="note">证据说明：以上结论来自两站线上 JS bundle 的源码级提取（jiejoe 的 Matter.js 调用点与 ciao 的 Three.js 场景代码），本机 agent-browser 因 Chrome 缺失未做实机 DOM 观测；交互细节中已标注推断项。</div>
+
+  <details>
+    <summary>SOURCE · REFERENCE-JIEJOE-CIAO.md</summary>
+    <pre id="md"></pre>
+  </details>
+  <script>
+    fetch('REFERENCE-JIEJOE-CIAO.md').then(function (r) { return r.text(); }).then(function (t) {
+      document.getElementById('md').textContent = t;
+    }).catch(function () {
+      document.getElementById('md').textContent = '(file:// 下无法读取源文档，请直接打开 REFERENCE-JIEJOE-CIAO.md)';
+    });
+  </script>
+</body>
+</html>

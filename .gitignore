@@ -1,0 +1,3 @@
+# Local tooling / workspace artifacts
+.playwright-mcp/
+.zcode/

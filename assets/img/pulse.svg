@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" width="1280" height="960">
+  <defs>
+    <filter id="g2"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer></filter>
+  </defs>
+  <rect width="1280" height="960" fill="#F6F4EE"/>
+  <!-- 均衡器细条 -->
+  <g fill="rgba(23,21,18,.08)">
+    <rect x="120" y="420" width="3" height="120"/><rect x="200" y="380" width="3" height="200"/>
+    <rect x="280" y="440" width="3" height="80"/><rect x="360" y="360" width="3" height="240"/>
+    <rect x="440" y="400" width="3" height="160"/><rect x="520" y="350" width="3" height="260"/>
+    <rect x="600" y="430" width="3" height="100"/><rect x="680" y="370" width="3" height="220"/>
+    <rect x="760" y="410" width="3" height="140"/><rect x="840" y="350" width="3" height="260"/>
+    <rect x="920" y="440" width="3" height="80"/><rect x="1000" y="390" width="3" height="180"/>
+    <rect x="1080" y="420" width="3" height="120"/>
+  </g>
+  <!-- 声波 -->
+  <path d="M60,480 Q140,660 220,480 T380,480 T540,480 T700,480 T860,480 T1020,480 T1180,480" fill="none" stroke="#2C43F5" stroke-width="3"/>
+  <!-- 波上粒子 -->
+  <g fill="#2C43F5">
+    <circle cx="140" cy="570" r="7"/><circle cx="300" cy="390" r="10"/>
+    <circle cx="460" cy="570" r="6"/><circle cx="620" cy="390" r="8"/>
+    <circle cx="780" cy="570" r="9"/><circle cx="940" cy="390" r="6"/>
+    <circle cx="1100" cy="570" r="7"/>
+  </g>
+  <circle cx="300" cy="390" r="16" fill="none" stroke="#2C43F5" stroke-width="2"/>
+  <circle cx="780" cy="570" r="16" fill="none" stroke="#171512" stroke-width="2"/>
+  <circle cx="1150" cy="200" r="10" fill="#171512"/>
+  <circle cx="130" cy="740" r="8" fill="#7C8BFF"/>
+  <rect width="1280" height="960" filter="url(#g2)"/>
+</svg>

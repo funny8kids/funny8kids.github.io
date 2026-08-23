@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://funny8kids.github.io/sitemap.xml
