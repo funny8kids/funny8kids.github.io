@@ -21,7 +21,9 @@
   });
 
   document.addEventListener('f8k-idle', () => {
-    loadScript('assets/vendor/matter.min.js').then(init).catch(() => { /* 静默放弃 */ });
+    // 与 playground.js 共享同一个加载 promise,避免重复注入脚本
+    window.__f8kMatter = window.__f8kMatter || loadScript('assets/vendor/matter.min.js');
+    window.__f8kMatter.then(init).catch(() => { /* 静默放弃 */ });
   }, { once: true });
 
   function init() {
@@ -186,12 +188,15 @@
       };
 
       /* ---------- 循环：全休眠 + 无粒子 + 无拖拽 = 零计算 ---------- */
-      let running = false, inView = false, rafId = 0;
+      let running = false, inView = false, rafId = 0, last = 0;
       const active = () => items.some((it) => !it.weight.isSleeping || it.drag || it.particles.length);
-      const loop = () => {
+      const loop = (ts) => {
         if (!running) return;
+        if (last === 0) last = ts;
+        const delta = Math.min(ts - last, 33.3); // 与刷新率无关的真实步长
+        last = ts;
         if (active()) {
-          Engine.update(engine, 1000 / 60);
+          Engine.update(engine, delta);
           items.forEach(drawWidget);
         }
         rafId = requestAnimationFrame(loop);
@@ -200,6 +205,7 @@
         const want = on && inView && !document.hidden;
         if (want === running) return;
         running = want;
+        last = 0;
         if (running) rafId = requestAnimationFrame(loop);
         else cancelAnimationFrame(rafId);
       };

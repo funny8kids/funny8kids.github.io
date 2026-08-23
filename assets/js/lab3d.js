@@ -41,30 +41,58 @@
         };
       };
       let V = readVars();
+      // ciaoenergy 式低功耗预算：iOS / 小屏关 AA、降材质、DPR 分级（桌面 1.5 / 移动 2）
+      const lowPower = /iPad|iPhone|iPod/.test(navigator.userAgent) || window.innerWidth < 1024;
 
       const renderer = new T.WebGLRenderer({
         canvas,
         alpha: true,
-        antialias: true,
+        antialias: !lowPower,
         powerPreference: 'low-power'
       });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 2 : 1.5));
       renderer.outputColorSpace = T.SRGBColorSpace;
+      renderer.toneMapping = T.ACESFilmicToneMapping; // 影棚级色调映射（ciaoenergy 同款）
+      renderer.toneMappingExposure = 1.0;
 
       const scene = new T.Scene();
       const camera = new T.PerspectiveCamera(40, 1, 0.1, 60);
       camera.position.set(0, 0.35, 6.6);
       camera.lookAt(0, 0, 0);
 
+      /* ---------- 程序化环境贴图（无外网 HDRI，仅 Canvas 渐变 → PMREM；金属反射的"天光"） ---------- */
+      const makeEnv = () => {
+        const c = document.createElement('canvas');
+        c.width = 256; c.height = 128;
+        const g = c.getContext('2d');
+        const grad = g.createLinearGradient(0, 0, 0, 128);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.5, '#9aa4cf');
+        grad.addColorStop(1, '#161b2e');
+        g.fillStyle = grad; g.fillRect(0, 0, 256, 128);
+        g.globalAlpha = 0.9; g.fillStyle = '#ffffff';
+        g.beginPath(); g.ellipse(52, 42, 22, 14, 0, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.ellipse(204, 40, 22, 14, 0, 0, Math.PI * 2); g.fill();
+        g.globalAlpha = 1;
+        const tex = new T.CanvasTexture(c);
+        tex.mapping = T.EquirectangularReflectionMapping;
+        tex.colorSpace = T.SRGBColorSpace;
+        const pmrem = new T.PMREMGenerator(renderer);
+        const env = pmrem.fromEquirectangular(tex).texture;
+        tex.dispose(); pmrem.dispose();
+        return env;
+      };
+      try { scene.environment = makeEnv(); } catch (e) { /* PMREM 失败则仅靠灯光 */ }
+
       /* ---------- 明亮影棚布光 ---------- */
-      scene.add(new T.AmbientLight(0xffffff, 0.85));
-      const key = new T.DirectionalLight(0xffffff, 2.4);
+      scene.add(new T.AmbientLight(0xffffff, 0.5));
+      const key = new T.DirectionalLight(0xffffff, 1.8);
       key.position.set(5, 6, 4);
       scene.add(key);
-      const rim = new T.DirectionalLight(V.mint, 1.7);
+      const rim = new T.DirectionalLight(V.mint, 1.1);
       rim.position.set(-4, 2, -3);
       scene.add(rim);
-      const fill = new T.DirectionalLight(V.sun, 1.2);
+      const fill = new T.DirectionalLight(V.sun, 0.8);
       fill.position.set(0, -3, 2);
       scene.add(fill);
 
@@ -72,17 +100,16 @@
       const root = new T.Group();
       const can = new T.Group();
 
-      const metal = (c, extra) => new T.MeshPhysicalMaterial(Object.assign({
-        color: c,
-        metalness: 0.92,
-        roughness: 0.28,
-        sheen: 0.6,
-        sheenColor: 0xffffff,
-        sheenRoughness: 0.35,
-        clearcoat: 0.6,
-        clearcoatRoughness: 0.25,
-        reflectivity: 1
-      }, extra || {}));
+      // ciaoenergy 式 makeMaterial：低功耗自动去掉 clearcoat/sheen/ior，回落 MeshStandardMaterial
+      const makeMat = (c, extra) => {
+        const base = Object.assign({ color: c, metalness: 0.9, roughness: 0.22, envMapIntensity: 3 }, extra || {});
+        if (lowPower) return new T.MeshStandardMaterial(base);
+        return new T.MeshPhysicalMaterial(Object.assign({}, base, {
+          sheen: 0.8, sheenColor: 0xffffff, sheenRoughness: 0.2,
+          clearcoat: 1, clearcoatRoughness: 0.1, reflectivity: 1, ior: 2
+        }));
+      };
+      const metal = makeMat; // 保留旧变量名，后续引用不用改
 
       const bodyMat = metal(V.accent);
       can.add(new T.Mesh(new T.CylinderGeometry(1, 1, 2.5, 48), bodyMat));
@@ -97,6 +124,18 @@
       can.add(rimTop, rimBottom);
 
       root.add(can);
+
+      // 追加小金属罐簇（共享几何/材质，仅新增变换，成本极低，随 root 自转形成罐群）
+      const addMiniCan = (s, x, y, z, deg) => {
+        const m = can.clone();
+        m.scale.setScalar(s);
+        m.position.set(x, y, z);
+        m.rotation.z = (deg * Math.PI) / 180;
+        root.add(m);
+      };
+      addMiniCan(0.42, 2.15, -1.3, 0.2, 18);
+      addMiniCan(0.34, -2.3, -0.95, -0.4, -22);
+      addMiniCan(0.27, 0.2, -2.15, 0.55, 10);
 
       /* ---------- 轨道环 + 三颗卫星（呼应站点三色） ---------- */
       const ringMat = metal(V.sun, { roughness: 0.15, sheen: 0.9, clearcoat: 0.8 });

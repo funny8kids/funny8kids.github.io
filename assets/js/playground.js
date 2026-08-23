@@ -1,5 +1,5 @@
 /* =========================================================
-   F8K® — 彩蛋物理游乐场 v2（Matter.js 官方 Constraints 演示 · 1:1 完全复刻）
+   F8K® — 彩蛋物理游乐场 v3
    场景 = brm.io/matter-js/demo/#constraints 的 8 组约束设施，
    坐标与参数与官方 examples/constraints.js 逐项一致：
      ① 刚性全局约束（五边形）   ② 软性全局约束（三角形）
@@ -11,14 +11,22 @@
    showAngleIndicator 角度指示线、showSleeping 睡眠半透明、
    鼠标 angularStiffness:0（拖拽时刚体可旋转）、拖拽约束不可见。
    世界坐标固定 800×600，等比例缩放居中（官方 Render.lookAt 同款思路）。
-   与官方的差异仅一处站点性能设置：离屏/后台暂停（官方 Runner 常驻）；
-   Dat.GUI 换成站内 HUD 按钮（样式/重力/添加/重置）。
+
+   站点性能/手感改进（相对 v2）：
+     · 时间步进改为真实 rAF 时间差（clamp ≤33.3ms），模拟速度与刷新率无关；
+     · 开启 enableSleeping，睡眠体半透明真正生效，全静止时省 CPU；
+     · 鼠标约束 stiffness 0.2（官方默认 0.1）+ 拖拽阻尼，甩动手感更"软"；
+     · 新增 ResizeObserver，布局变化即时重算鼠标映射；
+     · prefers-reduced-motion 降级：只渲染单帧、不跑循环、不自动 kick；
+     · 与 pendulums.js 共享 matter 加载 promise；
+     · 新增「目标[ON]」计分小游戏：往下方目标带投掷刚体得分。
    ========================================================= */
 (() => {
   'use strict';
 
   const canvas = document.getElementById('playCanvas');
   if (!canvas) return;
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const loadScript = (src) => new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -29,7 +37,9 @@
   });
 
   document.addEventListener('f8k-idle', () => {
-    loadScript('assets/vendor/matter.min.js').then(init).catch(() => { /* 静默放弃 */ });
+    // 与 pendulums.js 共享同一个加载 promise,避免重复注入脚本
+    window.__f8kMatter = window.__f8kMatter || loadScript('assets/vendor/matter.min.js');
+    window.__f8kMatter.then(init).catch(() => { /* 静默放弃 */ });
   }, { once: true });
 
   function init() {
@@ -38,8 +48,8 @@
     const { Engine, Bodies, Body, Composite, Constraint, Mouse, MouseConstraint, Query, Events, Sleeping } = M;
     try {
       const doc = document.documentElement;
-      // 官方演示不启用休眠（场景始终活着）；站点省电改用离屏/后台暂停
-      const engine = Engine.create();
+      // enableSleeping：睡眠体半透明 + 静止时零计算（官方演示不启用，这里为了手感与省电）
+      const engine = Engine.create({ enableSleeping: true });
       engine.gravity.y = 1;
       const ctx = canvas.getContext('2d');
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -65,6 +75,19 @@
       let bodies = []; // 全部动态体（渲染与激活判定用）
       let mc = null;
       let wireframe = false; // 样式[线]：官方 wireframes:true 渲染模式
+
+      /* ---------- 目标计分小游戏 ---------- */
+      let goalMode = false;
+      let score = 0;
+      const scoreEl = document.getElementById('playScore');
+      const goalBtn = document.getElementById('playGoal');
+      const goalTop = 505, goalBottom = 548;
+      const scoreCooldown = new Map(); // bodyId -> time 已计分的时间戳（冷却）
+      let goalFlashUntil = 0;
+      const paintScore = () => {
+        if (scoreEl) scoreEl.textContent = 'SCORE ' + String(score).padStart(2, '0');
+      };
+      const resetGoal = () => { score = 0; scoreCooldown.clear(); paintScore(); };
 
       const wakeAll = () => Composite.allBodies(engine.world).forEach((b) => Sleeping.set(b, false));
 
@@ -157,11 +180,12 @@
         bodies = Composite.allBodies(engine.world).filter((b) => !b.isStatic);
       };
 
-      /* ---------- 鼠标：官方 angularStiffness:0（拖拽可旋转）+ 约束不可见 ---------- */
+      /* ---------- 鼠标：官方 angularStiffness:0（拖拽可旋转）+ 约束不可见 ----------
+         stiffness 0.1 → 0.2：让被拖拽刚体带一点松软跟随（jiejoe 甩动手感） */
       const mouse = Mouse.create(canvas);
       mc = MouseConstraint.create(engine, {
         mouse,
-        constraint: { angularStiffness: 0, render: { visible: false } }
+        constraint: { angularStiffness: 0, stiffness: 0.2, render: { visible: false } }
       });
       Events.on(mc, 'startdrag', () => wakeAll()); // 拖拽唤醒全场（约束链不会因睡眠断裂）
 
@@ -261,6 +285,51 @@
         ctx.globalAlpha = 1;
       };
 
+      const drawGoal = () => {
+        if (!goalMode) return;
+        const h = goalBottom - goalTop;
+        const flashing = performance.now() < goalFlashUntil;
+        ctx.save();
+        ctx.fillStyle = flashing ? C.accent : C.ink;
+        ctx.globalAlpha = flashing ? 0.10 : 0.06;
+        ctx.fillRect(0, goalTop, WORLD_W, h);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = flashing ? C.accent : C.wire;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        ctx.moveTo(0, goalTop); ctx.lineTo(WORLD_W, goalTop);
+        ctx.moveTo(0, goalBottom); ctx.lineTo(WORLD_W, goalBottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // 目标中标签
+        ctx.fillStyle = flashing ? C.accent : C.ink;
+        ctx.font = '10px ui-monospace, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.globalAlpha = 0.7;
+        ctx.fillText('GOAL', WORLD_W / 2, goalTop + h / 2);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      };
+
+      // 计分：动态体向下穿过目标带 + 冷却
+      const checkScore = () => {
+        if (!goalMode) return;
+        const now = performance.now();
+        for (const b of bodies) {
+          if (b.isStatic || b.isSleeping) continue;
+          const last = scoreCooldown.get(b.id) || 0;
+          if (now - last < 600) continue;
+          if (b.position.y >= goalTop && b.position.y <= goalBottom && b.velocity.y > 0.3) {
+            score++;
+            scoreCooldown.set(b.id, now);
+            goalFlashUntil = now + 400;
+            paintScore();
+          }
+        }
+      };
+
       const draw = () => {
         ctx.setTransform(dpr * S, 0, 0, dpr * S, dpr * OX, dpr * OY);
         ctx.clearRect(0, 0, WORLD_W, WORLD_H);
@@ -268,25 +337,33 @@
         if (wireframe) for (const b of bodies) drawBodyWire(b);
         else for (const b of bodies) drawBodySolid(b);
         drawAngleIndicators();
+        drawGoal();
       };
 
-      /* ---------- 渲染循环：离屏/后台零计算（无休眠，进视野始终有生命） ---------- */
-      let running = false, inView = false, rafId = 0;
-      const loop = () => {
+      /* ---------- 渲染循环：真实时间步长 + 离屏/后台零计算 ---------- */
+      let running = false, inView = false, rafId = 0, last = 0;
+      const loop = (ts) => {
         if (!running) return;
-        Engine.update(engine, 1000 / 60);
+        if (last === 0) last = ts;
+        const delta = Math.min(ts - last, 33.3); // 与刷新率无关；后台恢复时 clamp 防跳变
+        last = ts;
+        Engine.update(engine, delta);
+        checkScore();
         draw();
         rafId = requestAnimationFrame(loop);
       };
       const setRunning = (on) => {
+        if (reducedMotion) { draw(); return; }  // 降级：只渲染单帧，不跑连续循环
         const want = on && inView && !document.hidden;
         if (want === running) return;
         running = want;
+        last = 0;
         if (running) rafId = requestAnimationFrame(loop);
         else cancelAnimationFrame(rafId);
       };
       // 开场一击：每次滚进视野都唤醒场景（官方 Runner 常驻运行的同观感）
       const kick = () => {
+        if (reducedMotion) return;
         const b = bodies;
         if (b.length < 13) return;
         Body.setVelocity(b[0], { x: 7, y: -3 });     // ① 刚性五边形荡起
@@ -300,6 +377,8 @@
         setRunning(true);
       }, { rootMargin: '120px' }).observe(canvas);
       document.addEventListener('visibilitychange', () => setRunning(true));
+      // 布局变化（如字体加载、内容撑开）即时重算缩放与鼠标映射
+      if (window.ResizeObserver) new ResizeObserver(() => { measure(); draw(); }).observe(canvas);
 
       /* ---------- HUD 控制 ---------- */
       const gravityBtn = document.getElementById('playGravity');
@@ -333,6 +412,7 @@
             bodies.push(b);
           }
           draw();
+          if (reducedMotion) draw(); // 降级下无循环，仅静态刷新
         });
       }
       const resetBtn = document.getElementById('playReset');
@@ -346,11 +426,20 @@
             gravityBtn && (gravityBtn.textContent = '重力[↓]');
           }
           build();
+          if (goalMode) resetGoal();
+          draw();
+        });
+      }
+      if (goalBtn) {
+        goalBtn.addEventListener('click', () => {
+          goalMode = !goalMode;
+          goalBtn.textContent = goalMode ? '目标[ON]' : '目标[OFF]';
+          if (goalMode) resetGoal();
           draw();
         });
       }
 
-      /* ---------- 主题联动 / resize（官方演示不随 resize 重建，等比缩放自适应） ---------- */
+      /* ---------- 主题联动 / resize（等比缩放自适应） ---------- */
       document.addEventListener('f8k-theme', () => {
         readColors();
         draw();
@@ -369,7 +458,9 @@
         gravity: () => engine.gravity.y,
         constraints: () => Composite.allConstraints(engine.world).length,
         wireframe: () => wireframe,
-        scale: () => S
+        scale: () => S,
+        goal: () => goalMode,
+        score: () => score
       }; // 调试验证标记
     } catch (e) {
       canvas.style.display = 'none';

@@ -235,11 +235,17 @@
   };
   initVisitorGeo();
 
-  /* ---------- 光标坐标读数（常驻右下系统 HUD） ---------- */
+  /* ---------- 光标坐标读数（常驻右下系统 HUD）---------- */
   const xy = $('#xyReadout');
   if (xy) {
+    let xTick = false, lx = 0, ly = 0;
+    const paintXY = () => {
+      xTick = false;
+      xy.textContent = 'X ' + String(lx).padStart(4, '0') + ' · Y ' + String(ly).padStart(4, '0');
+    };
     window.addEventListener('mousemove', (e) => {
-      xy.textContent = 'X ' + String(e.clientX).padStart(4, '0') + ' · Y ' + String(e.clientY).padStart(4, '0');
+      lx = e.clientX; ly = e.clientY;
+      if (!xTick) { xTick = true; requestAnimationFrame(paintXY); } // 每帧最多写一次，降文本重排
     }, { passive: true });
   }
 
@@ -298,21 +304,22 @@
     let lastX = 0, velocity = 0, rafId = 0, target = 0, suppressClick = false;
 
     const clampX = (v) => Math.min(0, Math.max(minX, v));
+    let cardMids = []; // 每张卡在 strip 内的中心偏移（缓存，避免拖拽时逐帧读布局）
     const measure = () => {
       minX = Math.min(0, deck.clientWidth - strip.scrollWidth - 24);
+      cardMids = Array.from(strip.children).map((c) => c.offsetLeft + c.offsetWidth / 2);
     };
     const apply = () => {
       strip.style.transform = 'translate3d(' + Math.round(x) + 'px,0,0)';
-      if (!idxEl) return;
-      const cards = strip.children;
-      const mid = deck.getBoundingClientRect().left + deck.clientWidth / 2;
+      if (!idxEl || !cardMids.length) return;
+      // 视口中点相对 strip 的坐标 = deck 半宽 - x（getBoundingClientRect 换成缓存数学，零布局读）
+      const mid = deck.clientWidth / 2 - x;
       let active = 0, best = Infinity;
-      for (let i = 0; i < cards.length; i++) {
-        const r = cards[i].getBoundingClientRect();
-        const d = Math.abs(r.left + r.width / 2 - mid);
+      for (let i = 0; i < cardMids.length; i++) {
+        const d = Math.abs(cardMids[i] - mid);
         if (d < best) { best = d; active = i; }
       }
-      idxEl.textContent = String(active + 1).padStart(2, '0') + ' / ' + String(cards.length).padStart(2, '0');
+      idxEl.textContent = String(active + 1).padStart(2, '0') + ' / ' + String(cardMids.length).padStart(2, '0');
     };
     const glide = () => {
       rafId = 0;
@@ -362,7 +369,11 @@
       }
     }, true);
 
-    window.addEventListener('resize', () => { measure(); x = clampX(x); apply(); });
+    let dRsz;
+    window.addEventListener('resize', () => {
+      clearTimeout(dRsz);
+      dRsz = setTimeout(() => { measure(); x = clampX(x); apply(); }, 200);
+    });
     window.addEventListener('load', () => { measure(); apply(); });
     measure();
     apply();
@@ -450,10 +461,17 @@
   const initSpotlight = () => {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     document.querySelectorAll('.service').forEach((card) => {
+      let r = null, tick = false, cx = 0, cy = 0;
+      const paint = () => {
+        tick = false;
+        card.style.setProperty('--mx', cx + 'px');
+        card.style.setProperty('--my', cy + 'px');
+      };
+      card.addEventListener('mouseenter', () => { r = card.getBoundingClientRect(); });
       card.addEventListener('mousemove', (e) => {
-        const r = card.getBoundingClientRect();
-        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+        if (!r) r = card.getBoundingClientRect();
+        cx = (e.clientX - r.left); cy = (e.clientY - r.top);
+        if (!tick) { tick = true; requestAnimationFrame(paint); } // 每帧至多写一次，降渐变重绘
       }, { passive: true });
     });
   };
@@ -778,7 +796,11 @@
     if (marquee && track && track.children[0]) {
       const measure = () => { setW = Math.max(1, track.children[0].offsetWidth); };
       measure();
-      window.addEventListener('resize', measure);
+      let mqRsz;
+      window.addEventListener('resize', () => {
+        clearTimeout(mqRsz);
+        mqRsz = setTimeout(measure, 200);
+      });
       mqSkew = gsap.quickTo(marquee, 'skewX', { duration: .5, ease: 'power3' });
       // 桌面：跑马灯带在视口上部驻留一段滚动，期间速度直接转化为文字流速
       if (typeof gsap.matchMedia === 'function') {
@@ -923,25 +945,30 @@
         r: gsap.quickTo(c, 'rotation', { duration: .3, ease: 'power3' }),
         y: gsap.quickTo(c, 'y', { duration: .3, ease: 'power3' })
       }));
-      let centers = [], on = false;
+      let centers = [], on = false, mTick = false, mx = 0, my = 0;
       const cache = () => {
         centers = Array.from(chars).map((c) => {
           const r = c.getBoundingClientRect();
           return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
         });
       };
-      title.addEventListener('mouseenter', () => { on = true; cache(); });
-      title.addEventListener('mousemove', (e) => {
-        if (!on) return;
+      const applyPressure = () => {
+        mTick = false;
         for (let i = 0; i < centers.length; i++) {
-          const d = Math.hypot(e.clientX - centers[i].x, e.clientY - centers[i].y);
+          const d = Math.hypot(mx - centers[i].x, my - centers[i].y);
           const f = Math.max(0, 1 - d / 240);
-          const dir = e.clientX > centers[i].x ? 1 : -1;
+          const dir = mx > centers[i].x ? 1 : -1;
           quick[i].s(1 + f * 0.05);
           quick[i].x(dir * f * 9);
           quick[i].r(dir * f * 9);
           quick[i].y(-f * 7);
         }
+      };
+      title.addEventListener('mouseenter', () => { on = true; cache(); });
+      title.addEventListener('mousemove', (e) => {
+        if (!on) return;
+        mx = e.clientX; my = e.clientY;
+        if (!mTick) { mTick = true; requestAnimationFrame(applyPressure); } // 每帧最多算一次全字符
       }, { passive: true });
       title.addEventListener('mouseleave', () => {
         on = false;
@@ -958,7 +985,7 @@
       if (!wrap || !panel || reduced || !finePointer) return;
       const rx = gsap.quickTo(panel, 'rotationX', { duration: .6, ease: 'power3.out' });
       const ry = gsap.quickTo(panel, 'rotationY', { duration: .6, ease: 'power3.out' });
-      let pr = null;
+      let pr = null, gTick = false;
       const cachePr = () => { pr = panel.getBoundingClientRect(); };
       cachePr();
       window.addEventListener('resize', cachePr);
@@ -967,8 +994,16 @@
         ry((e.clientX / window.innerWidth - 0.5) * 14);
         rx(-(e.clientY / window.innerHeight - 0.5) * 10);
         if (!pr) cachePr();
-        panel.style.setProperty('--gx', (((e.clientX - pr.left) / pr.width) * 100).toFixed(1) + '%');
-        panel.style.setProperty('--gy', (((e.clientY - pr.top) / pr.height) * 100).toFixed(1) + '%');
+        const gx = (((e.clientX - pr.left) / pr.width) * 100).toFixed(1) + '%';
+        const gy = (((e.clientY - pr.top) / pr.height) * 100).toFixed(1) + '%';
+        if (!gTick) {
+          gTick = true;
+          requestAnimationFrame(() => {
+            gTick = false;
+            panel.style.setProperty('--gx', gx);
+            panel.style.setProperty('--gy', gy);
+          });
+        }
       }, { passive: true });
       gsap.to(panel, { y: -9, duration: 2.6, ease: 'sine.inOut', yoyo: true, repeat: -1 });
     };
@@ -1020,6 +1055,23 @@
         el.addEventListener('mouseleave', () => {
           gsap.to(el, { x: 0, y: 0, duration: .7, ease: 'elastic.out(1, .35)' });
         });
+      });
+    }
+
+    /* ---------- 作品卡 / 评价卡 hover 立体倾斜（React Bits "Tilted Card" 轻量版） ---------- */
+    if (finePointer) {
+      document.querySelectorAll('.deck-card__media, .quote').forEach((el) => {
+        const rx = gsap.quickTo(el, 'rotationX', { duration: .4, ease: 'power3.out' });
+        const ry = gsap.quickTo(el, 'rotationY', { duration: .4, ease: 'power3.out' });
+        el.addEventListener('mousemove', (e) => {
+          if (e.buttons) return; // 拖拽卡组时不动
+          const r = el.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          ry(px * 10);
+          rx(-py * 10);
+        }, { passive: true });
+        el.addEventListener('mouseleave', () => { rx(0); ry(0); });
       });
     }
 

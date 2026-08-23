@@ -76,7 +76,11 @@
         renderer.setSize(s, s, false);
       };
       resize();
-      window.addEventListener('resize', resize);
+      let hRsz;
+      window.addEventListener('resize', () => {
+        clearTimeout(hRsz);
+        hRsz = setTimeout(resize, 200); // 防抖：等窗口稳定再改画布尺寸
+      });
 
       let running = false, inView = true, rafId = 0;
       let mx = 0, my = 0, rx = 0, ry = 0, frame = 0, rendered = false;
