@@ -107,12 +107,15 @@
     });
   }
 
-  /* ---------- 声音开关（SOUND[|/»]）：WebAudio 合成微音效，无音频文件，默认关 ---------- */
+  /* ---------- 声音开关（SOUND[|/»]）：WebAudio 合成微音效，无音频文件，默认开 ---------- */
   const initSound = () => {
     const btn = document.getElementById('soundToggle');
     if (!btn) return;
-    let ctx = null, master = null, enabled = false;
-    try { enabled = localStorage.getItem('f8k-sound') === 'on'; } catch (e) { /* 隐私模式 */ }
+    let ctx = null, master = null, enabled = true; // 默认打开：首次访问未存值即启用
+    try {
+      const s = localStorage.getItem('f8k-sound');
+      enabled = s === null ? true : s === 'on';
+    } catch (e) { /* 隐私模式 */ }
     const label = btn.querySelector('i');
     const render = () => {
       if (label) label.textContent = enabled ? '[»]' : '[|]';
@@ -591,8 +594,10 @@
       gsap.ticker.lagSmoothing(0);
     }
 
-    /* ---------- 预加载：莫比乌斯环画布（透视线框 + 深度光影） ----------
-       单侧曲面、一个边界 —— 数学里最优雅的"悖论之美"。
+    /* ---------- 预加载：莫比乌斯环 + 3D 轨道画布 ----------
+       单侧曲面、一个边界 —— 数学里最优雅的"悖论之美"；
+       克莱因蓝轨道与玻璃同相机透视（前后遮挡），彗星开普勒式绕过扭结并照亮玻璃；
+       配合下方欧拉恒等式，构成"数学美感"的收束意象。
        配合下方欧拉恒等式，构成"数学美感"的收束意象；只画干净的线框，无叠加爆白。 */
     const mathCanvas = $('#preloaderCanvas');
     const startMathPreloader = (canvas) => {
@@ -635,25 +640,55 @@
       window.addEventListener('pointermove', onMove);
 
       const GLYPHS = ['π', '∞', 'Σ', '∫', 'φ', '∇', 'λ', 'θ'];
+      /* ---------- 背景尘埃三层景深（远/中在玻璃之下，近层小星火在玻璃之上） ----------
+         远层大而淡（出 blur 通道后自带失焦感），近层小且亮；
+         远/中层的粒子各有点亮阈值 litAt —— 加载进度跨过阈值即被"点亮"，参与充能叙事。 */
+      const DUST_LAYER = [
+        { n: 16, r: [18, 32], a: [0.04, 0.09], par: 0.35 },
+        { n: 16, r: [9, 15],  a: [0.08, 0.16], par: 0.75 },
+        { n: 14, r: [3, 6],   a: [0.16, 0.30], par: 1.30 }
+      ];
       let dust = [];
       function seedDust() {
-        const n = 30;
         dust = [];
-        for (let i = 0; i < n; i++) {
-          const isGlyph = i % 3 === 0;
-          dust.push({
-            x: Math.random(), y: Math.random(),            // 相对坐标 0..1
-            r: 8 + Math.random() * 24,                     // 像素尺寸(字形/点)
-            vx: (Math.random() - 0.5) * 0.00003,           // 水平漂移
-            vy: -(0.00004 + Math.random() * 0.00008),      // 缓慢上浮
-            ph: Math.random() * Math.PI * 2,               // 闪烁相位
-            glyph: isGlyph ? GLYPHS[(Math.random() * GLYPHS.length) | 0] : null,
-            emerald: Math.random() < 0.6
-          });
-        }
+        DUST_LAYER.forEach((L, layer) => {
+          for (let i = 0; i < L.n; i++) {
+            const isGlyph = layer < 2 && i % 3 === 0;
+            dust.push({
+              layer,
+              x: Math.random(), y: Math.random(),                   // 相对坐标 0..1
+              r: L.r[0] + Math.random() * (L.r[1] - L.r[0]),        // 像素尺寸(字形/点)
+              vx: (Math.random() - 0.5) * 0.00003 * (1 + layer * 0.5),
+              vy: -(0.00003 + Math.random() * 0.00007) / (1 + layer * 0.3), // 缓慢上浮
+              ph: Math.random() * Math.PI * 2,                      // 闪烁相位
+              par: L.par * (0.75 + Math.random() * 0.5),            // 鼠标视差系数(层内再散开)
+              litAt: layer < 2 ? 0.30 + Math.random() * 0.62 : Infinity, // 点亮阈值
+              glyph: isGlyph ? GLYPHS[(Math.random() * GLYPHS.length) | 0] : null,
+              emerald: Math.random() < 0.6
+            });
+          }
+        });
       }
       seedDust();
       let pulseStart = -1;  // 点亮脉冲起始时间(未有则 -1)
+
+      /* ---------- 轨道（环）模型：与莫比乌斯同相机旋转/投影 → 透视一体，不再"两张皮" ----------
+         模型空间椭圆（带倾角），前后半按视空间 z 分绘：后半画进玻璃之下、前半画在玻璃之上；
+         彗星角速度随距离 r 变化（开普勒式：靠近扭结处加速掠过）。
+         预采 240 点，每帧只做旋转/投影，无额外开销。 */
+      const ORBIT = { a: 1.80, b: 0.92, incl: 0.30 };
+      const ORB_STEPS = 240;
+      const orbModel = [];
+      for (let i = 0; i < ORB_STEPS; i++) {
+        const ph = (i / ORB_STEPS) * Math.PI * 2;
+        orbModel.push({
+          x: ORBIT.a * Math.cos(ph),
+          y: ORBIT.b * Math.sin(ph) * Math.cos(ORBIT.incl),
+          z: ORBIT.b * Math.sin(ph) * Math.sin(ORBIT.incl)
+        });
+      }
+      let orbAngle = -Math.PI / 2; // 彗星从"顶端"出发
+      let lastT = 0;
 
       /* ---------- 莫比乌斯环（青绿玻璃 · ∞ 实体厚带 · 椭圆截面扫掠 · 深度排序 + 菲涅尔 + 双高光） ----------
          参数化：t 沿 ∞（figure-8）中心线走一周 [0,2π]，s 绕椭圆截面一周（闭合成封闭实体）。
@@ -756,6 +791,109 @@
           return { x: cx + v.x * scale * s, y: cy - v.y * scale * s, z: v.z };
         };
 
+        /* —— 彗星推进：开普勒式角速度（越靠近中心扭结扫得越快）—— */
+        const prog = Math.max(0, Math.min(1, preloaderProgress));
+        const orbR = (ph) => Math.hypot(ORBIT.a * Math.cos(ph), ORBIT.b * Math.sin(ph));
+        const dt = Math.min(Math.max(now - lastT || 16, 2), 40);
+        lastT = now;
+        const kp = Math.min(Math.max(1.06 / Math.max(orbR(orbAngle), 0.3), 0.72), 2.1);
+        orbAngle += ((Math.PI * 2) / 13000) * kp * kp * dt;
+        if (orbAngle >= Math.PI * 2) orbAngle -= Math.PI * 2;
+
+        // 彗星模型点 → 视图/屏幕（供光照融合与分前后）
+        const cometV = rotPt({
+          x: ORBIT.a * Math.cos(orbAngle),
+          y: ORBIT.b * Math.sin(orbAngle) * Math.cos(ORBIT.incl),
+          z: ORBIT.b * Math.sin(orbAngle) * Math.sin(ORBIT.incl)
+        });
+        const comet = proj(cometV);
+        const cometNear = cometV.z > 0;
+        const cometGlowR = scale * 0.58;
+
+        /* —— 轨道分段（按视空间 z 分前后；远段画进玻璃之下、近段画在玻璃之上）—— */
+        const segs = [];
+        let cur = null;
+        for (let i = 0; i <= ORB_STEPS; i++) {
+          const m = orbModel[i % ORB_STEPS];
+          const v = rotPt(m);
+          const p = proj(v);
+          const near = v.z > 0;
+          if (!cur || cur.near !== near) {
+            if (cur) segs.push(cur);
+            cur = { near, pts: [p] };
+          } else cur.pts.push(p);
+        }
+        if (cur) segs.push(cur);
+
+        // 充能弧：彗星身后 prog·2π 的已点亮段（与彗星同速推进，落到"无限趋近"的隐喻上）
+        const nCh = Math.max(2, Math.round(ORB_STEPS * (prog + 0.001)));
+        const chargedSegs = [];
+        let curC = null;
+        for (let k = 0; k <= nCh; k++) {
+          const ph = orbAngle - (k / nCh) * prog * Math.PI * 2; // 由彗星角回扫
+          const v = rotPt({
+            x: ORBIT.a * Math.cos(ph),
+            y: ORBIT.b * Math.sin(ph) * Math.cos(ORBIT.incl),
+            z: ORBIT.b * Math.sin(ph) * Math.sin(ORBIT.incl)
+          });
+          const p = proj(v);
+          const near = v.z > 0;
+          if (!curC || curC.near !== near) {
+            if (curC) chargedSegs.push(curC);
+            curC = { near, pts: [p] };
+          } else curC.pts.push(p);
+        }
+        if (curC) chargedSegs.push(curC);
+
+        const strokeSegs = (g, list, near) => {
+          for (const sg of list) {
+            if (sg.near !== near || sg.pts.length < 2) continue;
+            g.beginPath();
+            g.moveTo(sg.pts[0].x, sg.pts[0].y);
+            for (let i = 1; i < sg.pts.length; i++) g.lineTo(sg.pts[i].x, sg.pts[i].y);
+            g.stroke();
+          }
+        };
+
+        /* ---------- 尘埃层绘制（可指定画布：远/中层进 off 被玻璃覆盖，近层叠在玻璃上） ---------- */
+        const drawDustLayer = (layer, g, t) => {
+          for (const d of dust) {
+            if (d.layer !== layer) continue;
+            d.x += d.vx * 60;
+            d.y += d.vy * 60;
+            if (d.y < -0.06) { d.y = 1.06; d.x = Math.random(); }
+            if (d.x < -0.05) d.x = 1.05; else if (d.x > 1.05) d.x = -0.05;
+            const px = d.x * w + mcx * d.par * (10 + d.r * 0.9);
+            const py = d.y * h + mcy * d.par * (10 + d.r * 0.9);
+            const tw = 0.5 + 0.5 * Math.sin(t * 0.0009 + d.ph);
+            let alpha = DUST_LAYER[d.layer].a[0] + tw * (DUST_LAYER[d.layer].a[1] - DUST_LAYER[d.layer].a[0]);
+            // 加载进度点亮：跨过阈值的粒子渐亮并落一道柔光
+            if (d.litAt < prog) {
+              const k = Math.min(1, (prog - d.litAt) / 0.12);
+              alpha += k * 0.16;
+              if (k > 0.02) {
+                const gri = Math.max(5, d.r * 0.8);
+                const grd = g.createRadialGradient(px, py, 0, px, py, gri);
+                grd.addColorStop(0, d.emerald ? 'rgba(80,220,180,' + (k * 0.18).toFixed(3) + ')' : 'rgba(124,139,255,' + (k * 0.16).toFixed(3) + ')');
+                grd.addColorStop(1, 'rgba(255,255,255,0)');
+                g.fillStyle = grd;
+                g.beginPath(); g.arc(px, py, gri, 0, Math.PI * 2); g.fill();
+              }
+            }
+            if (d.glyph) {
+              g.font = Math.round(d.r) + 'px Georgia, "Times New Roman", serif';
+              g.fillStyle = d.emerald ? 'rgba(40,170,145,' + alpha.toFixed(3) + ')' : rgba(alpha * 0.85);
+              g.textAlign = 'center'; g.textBaseline = 'middle';
+              g.fillText(d.glyph, px, py);
+            } else {
+              g.fillStyle = d.emerald
+                ? 'rgba(24,178,130,' + alpha.toFixed(3) + ')'
+                : (layer === 2 ? 'rgba(124,139,255,' + alpha.toFixed(3) + ')' : 'rgba(70,95,255,' + (alpha * 0.85).toFixed(3) + ')');
+              g.beginPath(); g.arc(px, py, d.r * 0.14, 0, Math.PI * 2); g.fill();
+            }
+          }
+        };
+
         // 地面：柔影 + 青光（浮得越高影越小越淡）
         const ground = baseCy + scale * 1.18;
         const sway = bob / (Math.min(w, h) * 0.012); // -1..1
@@ -819,7 +957,24 @@
           r += (255 - r) * glint;
           g += (255 - g) * glint;
           b += (255 - b) * glint;
-          const alpha = CL(0.84 + f * 0.08 + spec1 * 0.05, 0.68, 0.96); // 薄透玻璃，留一点光透过
+          let alpha = CL(0.84 + f * 0.08 + spec1 * 0.05, 0.68, 0.96); // 薄透玻璃，留一点光透过
+
+          /* —— 彗星与玻璃的光照融合：近侧掠过扫亮玻璃表面，远侧隔玻璃透出光晕 —— */
+          const fcx = (a2.x + b2.x + c2.x + d2.x) / 4;
+          const fcy = (a2.y + b2.y + c2.y + d2.y) / 4;
+          const ddx = fcx - comet.x, ddy = fcy - comet.y;
+          const dwq = (ddx * ddx + ddy * ddy) / (2 * cometGlowR * cometGlowR);
+          if (dwq < 6) {
+            const wq = Math.exp(-dwq);
+            if (cometNear) {
+              const kq = wq * 0.42; // 表面被光扫亮
+              r += (255 - r) * kq; g += (255 - g) * kq; b += (255 - b) * kq;
+              alpha = Math.min(alpha + wq * 0.05, 0.97);
+            } else {
+              const kq = wq * 0.55; // 隔玻璃透光：更穿透
+              r += (232 - r) * kq; g += (255 - g) * kq; b += (248 - b) * kq;
+            }
+          }
 
           faces.push({
             a2, b2, c2, d2,
@@ -827,7 +982,25 @@
           });
         }
         faces.sort((p, q2) => p.z - q2.z); // 远(z 小)先画 → 近(z 大)后画
+
+        /* —— off 合成：远/中尘埃 → 后半轨道 → 玻璃带面（玻璃压住轨道，遮挡关系真实）—— */
         octx.clearRect(0, 0, w, h);
+        drawDustLayer(0, octx, now);
+        drawDustLayer(1, octx, now);
+        ctx.save();
+        ctx.strokeStyle = rgba(0.09);
+        ctx.lineWidth = Math.max(1, scale * 0.011);
+        strokeSegs(octx, segs, false);
+        ctx.restore();
+        if (prog > 0.001) {
+          ctx.save();
+          ctx.strokeStyle = rgba(0.30);
+          ctx.lineWidth = Math.max(1.1, scale * 0.014);
+          ctx.shadowColor = rgba(0.6);
+          ctx.shadowBlur = 7;
+          strokeSegs(octx, chargedSegs, false);
+          ctx.restore();
+        }
         for (const f of faces) {
           octx.fillStyle = `rgba(${f.r},${f.g},${f.b},${f.alpha.toFixed(3)})`;
           octx.beginPath();
@@ -844,6 +1017,13 @@
         ctx.filter = 'blur(1.6px)';
         ctx.drawImage(off, 0, 0, offW, offH, 0, 0, w, h);
         ctx.restore();
+        // Bloom：整体加一层屏混大模糊，玻璃获得能量光晕（"液体感"的最后一层）
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.08;
+        ctx.filter = 'blur(8px)';
+        ctx.drawImage(off, 0, 0, offW, offH, 0, 0, w, h);
+        ctx.restore();
 
         // 游走高光（沿带面环绕）—— 点睛
         const qi = Math.floor((now * 0.012) % U);
@@ -857,58 +1037,55 @@
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
         ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(1, scale * 0.018), 0, Math.PI * 2); ctx.fill();
 
-        // —— 环境尘埃：缓慢上浮、闪烁的几何字形 / 微光点（低透明度，增加纵深与生气）——
-        const minWH = Math.min(w, h);
-        for (const d of dust) {
-          d.x += d.vx * 60 + mcx * 0.00002;
-          d.y += d.vy * 60;
-          if (d.y < -0.06) { d.y = 1.06; d.x = Math.random(); }
-          if (d.x < -0.06) d.x = 1.06; else if (d.x > 1.06) d.x = -0.06;
-          const px = d.x * w + mcx * d.r * 0.6;
-          const py = d.y * h + mcy * d.r * 0.6;
-          const tw = 0.5 + 0.5 * Math.sin(now * 0.0009 + d.ph);
-          const alpha = 0.06 + tw * 0.17;
-          if (d.glyph) {
-            ctx.font = Math.round(d.r) + 'px Georgia, "Times New Roman", serif';
-            ctx.fillStyle = d.emerald ? 'rgba(40,170,145,' + alpha.toFixed(3) + ')' : rgba(alpha * 0.8);
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(d.glyph, px, py);
-          } else {
-            ctx.fillStyle = d.emerald ? 'rgba(60,200,170,' + alpha.toFixed(3) + ')' : 'rgba(255,255,255,' + (alpha * 0.7).toFixed(3) + ')';
-            ctx.beginPath(); ctx.arc(px, py, d.r * 0.14, 0, Math.PI * 2); ctx.fill();
-          }
+        /* —— 前半轨道 + 充能弧：画在玻璃之上（近段从带面扫过，光晕随之融合）—— */
+        ctx.save();
+        ctx.strokeStyle = rgba(0.20);
+        ctx.lineWidth = Math.max(1.1, scale * 0.012);
+        strokeSegs(ctx, segs, true);
+        ctx.restore();
+        if (prog > 0.001) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.strokeStyle = rgba(0.34);
+          ctx.lineWidth = Math.max(2.4, scale * 0.03);
+          ctx.shadowColor = rgba(0.9);
+          ctx.shadowBlur = 18;
+          strokeSegs(ctx, chargedSegs, true);
+          ctx.restore();
+          ctx.save();
+          ctx.strokeStyle = rgba(0.72);
+          ctx.lineWidth = Math.max(1.2, scale * 0.014);
+          ctx.shadowColor = rgba(1);
+          ctx.shadowBlur = 10;
+          strokeSegs(ctx, chargedSegs, true);
+          ctx.restore();
         }
 
-        // —— 充能环：环绕 ∞ 的椭圆能量弧，随真实加载进度点亮（品牌克莱因蓝 + 领头光点）——
-        const prog = Math.max(0, Math.min(1, preloaderProgress));
-        const ringR = scale * 1.62, ringRy = scale * 0.94;
+        /* —— 彗星：近侧亮核 + 光晕；远侧隔玻璃的透光柔晕 —— */
+        const cr = Math.max(3, scale * 0.035);
         ctx.save();
-        ctx.strokeStyle = rgba(0.10);
-        ctx.lineWidth = Math.max(1.2, scale * 0.014);
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, ringR, ringRy, 0, 0, Math.PI * 2);
-        ctx.stroke();
-        if (prog > 0.001) {
-          const startA = -Math.PI / 2;
-          const endA = startA + prog * Math.PI * 2;
-          ctx.strokeStyle = rgba(0.42 + 0.35 * prog);
-          ctx.lineWidth = Math.max(1.2, scale * 0.02);
-          ctx.shadowColor = rgba(0.9);
-          ctx.shadowBlur = 16;
-          ctx.beginPath();
-          ctx.ellipse(cx, cy, ringR, ringRy, 0, startA, endA);
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-          const tx2 = cx + Math.cos(endA) * ringR;
-          const ty2 = cy + Math.sin(endA) * ringRy;
-          const tipR = Math.max(3, scale * 0.045);
-          const tip = ctx.createRadialGradient(tx2, ty2, 0, tx2, ty2, tipR);
-          tip.addColorStop(0, 'rgba(150,172,255,0.95)');
-          tip.addColorStop(1, 'rgba(150,172,255,0)');
-          ctx.fillStyle = tip;
-          ctx.beginPath(); ctx.arc(tx2, ty2, tipR, 0, Math.PI * 2); ctx.fill();
+        const halo = ctx.createRadialGradient(comet.x, comet.y, 0, comet.x, comet.y, cr * 5);
+        if (cometNear) {
+          halo.addColorStop(0, 'rgba(255,255,255,0.9)');
+          halo.addColorStop(0.25, 'rgba(190,205,255,0.5)');
+          halo.addColorStop(1, 'rgba(190,205,255,0)');
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = halo;
+          ctx.beginPath(); ctx.arc(comet.x, comet.y, cr * 5, 0, Math.PI * 2); ctx.fill();
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = 'rgba(255,255,255,1)';
+          ctx.beginPath(); ctx.arc(comet.x, comet.y, cr * 0.55, 0, Math.PI * 2); ctx.fill();
+        } else {
+          halo.addColorStop(0, 'rgba(190,220,255,0.40)');
+          halo.addColorStop(1, 'rgba(190,220,255,0)');
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = halo;
+          ctx.beginPath(); ctx.arc(comet.x, comet.y, cr * 4, 0, Math.PI * 2); ctx.fill();
         }
         ctx.restore();
+
+        // 近层星火：叠在玻璃前面的小光点（与鼠标视差交错，最后一层"生气"）
+        drawDustLayer(2, ctx, now);
 
         // —— 点亮脉冲：进度到位瞬间，环后爆发一圈扩张光环，点燃进入的一刻 ——
         if (prog >= 0.999) {
@@ -916,12 +1093,12 @@
           const pt = (now - pulseStart) / 900; // 0..1 / 900ms
           if (pt < 1) {
             const ease = 1 - Math.pow(1 - pt, 3);
-            const prad = ringR * (0.4 + ease * 1.15);
+            const prad = scale * 1.9 * (0.4 + ease * 1.15);
             const pAlpha = (1 - pt) * 0.5;
             ctx.strokeStyle = 'rgba(255,255,255,' + pAlpha.toFixed(3) + ')';
             ctx.lineWidth = Math.max(2, scale * 0.05 * (1 - pt * 0.6));
             ctx.beginPath();
-            ctx.ellipse(cx, cy, prad, prad * (ringRy / ringR), 0, 0, Math.PI * 2);
+            ctx.ellipse(cx, cy, prad, prad * 0.52, 0, 0, Math.PI * 2);
             ctx.stroke();
           }
         }
@@ -937,7 +1114,466 @@
         window.removeEventListener('pointermove', onMove);
       };
     };
-    stopPreloaderAnim = startMathPreloader(mathCanvas);
+    /* ---------- 预加载 3D：Three.js 玻璃透射实体（WebGL 升维版） ----------
+       与下方 2D 版本同一套莫比乌斯参数化与椭圆轨道；
+       MeshPhysicalMaterial transmission=1 + ior + attenuation → 真折射/吸收玻璃；
+       轨道环是连续 Torus（深度缓冲天然遮挡，不再有"半圈消失"的断裂感）；
+       彗星玻璃珠带动光源扫亮玻璃，进度 100% 撞击中心触发水波纹涟漪；
+       任何失败（无 WebGL / 上下文异常）返回 null，回落 2D 渲染器。 */
+    const startMathPreloader3D = (canvas) => {
+      const T = window.THREE;
+      if (!T || !canvas) return null;
+      let renderer = null, envRT = null;
+      try {
+        renderer = new T.WebGLRenderer({
+          canvas, alpha: true, antialias: true, powerPreference: 'high-performance'
+        });
+        if (!renderer.getContext()) throw new Error('no-webgl');
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+        let w = 0, h = 0;
+        const camera = new T.PerspectiveCamera(42, 1, 0.1, 60);
+        camera.position.set(0, 0.16, 4.35);
+        const resize = () => {
+          w = canvas.clientWidth || window.innerWidth;
+          h = canvas.clientHeight || window.innerHeight;
+          renderer.setPixelRatio(dpr);
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+        };
+        resize();
+        window.addEventListener('resize', resize);
+
+        renderer.outputColorSpace = T.SRGBColorSpace;
+        renderer.toneMapping = T.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.12;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = T.PCFSoftShadowMap;
+
+        const scene = new T.Scene();
+        const rig = new T.Group();
+        scene.add(rig);
+
+        /* ---------- 影棚环境：渐变穹顶 + HDR 柔光箱 → PMREM（玻璃接住长条高光） ---------- */
+        const envScene = new T.Scene();
+        const envBg = new T.Mesh(
+          new T.SphereGeometry(12, 24, 16),
+          new T.ShaderMaterial({
+            side: T.BackSide,
+            vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+            fragmentShader: 'varying vec3 vP; void main(){ float t = clamp(vP.y/12.0, -1.0, 1.0); vec3 top = vec3(1.0,1.0,0.99), mid = vec3(0.88,0.92,0.90), bot = vec3(0.58,0.69,0.65); vec3 c = t>0.0 ? mix(mid,top,pow(t,0.75)) : mix(mid,bot,pow(-t,0.8)); gl_FragColor = vec4(c,1.0); }'
+          })
+        );
+        envScene.add(envBg);
+        const stripMat = new T.MeshBasicMaterial();
+        stripMat.color.setRGB(6, 6, 6); // HDR 白：PMREM 后玻璃反射出"柔光箱长条高光"
+        const mkStrip = (px, py, pz, sx, sy) => {
+          const m = new T.Mesh(new T.PlaneGeometry(sx, sy), stripMat);
+          m.position.set(px, py, pz);
+          m.lookAt(0, 0, 0);
+          envScene.add(m);
+        };
+        mkStrip(-3.6, 3.4, -2.4, 2.6, 1.3);   // 上左主柔光箱
+        mkStrip(4.0, 2.4, -1.6, 1.9, 0.9);    // 右上辅助箱
+        mkStrip(0.4, -2.6, 4.6, 3.4, 1.5);    // 底部反光箱（让玻璃底缘亮起来）
+        const pmrem = new T.PMREMGenerator(renderer);
+        envRT = pmrem.fromScene(envScene, 0.05);
+        scene.environment = envRT.texture;
+        pmrem.dispose();
+
+        /* ---------- 灯光：半球 + 主光（真实软阴影）+ 边缘光 ---------- */
+        scene.add(new T.HemisphereLight(0xffffff, 0xd4dcd6, 0.5));
+        const key = new T.DirectionalLight(0xffffff, 2.4);
+        key.position.set(2.4, 3.4, 3.8);
+        key.castShadow = true;
+        key.shadow.mapSize.set(1024, 1024);
+        key.shadow.camera.left = -2.8; key.shadow.camera.right = 2.8;
+        key.shadow.camera.top = 2.4; key.shadow.camera.bottom = -2.4;
+        key.shadow.camera.near = 1; key.shadow.camera.far = 12;
+        key.shadow.bias = -0.0004;
+        scene.add(key);
+        const rim = new T.DirectionalLight(0xe8f4ff, 0.9);
+        rim.position.set(-3.0, -1.0, 2.2);
+        scene.add(rim);
+
+        /* ---------- 莫比乌斯玻璃带（同一参数化；闭合接缝按 Möbius 翻转缝合） ---------- */
+        const MU = 200, MV = 30, MA = 1.10, MB = 0.50, MHALF = 0.30, MTH = 0.16;
+        const P3 = (t, s) => {
+          const cxr = MA * Math.sin(t);
+          const cyr = MB * Math.sin(2 * t);
+          const tx = MA * Math.cos(t), ty = 2 * MB * Math.cos(2 * t);
+          const tl = Math.hypot(tx, ty) || 1;
+          const Txn = tx / tl, Tyn = ty / tl;
+          const nx = -Tyn, ny = Txn;
+          const th = t / 2;
+          const Wx = nx * Math.sin(th), Wy = ny * Math.sin(th), Wz = Math.cos(th);
+          let u3x = Tyn * Wz, u3y = -Txn * Wz, u3z = Txn * Wy - Tyn * Wx;
+          const u3l = Math.hypot(u3x, u3y, u3z) || 1;
+          u3x /= u3l; u3y /= u3l; u3z /= u3l;
+          const ow = MHALF * Math.cos(s), ot = MTH * Math.sin(s);
+          return [cxr + Wx * ow + u3x * ot, cyr + Wy * ow + u3y * ot, Wz * ow + u3z * ot];
+        };
+        const posArr = new Float32Array(MU * MV * 3);
+        const norArr = new Float32Array(MU * MV * 3);
+        const ds = (Math.PI * 2) / MV, dt2 = 0.0025, tmp = [0, 0, 0];
+        for (let i = 0; i < MU; i++) {
+          const t = (i / MU) * Math.PI * 2;
+          for (let j = 0; j < MV; j++) {
+            const s = (j / MV) * Math.PI * 2;
+            const k = (i * MV + j) * 3;
+            const p = P3(t, s);
+            posArr[k] = p[0]; posArr[k + 1] = p[1]; posArr[k + 2] = p[2];
+            // 数值偏导求平滑法线：∂t（沿带）× ∂s（绕截面）
+            const t1 = P3(t - dt2, s), t2r = P3(t + dt2, s);
+            const s1 = P3(t, s - ds), s2r = P3(t, s + ds);
+            const ax = t2r[0] - t1[0], ay = t2r[1] - t1[1], az = t2r[2] - t1[2];
+            const bx = s2r[0] - s1[0], by = s2r[1] - s1[1], bz = s2r[2] - s1[2];
+            const nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+            const nl = Math.hypot(nx, ny, nz) || 1;
+            norArr[k] = nx / nl; norArr[k + 1] = ny / nl; norArr[k + 2] = nz / nl;
+          }
+        }
+        const bandGeo = new T.BufferGeometry();
+        bandGeo.setAttribute('position', new T.BufferAttribute(posArr, 3));
+        bandGeo.setAttribute('normal', new T.BufferAttribute(norArr, 3));
+        const bandIdx = new Uint16Array(MU * MV * 6);
+        const half = MV / 2;
+        let bi = 0;
+        for (let i = 0; i < MU; i++) {
+          const i2 = (i + 1) % MU;
+          const jShift = i2 === 0 ? half : 0; // 闭合缝：Möbius 截面翻半圈缝合
+          for (let j = 0; j < MV; j++) {
+            const a = i * MV + j;
+            const b = i2 * MV + ((j + jShift) % MV);
+            const c = i2 * MV + ((j + 1 + jShift) % MV);
+            const d = i * MV + ((j + 1) % MV);
+            bandIdx[bi++] = a; bandIdx[bi++] = b; bandIdx[bi++] = d;
+            bandIdx[bi++] = b; bandIdx[bi++] = c; bandIdx[bi++] = d;
+          }
+        }
+        bandGeo.setIndex(new T.BufferAttribute(bandIdx, 1));
+        const glassMat = new T.MeshPhysicalMaterial({
+          color: 0x2fbf94,
+          metalness: 0,
+          roughness: 0.08,
+          transmission: 1,
+          thickness: 0.6,
+          ior: 1.5,
+          attenuationColor: 0x0c7f5c,
+          attenuationDistance: 0.85,
+          clearcoat: 1,
+          clearcoatRoughness: 0.06,
+          envMapIntensity: 1.25,
+          specularIntensity: 0.8,
+          iridescence: 0.16,
+          iridescenceIOR: 1.35,
+          side: T.DoubleSide
+        });
+        const band = new T.Mesh(bandGeo, glassMat);
+        band.castShadow = true;
+        rig.add(band);
+
+        /* ---------- 轨道：连续 Torus（真几何体 + 深度缓冲），亮芯 + 柔晕双层 ---------- */
+        const ORB = { ax: 1.78, by: 0.92, incl: 0.30 };
+        const orbitTilt = new T.Group();
+        orbitTilt.rotation.x = ORB.incl;
+        rig.add(orbitTilt);
+        const orbitSquash = new T.Group();
+        orbitSquash.scale.y = ORB.by / ORB.ax;
+        orbitTilt.add(orbitSquash);
+        const ringCore = new T.Mesh(
+          new T.TorusGeometry(ORB.ax, 0.014, 10, 240),
+          new T.MeshBasicMaterial({ color: 0x2440ff, transparent: true, opacity: 1, toneMapped: false, depthWrite: false })
+        );
+        const ringHalo = new T.Mesh(
+          new T.TorusGeometry(ORB.ax, 0.045, 8, 200),
+          new T.MeshBasicMaterial({ color: 0x7c8bff, transparent: true, opacity: 0.1, toneMapped: false, blending: T.AdditiveBlending, depthWrite: false })
+        );
+        orbitSquash.add(ringCore);
+        orbitSquash.add(ringHalo);
+
+        // 充能弧（彗星身后随进度生长的段；几何随角度每帧重建，旧几何即时释放）
+        const chargeMat = new T.MeshBasicMaterial({ color: 0xa9bcff, transparent: true, opacity: 0.95, toneMapped: false, depthWrite: false });
+        const chargeHaloMat = new T.MeshBasicMaterial({ color: 0x7c8bff, transparent: true, opacity: 0.35, toneMapped: false, blending: T.AdditiveBlending, depthWrite: false });
+        const chargeMesh = new T.Mesh(undefined, chargeMat);
+        const chargeHalo = new T.Mesh(undefined, chargeHaloMat);
+        orbitSquash.add(chargeHalo);
+        orbitSquash.add(chargeMesh);
+        let chargeGeo = null;
+        const buildCharge = (arc, headAng) => {
+          const segs = Math.max(8, Math.round(240 * Math.min(arc + 0.05, 1)));
+          if (chargeGeo) chargeGeo.dispose();
+          chargeGeo = new T.TorusGeometry(ORB.ax, 0.014, 10, segs, arc * Math.PI * 2);
+          chargeMesh.geometry = chargeGeo;
+          chargeHalo.geometry = chargeGeo;
+          chargeMesh.rotation.z = headAng - arc * Math.PI * 2;
+          chargeHalo.rotation.z = chargeMesh.rotation.z;
+        };
+
+        /* ---------- 彗星：玻璃小珠 + 添加剂光晕 + 点光源（扫亮玻璃） ---------- */
+        const cometRig = new T.Group();
+        cometRig.rotation.x = ORB.incl;
+        rig.add(cometRig);
+        const comet = new T.Mesh(
+          new T.SphereGeometry(0.075, 24, 18),
+          new T.MeshPhysicalMaterial({
+            color: 0xbfe4ff,
+            metalness: 0,
+            roughness: 0.05,
+            transmission: 1,
+            thickness: 0.25,
+            ior: 1.5,
+            attenuationColor: 0x88b6ff,
+            attenuationDistance: 0.55,
+            envMapIntensity: 1.4,
+            specularIntensity: 1,
+            clearcoat: 1,
+            clearcoatRoughness: 0.03,
+            side: T.DoubleSide
+          })
+        );
+        cometRig.add(comet);
+        const glowTex = (() => {
+          const cv = document.createElement('canvas');
+          cv.width = cv.height = 64;
+          const g = cv.getContext('2d');
+          const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+          gr.addColorStop(0, 'rgba(255,255,255,1)');
+          gr.addColorStop(0.3, 'rgba(190,215,255,0.55)');
+          gr.addColorStop(1, 'rgba(190,215,255,0)');
+          g.fillStyle = gr;
+          g.fillRect(0, 0, 64, 64);
+          const tex = new T.CanvasTexture(cv);
+          tex.needsUpdate = true;
+          return tex;
+        })();
+        const glowSprite = new T.Sprite(new T.SpriteMaterial({
+          map: glowTex, color: 0xcfe0ff, transparent: true, opacity: 0.6,
+          blending: T.AdditiveBlending, depthWrite: false
+        }));
+        glowSprite.scale.set(0.38, 0.38, 1);
+        comet.add(glowSprite);
+        const cometLight = new T.PointLight(0xcdeaff, 14, 5, 2);
+        comet.add(cometLight);
+
+        let orbAngle = -Math.PI / 2;
+        let lastT = 0;
+
+        /* ---------- 粒子：WebGL Points（两层，淡蓝紫统一色调，前后景深由 rig 视差展开） ---------- */
+        const PALETTE = [
+          [0.66, 0.72, 1.00],  // 淡蓝
+          [0.78, 0.72, 1.00],  // 淡紫
+          [0.93, 0.95, 1.00]   // 近白
+        ];
+        const pointVerts = `
+          attribute float aSize; attribute vec3 aColor; attribute float aAlpha;
+          varying vec3 vC; varying float vA; uniform float uPr;
+          void main(){
+            vC = aColor; vA = aAlpha;
+            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = aSize * uPr * (240.0 / -mv.z);
+            gl_Position = projectionMatrix * mv;
+          }`;
+        const pointFrag = `
+          varying vec3 vC; varying float vA;
+          void main(){
+            vec2 d = gl_PointCoord - 0.5;
+            float r2 = dot(d, d);
+            float m = smoothstep(0.25, 0.03, r2);
+            float c = smoothstep(0.02, 0.0, r2) * 1.3;
+            if (m < 0.01) discard;
+            gl_FragColor = vec4(vC * (0.6 + c), vA * m);
+          }`;
+        const mkPoints = (n, zMin, zMax, sMin, sMax) => {
+          const p = new Float32Array(n * 3);
+          const sz = new Float32Array(n);
+          const col = new Float32Array(n * 3);
+          const al = new Float32Array(n);
+          const meta = [];
+          for (let i = 0; i < n; i++) {
+            p[i * 3] = (Math.random() - 0.5) * 5.4;
+            p[i * 3 + 1] = (Math.random() - 0.5) * 3.4;
+            p[i * 3 + 2] = zMin + Math.random() * (zMax - zMin);
+            sz[i] = sMin + Math.random() * (sMax - sMin);
+            const c = PALETTE[(Math.random() * PALETTE.length) | 0];
+            col[i * 3] = c[0]; col[i * 3 + 1] = c[1]; col[i * 3 + 2] = c[2];
+            meta.push({
+              vx: (Math.random() - 0.5) * 0.0006,
+              vy: -(0.0003 + Math.random() * 0.0007),
+              ph: Math.random() * Math.PI * 2,
+              ab: 0.5 + Math.random() * 0.4,
+              litAt: 0.3 + Math.random() * 0.65,
+              alpha: 0
+            });
+          }
+          const g = new T.BufferGeometry();
+          g.setAttribute('position', new T.BufferAttribute(p, 3));
+          g.setAttribute('aSize', new T.BufferAttribute(sz, 1));
+          g.setAttribute('aColor', new T.BufferAttribute(col, 3));
+          g.setAttribute('aAlpha', new T.BufferAttribute(al, 1));
+          const mat = new T.ShaderMaterial({
+            vertexShader: pointVerts,
+            fragmentShader: pointFrag,
+            uniforms: { uPr: { value: dpr } },
+            transparent: true, depthWrite: false, depthTest: true
+          });
+          const mesh = new T.Points(g, mat);
+          rig.add(mesh);
+          return { mesh, meta, al, n };
+        };
+        const farPts = mkPoints(46, -1.3, -0.35, 0.03, 0.08);
+        const nearPts = mkPoints(38, -0.15, 0.9, 0.02, 0.055);
+
+        /* ---------- 地面：真实 PCF 软阴影（ShadowMaterial）+ 极淡翡翠反光 ---------- */
+        const ground = new T.Mesh(
+          new T.PlaneGeometry(10, 10),
+          new T.ShadowMaterial({ opacity: 0.12 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.98;
+        ground.receiveShadow = true;
+        scene.add(ground);
+        const bounce = new T.Mesh(
+          new T.PlaneGeometry(6.5, 3),
+          new T.MeshBasicMaterial({ color: 0x17936e, transparent: true, opacity: 0.05, blending: T.AdditiveBlending, depthWrite: false })
+        );
+        bounce.rotation.x = -Math.PI / 2;
+        bounce.position.set(0, -0.975, 0);
+        scene.add(bounce);
+
+        /* ---------- 100% 撞击涟漪（三层扩散环 + 灯光尖峰；置于玻璃前方避免穿模） ---------- */
+        const rippleMat = () => new T.MeshBasicMaterial({ color: 0xbdd0ff, transparent: true, opacity: 0, toneMapped: false, depthWrite: false, side: T.DoubleSide });
+        const ripples = [];
+        for (let i = 0; i < 3; i++) {
+          const rm = new T.Mesh(new T.RingGeometry(0.94, 1.0, 96), rippleMat());
+          rm.visible = false;
+          rm.position.z = 0.42;
+          rig.add(rm);
+          ripples.push({ mesh: rm, start: -1 });
+        }
+        let burstAt = -1;
+
+        /* ---------- 交互：鼠标视差（阻尼）+ 怠速摆动 ---------- */
+        let mtx = 0, mty = 0, mx = 0, my = 0;
+        const onMove = (e) => {
+          mtx = (e.clientX / (window.innerWidth || 1) - 0.5) * 2;
+          mty = (e.clientY / (window.innerHeight || 1) - 0.5) * 2;
+        };
+        window.addEventListener('pointermove', onMove);
+        const fit = Math.min(1, (w / h) / 1.35); // 竖屏：整体取景收缩，不裁切轨道
+        rig.scale.setScalar(fit);
+
+        /* ---------- 主循环 ---------- */
+        let raf = 0;
+        const tick = (now) => {
+          raf = requestAnimationFrame(tick);
+          const dt = Math.min(Math.max(now - lastT || 16, 2), 40);
+          lastT = now;
+
+          mx += (mtx - mx) * 0.05;
+          my += (mty - my) * 0.05;
+
+          // 彗星推进：开普勒式（靠近扭结加速）
+          const rNow = Math.hypot(ORB.ax * Math.cos(orbAngle), ORB.by * Math.sin(orbAngle));
+          const kp = Math.min(Math.max(1.06 / Math.max(rNow, 0.3), 0.72), 2.1);
+          orbAngle += ((Math.PI * 2) / 13000) * kp * kp * dt;
+          if (orbAngle >= Math.PI * 2) orbAngle -= Math.PI * 2;
+          // 阻尼跟随：彗星额外朝鼠标方向轻漂（上限 0.16，回弹柔和）
+          const cxd = ORB.ax * Math.cos(orbAngle) + mx * 0.10;
+          const cyd = ORB.by * Math.sin(orbAngle) + my * 0.10;
+          comet.position.set(cxd, cyd, 0);
+
+          const prog = Math.max(0, Math.min(1, preloaderProgress));
+          buildCharge(prog, orbAngle);
+
+          // 粒子：闪烁 + 加载进度点亮（位置缓慢漂移，越界回卷）
+          const dtf = dt / 16.67;
+          const updPts = (P2, tw) => {
+            const attr = P2.mesh.geometry.attributes.position;
+            for (let i = 0; i < P2.n; i++) {
+              const d = P2.meta[i];
+              attr.array[i * 3] += d.vx * dtf;
+              attr.array[i * 3 + 1] += d.vy * dtf;
+              if (attr.array[i * 3 + 1] < -1.8) attr.array[i * 3 + 1] = 1.8;
+              if (attr.array[i * 3] < -2.9) attr.array[i * 3] = 2.9;
+              else if (attr.array[i * 3] > 2.9) attr.array[i * 3] = -2.9;
+              const twk = 0.55 + 0.45 * Math.sin(tw * 0.0011 + d.ph);
+              let a = d.ab * twk;
+              if (prog > d.litAt) a += 0.5 * Math.min(1, (prog - d.litAt) / 0.12);
+              P2.al[i] = Math.min(a, 1);
+            }
+            attr.needsUpdate = true;
+            P2.mesh.geometry.attributes.aAlpha.needsUpdate = true;
+          };
+          updPts(farPts, now);
+          updPts(nearPts, now);
+
+          // rig 姿态：鼠标视差 + 怠速
+          rig.rotation.y = mx * 0.30 + Math.sin(now * 0.00042) * 0.10;
+          rig.rotation.x = 0.30 + my * 0.14 + Math.sin(now * 0.0006) * 0.03;
+          rig.rotation.z = Math.sin(now * 0.00031) * 0.05;
+          rig.position.y = Math.sin(now * 0.0011) * 0.05;
+
+          // 彗星光随位置起伏；100% 时撞击：涟漪扩散 + 灯光尖峰
+          cometLight.intensity = 14 + Math.sin(now * 0.003) * 2;
+          if (prog >= 0.999 && burstAt < 0) {
+            burstAt = now;
+            ripples[0].start = now;
+            ripples[1].start = now + 170;
+            ripples[2].start = now + 340;
+          }
+          if (burstAt > 0) {
+            for (const rp of ripples) {
+              const t0 = rp.start;
+              if (t0 < 0) continue;
+              const pt = (now - t0) / 950;
+              if (pt >= 0 && pt < 1) {
+                const e = 1 - Math.pow(1 - pt, 3);
+                rp.mesh.visible = true;
+                rp.mesh.scale.setScalar(0.22 + e * 4.0);
+                rp.mesh.material.opacity = (1 - pt) * 0.75;
+              } else if (pt >= 1) rp.mesh.visible = false;
+            }
+            const bd = (now - burstAt) / 900;
+            if (bd < 1) {
+              key.intensity = 2.4 + Math.sin(bd * Math.PI) * 1.4;
+              cometLight.intensity += (1 - bd) * 22;
+            } else key.intensity = 2.4;
+          }
+
+          renderer.render(scene, camera);
+        };
+        raf = requestAnimationFrame(tick);
+        window.__f8kPreload3d = true; // 3D 预加载渲染器已接管（调试验证标记）
+
+        return () => {
+          cancelAnimationFrame(raf);
+          window.removeEventListener('resize', resize);
+          window.removeEventListener('pointermove', onMove);
+          scene.traverse((o) => {
+            if (o.geometry) o.geometry.dispose();
+            if (o.material) {
+              if (o.material.map) o.material.map.dispose();
+              o.material.dispose();
+            }
+          });
+          envRT.dispose();
+          renderer.dispose();
+        };
+      } catch (e) {
+        // WebGL 不可用/异常：清理已创建资源后回落 2D 渲染器
+        try {
+          if (envRT) envRT.dispose();
+          if (renderer) renderer.dispose();
+        } catch (_) { /* ignore */ }
+        return null;
+      }
+    };
+    /* 优先 WebGL 玻璃渲染；任何失败回落 2D（错误边界 recover() 保底不卡屏）。
+       three.min.js 已在页面头常驻加载——标记为已就绪，hero/lab 懒加载直接复用。 */
+    window.__f8kThree = window.__f8kThree || Promise.resolve();
+    stopPreloaderAnim = (startMathPreloader3D(mathCanvas) || startMathPreloader(mathCanvas));
 
     /* ---------- 预加载：真实进度 + 双层幕布 + 首屏重叠交接 ---------- */
     const formulaEl = $('#preloaderFormula');
@@ -952,7 +1588,7 @@
       document.addEventListener('keydown', () => { pageReady = true; }, { once: true });
     }
 
-    gsap.set('.hero__title .line > span, .footer__title .line > span', { yPercent: 115 });
+    gsap.set('.footer__title .line > span', { yPercent: 115 });
     gsap.set('[data-hero-fade]', { y: 26, autoAlpha: 0 });
 
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -984,9 +1620,6 @@
         .to(preloader, { yPercent: -100, duration: .85, ease: 'power4.inOut' }, .15)
         .to(slatEl, { yPercent: -100, duration: .85, ease: 'power4.inOut' }, .26)
         .add(() => { doc.classList.remove('loading'); }, .95) // 幕布基本过半即解锁滚动
-        .fromTo('.hero__title .line > span',
-          { yPercent: 115 },
-          { yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: .1 }, .68)
         .to('[data-hero-fade]', { y: 0, autoAlpha: 1, duration: .9, stagger: .1 }, .82);
     })();
 
@@ -1230,14 +1863,10 @@
       autoAlpha: 0, ease: 'none',
       scrollTrigger: { trigger: '.hero', start: 'top top', end: '28% top', scrub: true }
     });
-    // 大字缩放下沉 + 3D 画布反向漂移：退场有纵深，不再是平面滑走
-    gsap.to('.hero__title', {
-      scale: .92, ease: 'none',
-      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 30%', scrub: true }
-    });
-    gsap.to('.hero-canvas', {
-      y: '+=96', ease: 'none',
-      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true }
+    // 玻璃 HELLO 随滚动轻微上浮：退场有纵深，不再是平面滑走
+    gsap.to('.hero__warp', {
+      yPercent: -12, ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 55%', scrub: true }
     });
 
     /* ---------- 作品卡封面视差：图片在卡框内随滚动上下漂移 ---------- */
@@ -1351,37 +1980,6 @@
       window.addEventListener('resize', () => { if (on) cache(); });
     };
     initTextPressure();
-
-    /* ---------- 液态玻璃 HELLO（Apple liquid glass：3D 倾斜 + 悬浮 + 跟随高光） ---------- */
-    const initGlassHello = () => {
-      const wrap = document.getElementById('glassHello');
-      const panel = wrap && wrap.querySelector('.glass-hello__panel');
-      if (!wrap || !panel || reduced || !finePointer) return;
-      const rx = gsap.quickTo(panel, 'rotationX', { duration: .6, ease: 'power3.out' });
-      const ry = gsap.quickTo(panel, 'rotationY', { duration: .6, ease: 'power3.out' });
-      let pr = null, gTick = false;
-      const cachePr = () => { pr = panel.getBoundingClientRect(); };
-      cachePr();
-      window.addEventListener('resize', cachePr);
-      window.addEventListener('scroll', () => { pr = null; }, { passive: true }); // 滚动后懒更新
-      window.addEventListener('mousemove', (e) => {
-        ry((e.clientX / window.innerWidth - 0.5) * 14);
-        rx(-(e.clientY / window.innerHeight - 0.5) * 10);
-        if (!pr) cachePr();
-        const gx = (((e.clientX - pr.left) / pr.width) * 100).toFixed(1) + '%';
-        const gy = (((e.clientY - pr.top) / pr.height) * 100).toFixed(1) + '%';
-        if (!gTick) {
-          gTick = true;
-          requestAnimationFrame(() => {
-            gTick = false;
-            panel.style.setProperty('--gx', gx);
-            panel.style.setProperty('--gy', gy);
-          });
-        }
-      }, { passive: true });
-      gsap.to(panel, { y: -9, duration: 2.6, ease: 'sine.inOut', yoyo: true, repeat: -1 });
-    };
-    initGlassHello();
 
     /* ---------- 懒加载模块改变布局后刷新 ScrollTrigger 测量 ---------- */
     document.addEventListener('f8k-layout', () => { if (hasST) ScrollTrigger.refresh(); });
@@ -1501,20 +2099,11 @@
       });
     }
 
-    /* ---------- Scrollspy：导航墨线滑移到当前章节 ---------- */
+    /* ---------- Scrollspy：导航药丸填色标记当前章节 ---------- */
     const spyLinks = Array.from(document.querySelectorAll('.header__nav a[href^="#"]'));
-    const ink = document.querySelector('.nav-ink');
-    if (spyLinks.length && ink) {
-      gsap.set(ink, { scaleX: 0 });
-      const xTo = gsap.quickTo(ink, 'x', { duration: .45, ease: 'power3.out' });
+    if (spyLinks.length) {
       const setActive = (link) => {
         spyLinks.forEach((l) => l.classList.toggle('is-active', l === link));
-        if (!link) { ink.classList.remove('is-on'); return; }
-        const r = link.getBoundingClientRect();
-        const nav = ink.parentElement.getBoundingClientRect();
-        xTo(r.left - nav.left);
-        gsap.to(ink, { scaleX: r.width / 100, duration: .45, ease: 'power3.out' });
-        ink.classList.add('is-on');
       };
       spyLinks.forEach((link) => {
         const target = document.querySelector(link.getAttribute('href'));
@@ -1525,12 +2114,86 @@
           onToggle: (self) => { if (self.isActive) setActive(link); }
         });
       });
-      // 首屏区间不点亮任何项，墨线淡出
+      // 首屏区间不点亮任何项，药丸全部回底色
       ScrollTrigger.create({
         trigger: '.hero', start: 'top top', end: 'bottom 55%',
         onToggle: (self) => { if (self.isActive) setActive(null); }
       });
     }
+
+    /* ---------- 药丸导航 hover（Port: React Bits PillNav）：底部圆扩 + 双层标签上滑 ---------- */
+    const initPillNav = () => {
+      if (typeof gsap === 'undefined') return;
+      const links = Array.from(document.querySelectorAll('.header__nav a[href^="#"]'));
+      if (!links.length) return;
+      const ease = 'power3.out';
+      const items = [];
+      // 注入 pill 内部结构：<a> → 圆 + 双层标签
+      links.forEach((link) => {
+        const label = link.textContent.trim();
+        link.innerHTML = '';
+        const circle = document.createElement('span');
+        circle.className = 'hover-circle';
+        circle.setAttribute('aria-hidden', 'true');
+        link.appendChild(circle);
+        const stack = document.createElement('span');
+        stack.className = 'label-stack';
+        const base = document.createElement('span');
+        base.className = 'pill-label';
+        base.textContent = label;
+        const hover = document.createElement('span');
+        hover.className = 'pill-label-hover';
+        hover.setAttribute('aria-hidden', 'true');
+        hover.textContent = label;
+        stack.appendChild(base);
+        stack.appendChild(hover);
+        link.appendChild(stack);
+        items.push({ link, circle, base, hover, tl: null, tween: null });
+      });
+      // 依实时几何布置圆：圆通过药丸上下两角，origin 在圆心下端
+      const layout = () => {
+        items.forEach((it) => {
+          const rect = it.link.getBoundingClientRect();
+          const w = rect.width, h = rect.height;
+          if (!w || !h) return;
+          const R = (w * w / 4 + h * h) / (2 * h);
+          const D = Math.ceil(2 * R) + 2;
+          const delta = Math.ceil(R - Math.sqrt(Math.max(0, R * R - w * w / 4))) + 1;
+          const originY = D - delta;
+          it.circle.style.width = D + 'px';
+          it.circle.style.height = D + 'px';
+          it.circle.style.bottom = -delta + 'px';
+          gsap.set(it.circle, { xPercent: -50, scale: 0, transformOrigin: '50% ' + originY + 'px' });
+          gsap.set(it.base, { y: 0 });
+          gsap.set(it.hover, { y: Math.ceil(h * 3), opacity: 0 });
+          if (it.tl) it.tl.kill();
+          const tl = gsap.timeline({ paused: true });
+          tl.to(it.circle, { scale: 1.2, xPercent: -50, duration: 2, ease, overwrite: 'auto' }, 0);
+          tl.to(it.base, { y: -(h + 8), duration: 2, ease, overwrite: 'auto' }, 0);
+          tl.to(it.hover, { y: 0, opacity: 1, duration: 2, ease, overwrite: 'auto' }, 0);
+          it.tl = tl;
+          it.h = h;
+        });
+      };
+      layout();
+      let rT;
+      window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(layout, 200); });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout).catch(() => {});
+      // 进 / 出：暂停时间线按 tweenTo 定向补间（连续滚动时快速终止）
+      items.forEach((it) => {
+        it.link.addEventListener('mouseenter', () => {
+          if (!it.tl) return;
+          if (it.tween) it.tween.kill();
+          it.tween = it.tl.tweenTo(it.tl.duration(), { duration: .3, ease, overwrite: 'auto' });
+        });
+        it.link.addEventListener('mouseleave', () => {
+          if (!it.tl) return;
+          if (it.tween) it.tween.kill();
+          it.tween = it.tl.tweenTo(0, { duration: .2, ease, overwrite: 'auto' });
+        });
+      });
+    };
+    initPillNav();
 
     /* ---------- Header 滚动态 ---------- */
     const header = $('.header');

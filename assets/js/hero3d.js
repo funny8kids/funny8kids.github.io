@@ -1,13 +1,41 @@
 /* =========================================================
-   F8K® — 首屏 3D 几何体（Three.js，本地 vendor）
-   监听 f8k-idle 懒启动；离屏 / 后台 / 上下文丢失均自动暂停与恢复
+   F8K® — 首屏玻璃折射 HELLO（WarpText 移植，Three.js 核心实现）
+   原作：React Bits <WarpText />（ogl 版，MIT）
+   本文件：同款 shader/参数体系 + three.js r160 核心（无新依赖），
+   监听 f8k-idle 懒启动；离屏 / 后台 / 上下文丢失均自动暂停与恢复；
+   无 WebGL / 减少动效时给容器挂 is-fallback，CSS 静态衬线字接管
    ========================================================= */
 (() => {
   'use strict';
 
-  const canvas = document.getElementById('heroCanvas');
-  if (!canvas) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const wrap = document.getElementById('heroWarp');
+  if (!wrap) return;
+
+  /* ---------- 可调参数（与 React Bits WarpText props 一一对应） ---------- */
+  const PROPS = {
+    text: 'hello',
+    colorVar: '--ink',               // 主题变量名，亮/暗自动重光栅化
+    fallbackColor: '#171512',
+    fontFamily: "'Instrument Serif', 'Songti SC', serif",
+    fontStyle: 'italic',
+    fontWeight: 400,
+    fontSize: 'clamp(5rem, 24vw, 22rem)',
+    letterSpacing: -0.02,
+    lineHeight: 0.9,
+    warpStrength: 0.10,
+    warpScale: 1.7,
+    speed: 0.5,
+    pointerInfluence: 0.55,
+    pointerStrength: 0.45,
+    refraction: 0.02,
+    ripple: true
+  };
+
+  // 减少动效：WebGL 让位，静态降级
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    wrap.classList.add('is-fallback');
+    return;
+  }
 
   const loadScript = (src) => new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -20,84 +48,297 @@
   document.addEventListener('f8k-idle', () => {
     // 与 lab3d.js 共享同一次 three.js 加载（避免双实例）
     window.__f8kThree = window.__f8kThree || loadScript('assets/vendor/three.min.js');
-    window.__f8kThree.then(init).catch(() => { /* 静默放弃 3D */ });
+    window.__f8kThree.then(init).catch(() => { wrap.classList.add('is-fallback'); });
   }, { once: true });
 
   function init() {
     if (!window.THREE) return;
     const T = window.THREE;
     try {
-      const doc = document.documentElement;
-      const readAccent = () =>
-        getComputedStyle(doc).getPropertyValue('--accent').trim() || '#2c43f5';
-
+      /* ---------- 渲染器（透明底，背景交给 DOM 渐变） ---------- */
+      const canvas = document.createElement('canvas');
+      wrap.appendChild(canvas);
       const renderer = new T.WebGLRenderer({
         canvas,
         alpha: true,
         antialias: false, // 高 DPR 已足够平滑，关 AA 省 GPU
-        powerPreference: 'low-power'
+        powerPreference: 'high-performance'
       });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      const dprCap = window.innerWidth > 1200 ? 1.75 : 1.25;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
+      renderer.setClearColor(0x000000, 0);
 
       const scene = new T.Scene();
-      const camera = new T.PerspectiveCamera(42, 1, 0.1, 50);
-      camera.position.z = 6.2;
+      const camera = new T.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-      const group = new T.Group();
-      const accent = readAccent();
-      const geo = new T.IcosahedronGeometry(1.75, 0);
-      const wireMat = new T.MeshBasicMaterial({ color: accent, wireframe: true, transparent: true, opacity: 0.9 });
-      group.add(new T.Mesh(geo, wireMat));
+      /* ---------- 全屏三角形（quad 的退化写法，只画一个三角形覆盖屏幕） ---------- */
+      const geo = new T.BufferGeometry();
+      geo.setAttribute('position', new T.BufferAttribute(new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]), 3));
+      geo.setAttribute('uv', new T.BufferAttribute(new Float32Array([0, 0, 2, 0, 0, 2]), 2));
 
-      // 顶点圆点 —— 呼应品牌标志的"双点"语言
-      const posAttr = geo.attributes.position;
-      const seen = new Set();
-      const dotGeo = new T.SphereGeometry(0.085, 10, 8);
-      const dotMat = new T.MeshBasicMaterial({ color: accent });
-      for (let i = 0; i < posAttr.count; i++) {
-        const x = posAttr.getX(i), y = posAttr.getY(i), z = posAttr.getZ(i);
-        const key = x.toFixed(2) + ',' + y.toFixed(2) + ',' + z.toFixed(2);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        const m = new T.Mesh(dotGeo, dotMat);
-        m.position.set(x, y, z);
-        group.add(m);
-      }
-      scene.add(group);
-
-      document.addEventListener('f8k-theme', () => {
-        const c = readAccent();
-        wireMat.color.set(c);
-        dotMat.color.set(c);
-      });
-
-      const resize = () => {
-        const s = canvas.clientWidth || 300;
-        renderer.setSize(s, s, false);
+      /* ---------- 文字纹理：每次光栅化换全新 CanvasTexture（避免替换 image 时 GPU 侧残留旧纹理） ---------- */
+      let texture = null;
+      const makeTexture = (raw) => {
+        const t = new T.CanvasTexture(raw);
+        t.generateMipmaps = false;
+        t.minFilter = T.LinearFilter;
+        t.magFilter = T.LinearFilter;
+        t.wrapS = T.ClampToEdgeWrapping;
+        t.wrapT = T.ClampToEdgeWrapping;
+        return t;
       };
-      resize();
-      let hRsz;
-      window.addEventListener('resize', () => {
-        clearTimeout(hRsz);
-        hRsz = setTimeout(resize, 200); // 防抖：等窗口稳定再改画布尺寸
-      });
+      texture = makeTexture(document.createElement('canvas'));
 
-      let running = false, inView = true, rafId = 0;
-      let mx = 0, my = 0, rx = 0, ry = 0, frame = 0, rendered = false;
-      const tick = (t) => {
-        if (!running) return;
-        ry += (my * 0.35 - ry) * 0.04;
-        rx += (mx * 0.25 - rx) * 0.04;
-        group.rotation.y = t * 0.00022 + ry;
-        group.rotation.x = rx + Math.sin(t * 0.0005) * 0.12;
-        group.position.y = Math.sin(t * 0.0011) * 0.12;
-        // 慢速旋转的线框 30fps 足够，隔帧渲染省一半 GPU；首帧后淡入避免突兀弹出
-        if ((frame++ & 1) === 0) {
-          renderer.render(scene, camera);
-          if (!rendered) {
-            rendered = true;
-            canvas.classList.add('is-on');
+      const vertex = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+      `;
+      const fragment = `
+        uniform sampler2D uTextTexture;
+        uniform vec2 uResolution;
+        uniform vec2 uPointer;
+        uniform float uPointerActive;
+        uniform float uTime;
+        uniform float uWarpStrength;
+        uniform float uWarpScale;
+        uniform float uSpeed;
+        uniform float uPointerInfluence;
+        uniform float uPointerStrength;
+        uniform float uRefraction;
+        uniform float uRipple;
+        uniform float uMotion;
+        varying vec2 vUv;
+
+        float hash(vec2 p) {
+          p = fract(p * vec2(123.34, 456.21));
+          p += dot(p, p + 45.32);
+          return fract(p.x * p.y);
+        }
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+        }
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          for (int i = 0; i < 4; i++) {
+            value += amplitude * noise(p);
+            p *= 2.02;
+            amplitude *= 0.5;
           }
+          return value;
+        }
+        vec4 sampleText(vec2 uv) {
+          if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
+          return texture2D(uTextTexture, uv);
+        }
+        void main() {
+          vec2 uv = vUv;
+          float aspect = uResolution.x / max(uResolution.y, 1.0);
+          float time = uTime * uSpeed;
+          float scale = max(uWarpScale, 0.001);
+
+          vec2 drift = vec2(time * 0.055, -time * 0.045);
+          float n1 = fbm(uv * scale * 3.1 + drift);
+          float n2 = fbm((uv + 19.17) * scale * 3.4 - drift.yx);
+          vec2 ambient = (vec2(n1, n2) - 0.5) * uWarpStrength * 0.045 * uMotion;
+
+          vec2 pointerDelta = uv - uPointer;
+          vec2 aspectDelta = vec2(pointerDelta.x * aspect, pointerDelta.y);
+          float dist = length(aspectDelta);
+          float radius = max(uPointerInfluence, 0.001);
+          float t = clamp(dist / radius, 0.0, 1.0);
+          float lens = smoothstep(radius, 0.0, dist) * uPointerActive;
+          float bulge = t * (1.0 - t) * (1.0 - t) * 6.75 * uPointerActive;
+          vec2 dir = dist > 0.0001 ? vec2(aspectDelta.x / aspect, aspectDelta.y) / dist : vec2(0.0);
+
+          float rippleWave = sin(dist * 28.0 - time * 4.2) * 0.5 + 0.5;
+          float rippleRing = (rippleWave - 0.5) * uRipple;
+          vec2 pointerWarp = -dir * bulge * uPointerStrength * 0.045;
+          pointerWarp += dir * rippleRing * bulge * uPointerStrength * 0.016;
+
+          vec2 displaced = uv + ambient + pointerWarp;
+          vec2 splitDir = ambient + pointerWarp;
+          float splitLen = length(splitDir);
+          splitDir = splitLen > 0.00001 ? splitDir / splitLen : vec2(0.7071, 0.7071);
+          vec2 split = splitDir * uRefraction * 0.16 * (0.35 + lens * 1.65);
+
+          vec4 base = sampleText(displaced);
+          float r = sampleText(displaced + split).r;
+          float g = base.g;
+          float b = sampleText(displaced - split).b;
+          float a = max(max(sampleText(displaced + split).a, base.a), sampleText(displaced - split).a);
+
+          vec3 color = vec3(r, g, b) + lens * base.a * 0.055;
+          gl_FragColor = vec4(color, a);
+        }
+      `;
+
+      const program = new T.ShaderMaterial({
+        vertexShader: vertex,
+        fragmentShader: fragment,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        uniforms: {
+          uTextTexture: { value: texture },
+          uResolution: { value: new T.Vector2(1, 1) },
+          uPointer: { value: new T.Vector2(0.5, 0.5) },
+          uPointerActive: { value: 0 },
+          uTime: { value: 0 },
+          uWarpStrength: { value: PROPS.warpStrength },
+          uWarpScale: { value: PROPS.warpScale },
+          uSpeed: { value: PROPS.speed },
+          uPointerInfluence: { value: PROPS.pointerInfluence },
+          uPointerStrength: { value: PROPS.pointerStrength },
+          uRefraction: { value: PROPS.refraction },
+          uRipple: { value: PROPS.ripple ? 1 : 0 },
+          uMotion: { value: 1 }
+        }
+      });
+      scene.add(new T.Mesh(geo, program));
+
+      /* ---------- 文字光栅化（与 WarpText buildTextCanvas 同逻辑，补充 fontStyle 支持） ---------- */
+      const getFontValue = (v) => typeof v === 'number' ? v + 'px' : v;
+      const measureLine = (ctx, line, ls) => {
+        const chars = Array.from(line);
+        return chars.reduce((w, ch) => w + ctx.measureText(ch).width, 0) + Math.max(0, chars.length - 1) * ls;
+      };
+      const drawLine = (ctx, line, x, y, ls) => {
+        const chars = Array.from(line);
+        let cursor = x - measureLine(ctx, line, ls) / 2;
+        chars.forEach((ch, i) => {
+          ctx.fillText(ch, cursor, y);
+          cursor += ctx.measureText(ch).width + (i === chars.length - 1 ? 0 : ls);
+        });
+      };
+      const readColor = () => {
+        const v = getComputedStyle(document.documentElement).getPropertyValue(PROPS.colorVar).trim();
+        return v || PROPS.fallbackColor;
+      };
+
+      let rasterVersion = 0;
+      const rasterize = async () => {
+        const version = ++rasterVersion;
+        if (document.fonts && document.fonts.status === 'loading') {
+          try { await document.fonts.ready; } catch (e) {}
+          if (version !== rasterVersion) return;
+        }
+        const w = wrap.clientWidth, h = wrap.clientHeight;
+        if (!w || !h) return;
+        const dpr = renderer.getPixelRatio();
+        const raw = document.createElement('canvas');
+        raw.width = Math.max(1, Math.floor(w * dpr));
+        raw.height = Math.max(1, Math.floor(h * dpr));
+        const ctx = raw.getContext('2d');
+        if (!ctx) return;
+
+        const probe = document.createElement('span');
+        probe.textContent = PROPS.text;
+        Object.assign(probe.style, {
+          position: 'absolute', visibility: 'hidden', pointerEvents: 'none',
+          whiteSpace: 'pre', inset: '0 auto auto 0',
+          fontFamily: PROPS.fontFamily, fontSize: getFontValue(PROPS.fontSize),
+          fontWeight: String(PROPS.fontWeight), letterSpacing: getFontValue(PROPS.letterSpacing),
+          fontStyle: PROPS.fontStyle
+        });
+        wrap.appendChild(probe);
+        const cs = getComputedStyle(probe);
+        let fontSizePx = parseFloat(cs.fontSize) || 96;
+        const fontFamily = cs.fontFamily || 'sans-serif';
+        const fontWeight = cs.fontWeight || String(PROPS.fontWeight);
+        const fontStyle = cs.fontStyle || 'normal';
+        let letterSpacing = cs.letterSpacing === 'normal' ? 0 : parseFloat(cs.letterSpacing) || 0;
+        let lineHeight = parseFloat(cs.lineHeight);
+        if (!Number.isFinite(lineHeight)) lineHeight = fontSizePx * (typeof PROPS.lineHeight === 'number' ? PROPS.lineHeight : 0.92);
+        probe.remove();
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = readColor();
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        const lines = String(PROPS.text || '').split('\n');
+        const applyFont = () => { ctx.font = fontStyle + ' ' + fontWeight + ' ' + fontSizePx + 'px ' + fontFamily; };
+        applyFont();
+
+        const maxWidth = w * 0.86, maxHeight = h * 0.78;
+        const widest = Math.max(...lines.map((line) => measureLine(ctx, line, letterSpacing)), 1);
+        const blockHeight = Math.max(lineHeight * lines.length, 1);
+        const fit = Math.min(1, maxWidth / widest, maxHeight / blockHeight);
+        if (fit < 1) {
+          fontSizePx *= fit; letterSpacing *= fit; lineHeight *= fit;
+          applyFont();
+        }
+        const startY = h / 2 - (lineHeight * (lines.length - 1)) / 2;
+        lines.forEach((line, i) => drawLine(ctx, line, w / 2, startY + i * lineHeight, letterSpacing));
+
+        const next = makeTexture(raw);
+        if (program.uniforms.uTextTexture.value) program.uniforms.uTextTexture.value.dispose();
+        program.uniforms.uTextTexture.value = next;
+        texture = next;
+        renderOnce();
+      };
+
+      /* ---------- 尺寸 / 指针 / 帧循环（沿用本站的暂停与节流纪律） ---------- */
+      const resize = () => {
+        const w = wrap.clientWidth || 1, h = wrap.clientHeight || 1;
+        renderer.setSize(w, h, false);
+        program.uniforms.uResolution.value.set(
+          renderer.getContext().drawingBufferWidth,
+          renderer.getContext().drawingBufferHeight
+        );
+        rasterize();
+      };
+
+      const pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, active: 0, activeTarget: 0 };
+      const startTime = performance.now();
+      window.addEventListener('mousemove', (e) => {
+        const r = wrap.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        pointer.tx = (e.clientX - r.left) / r.width;
+        pointer.ty = 1 - (e.clientY - r.top) / r.height;
+        pointer.activeTarget = 1;
+      }, { passive: true });
+      window.addEventListener('mouseleave', () => { pointer.activeTarget = 0; });
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const onReduce = (ev) => { program.uniforms.uMotion.value = ev.matches ? 0 : 1; renderOnce(); };
+      if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onReduce);
+
+      document.addEventListener('f8k-theme', () => { program.uniforms.uMotion.value = 1; rasterize(); });
+
+      let running = false, inView = true, rafId = 0, rendered = false, lastRs = 0;
+      const renderOnce = () => { if (running) renderer.render(scene, camera); };
+      const tick = (now) => {
+        if (!running) return;
+        if (now - lastRs >= 33) { // ≈30fps：满屏片元 4 次采样，节流省一半 GPU
+          lastRs = now - (now - lastRs) % 33;
+          const elapsed = (now - startTime) * 0.001;
+          const idleX = 0.5 + Math.sin(elapsed * 0.33) * 0.12;
+          const idleY = 0.5 + Math.cos(elapsed * 0.27) * 0.1;
+          const targetX = pointer.activeTarget > 0 ? pointer.tx : idleX;
+          const targetY = pointer.activeTarget > 0 ? pointer.ty : idleY;
+          const damping = pointer.activeTarget > 0 ? 0.12 : 0.035;
+          pointer.x += (targetX - pointer.x) * damping;
+          pointer.y += (targetY - pointer.y) * damping;
+          pointer.active += ((pointer.activeTarget > 0 ? 1 : 0.18) - pointer.active) * 0.06;
+          program.uniforms.uPointer.value.set(pointer.x, pointer.y);
+          program.uniforms.uPointerActive.value = pointer.active;
+          program.uniforms.uTime.value = elapsed;
+          renderer.render(scene, camera);
+          if (!rendered) { rendered = true; wrap.classList.add('is-on'); }
         }
         rafId = requestAnimationFrame(tick);
       };
@@ -109,30 +350,34 @@
         else cancelAnimationFrame(rafId);
       };
 
-      // GPU 重置自愈：上下文丢失即暂停，恢复后继续渲染
       canvas.addEventListener('webglcontextlost', (e) => {
         e.preventDefault();
         running = false;
         cancelAnimationFrame(rafId);
-        canvas.classList.remove('is-on');
+        wrap.classList.remove('is-on');
       }, false);
       canvas.addEventListener('webglcontextrestored', () => {
         resize();
-        frame = 0;
+        rendered = false;
         setRunning(true);
       }, false);
 
       new IntersectionObserver((en) => {
         inView = en[0].isIntersecting;
         setRunning(true);
-      }, { rootMargin: '80px' }).observe(canvas);
+      }, { rootMargin: '80px' }).observe(wrap);
       document.addEventListener('visibilitychange', () => setRunning(true));
-      window.addEventListener('mousemove', (e) => {
-        mx = (e.clientX / window.innerWidth) * 2 - 1;
-        my = (e.clientY / window.innerHeight) * 2 - 1;
-      }, { passive: true });
 
-      window.__f8k3d = true; // 调试验证标记
-    } catch (e) { /* WebGL 不可用则静默跳过 */ }
+      let hResize;
+      new ResizeObserver(() => {
+        clearTimeout(hResize);
+        hResize = setTimeout(resize, 150); // 防抖：等窗口稳定再改画布尺寸
+      }).observe(wrap);
+
+      resize();
+      setRunning(true);
+    } catch (e) {
+      wrap.classList.add('is-fallback');
+    }
   }
 })();
