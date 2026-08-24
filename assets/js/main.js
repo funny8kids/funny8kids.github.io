@@ -10,6 +10,10 @@
   const $ = (s) => document.querySelector(s);
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  // 刷新时浏览器会恢复曾经的滚动位置，把页面顶到中间、跳过 hello 首屏。
+  // 这里关掉滚动恢复：过渡页放完必须停在 hello 主页；除非 URL 自带 #锚点
+  // （那是有意深链，仍按锚点跳转到对应章节）。
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   const preloader = $('#preloader');
   const hasGsap = typeof window.gsap !== 'undefined';
   const hasST = typeof window.ScrollTrigger !== 'undefined';
@@ -1612,7 +1616,15 @@
       // 双层幕布：主底上滑 → 克莱因蓝薄板延迟跟随；
       // 首屏大字在幕布过半时提前入场（重叠约 0.35s），交接不再是干等
       const tl = gsap.timeline({
-        onComplete: () => { recover(); gotoInitialHash(true); }
+        onComplete: () => {
+          recover();
+          gotoInitialHash(true);
+          // 无 #锚点：交回 hello 首屏（已禁滚动恢复，此处兜底回顶，避免任何残留偏移）
+          if (!location.hash || location.hash.length <= 1) {
+            if (lenis) lenis.scrollTo(0, { immediate: true });
+            else window.scrollTo({ top: 0 });
+          }
+        }
       });
       tl.to('.preloader__brand', { y: -26, autoAlpha: 0, duration: .4, ease: 'power2.in' }, 0)
         .to(formulaEl, { y: -22, autoAlpha: 0, duration: .4, ease: 'power2.in' }, 0)
