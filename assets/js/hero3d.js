@@ -8,18 +8,17 @@
 (() => {
   'use strict';
 
-  const wrap = document.getElementById('heroWarp');
-  if (!wrap) return;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- 可调参数（与 React Bits WarpText props 一一对应） ---------- */
-  const PROPS = {
+  const HELLO_PROPS = {
     text: 'hello',
     colorVar: '--ink',               // 主题变量名，亮/暗自动重光栅化
     fallbackColor: '#171512',
     fontFamily: "'Instrument Serif', 'Songti SC', serif",
     fontStyle: 'italic',
     fontWeight: 400,
-    fontSize: 'clamp(5rem, 24vw, 22rem)',
+    fontSize: 'clamp(8.4rem, 28.5vw, 24rem)',
     letterSpacing: -0.02,
     lineHeight: 0.9,
     warpStrength: 0.10,
@@ -31,11 +30,35 @@
     ripple: true
   };
 
+  const TAGLINE_PROPS = {
+    text: '我在训练代码的灵魂',
+    colorVar: '--ink',
+    fallbackColor: '#171512',
+    /* 艺术字：站酷小薇体（自托管子集）→ 行楷/楷体兜底，优雅手书感 */
+    fontFamily: "'ZCOOL XiaoWei', 'STXingkai', 'KaiTi', 'STKaiti', 'Kaiti SC', 'Songti SC', serif",
+    fontStyle: 'normal',
+    fontWeight: 400,
+    fontSize: 'clamp(5rem, 15vw, 13rem)',
+    letterSpacing: 0.04,
+    lineHeight: 0.96,
+    warpStrength: 0.10,
+    warpScale: 1.7,
+    speed: 0.5,
+    pointerInfluence: 0.55,
+    pointerStrength: 0.45,
+    refraction: 0.02,
+    ripple: true
+  };
+
+  const WARPS = [
+    ['heroWarp', HELLO_PROPS],
+    ['taglineWarp', TAGLINE_PROPS]
+  ].filter(([id]) => document.getElementById(id));
+
+  const fallback = () => WARPS.forEach(([id]) => document.getElementById(id).classList.add('is-fallback'));
+
   // 减少动效：WebGL 让位，静态降级
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    wrap.classList.add('is-fallback');
-    return;
-  }
+  if (reducedMotion) { fallback(); return; }
 
   const loadScript = (src) => new Promise((resolve, reject) => {
     const s = document.createElement('script');
@@ -48,10 +71,11 @@
   document.addEventListener('f8k-idle', () => {
     // 与 lab3d.js 共享同一次 three.js 加载（避免双实例）
     window.__f8kThree = window.__f8kThree || loadScript('assets/vendor/three.min.js');
-    window.__f8kThree.then(init).catch(() => { wrap.classList.add('is-fallback'); });
+    window.__f8kThree.then(() => WARPS.forEach(([id, props]) => initWarpText(document.getElementById(id), props)))
+      .catch(fallback);
   }, { once: true });
 
-  function init() {
+  function initWarpText(wrap, PROPS) {
     if (!window.THREE) return;
     const T = window.THREE;
     try {
@@ -215,7 +239,7 @@
       };
       const drawLine = (ctx, line, x, y, ls) => {
         const chars = Array.from(line);
-        let cursor = x - measureLine(ctx, line, ls) / 2;
+        let cursor = x; // 左对齐：从左边距起笔，让玻璃 hello 落在首屏左列
         chars.forEach((ch, i) => {
           ctx.fillText(ch, cursor, y);
           cursor += ctx.measureText(ch).width + (i === chars.length - 1 ? 0 : ls);
@@ -229,8 +253,12 @@
       let rasterVersion = 0;
       const rasterize = async () => {
         const version = ++rasterVersion;
-        if (document.fonts && document.fonts.status === 'loading') {
-          try { await document.fonts.ready; } catch (e) {}
+        if (document.fonts) {
+          // 显式加载家族（含自托管艺术字），避免 canvas 用兜底字体先画一帧
+          try { await document.fonts.load(`16px ${PROPS.fontFamily}`); } catch (e) {}
+          if (document.fonts.status === 'loading') {
+            try { await document.fonts.ready; } catch (e) {}
+          }
           if (version !== rasterVersion) return;
         }
         const w = wrap.clientWidth, h = wrap.clientHeight;
@@ -273,7 +301,7 @@
         const applyFont = () => { ctx.font = fontStyle + ' ' + fontWeight + ' ' + fontSizePx + 'px ' + fontFamily; };
         applyFont();
 
-        const maxWidth = w * 0.86, maxHeight = h * 0.78;
+        const maxWidth = w * 0.90, maxHeight = h * 0.92;
         const widest = Math.max(...lines.map((line) => measureLine(ctx, line, letterSpacing)), 1);
         const blockHeight = Math.max(lineHeight * lines.length, 1);
         const fit = Math.min(1, maxWidth / widest, maxHeight / blockHeight);
@@ -282,7 +310,8 @@
           applyFont();
         }
         const startY = h / 2 - (lineHeight * (lines.length - 1)) / 2;
-        lines.forEach((line, i) => drawLine(ctx, line, w / 2, startY + i * lineHeight, letterSpacing));
+        const startX = w * 0.03; // 左对齐边距，贴合首屏左列
+        lines.forEach((line, i) => drawLine(ctx, line, startX, startY + i * lineHeight, letterSpacing));
 
         const next = makeTexture(raw);
         if (program.uniforms.uTextTexture.value) program.uniforms.uTextTexture.value.dispose();

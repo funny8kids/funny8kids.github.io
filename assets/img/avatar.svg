@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 585" role="img" aria-label="dominicjamil 插画头像">
+  <defs>
+    <linearGradient id="av-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141220"/>
+      <stop offset="1" stop-color="#1e1c31"/>
+    </linearGradient>
+    <radialGradient id="av-halo" cx="0.5" cy="0.51" r="0.64">
+      <stop offset="0" stop-color="#2c43f5" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#2c43f5" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="av-sweater" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a54ff"/>
+      <stop offset="1" stop-color="#2236c9"/>
+    </linearGradient>
+  </defs>
+  <!-- 底：深海军蓝 + 克莱因蓝光晕（与卡片内渐变衔接；顶部留深色区承载标题） -->
+  <rect width="420" height="585" fill="url(#av-bg)"/>
+  <rect width="420" height="585" fill="url(#av-halo)"/>
+  <!-- 数学母题：两道轨道环 -->
+  <circle cx="210" cy="305" r="188" fill="none" stroke="rgba(124,139,255,0.22)" stroke-width="1.2"/>
+  <circle cx="210" cy="305" r="150" fill="none" stroke="rgba(236,229,213,0.32)" stroke-width="1.6"/>
+  <!-- 人：纸色头 + 克莱因蓝毛衣 -->
+  <path d="M28 585 L28 532 Q28 456 128 420 Q184 394 210 389 Q236 394 292 420 Q392 456 392 532 L392 585 Z" fill="url(#av-sweater)"/>
+  <rect x="190" y="372" width="40" height="36" fill="#d8cdb8"/>
+  <path d="M176 426 Q210 400 244 426" fill="none" stroke="#182a9e" stroke-width="13" stroke-linecap="round"/>
+  <ellipse cx="210" cy="301" rx="74" ry="82" fill="#e9e1cf"/>
+</svg>

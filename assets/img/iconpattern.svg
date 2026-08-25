@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <!-- shine 亮度遮罩母题：数学符号灯纹（白即显、黑即隐） -->
+  <rect width="240" height="240" fill="#000"/>
+  <g fill="#fff" font-family="Georgia, 'Times New Roman', serif" font-style="italic" text-anchor="middle">
+    <text x="58" y="66" font-size="34" opacity="0.92">e</text>
+    <text x="176" y="52" font-size="26" opacity="0.7">iπ</text>
+    <text x="118" y="156" font-size="42" opacity="0.9">φ</text>
+    <text x="206" y="186" font-size="30" opacity="0.72">π</text>
+    <text x="42" y="206" font-size="32" opacity="0.8">∞</text>
+    <text x="150" y="238" font-size="24" opacity="0.6">θ</text>
+    <text x="222" y="118" font-size="28" opacity="0.66">λ</text>
+  </g>
+</svg>

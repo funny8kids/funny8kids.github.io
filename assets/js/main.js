@@ -490,7 +490,7 @@
   /* ---------- 聚光卡（React Bits "Spotlight Card"）：鼠标跟随高光 ---------- */
   const initSpotlight = () => {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    document.querySelectorAll('.service').forEach((card) => {
+    document.querySelectorAll('.service, .stack__item').forEach((card) => {
       let r = null, tick = false, cx = 0, cy = 0;
       const paint = () => {
         tick = false;
@@ -1871,15 +1871,6 @@
       yPercent: -16, autoAlpha: 0, ease: 'none',
       scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 42%', scrub: true }
     });
-    gsap.to('.hero__foot', {
-      autoAlpha: 0, ease: 'none',
-      scrollTrigger: { trigger: '.hero', start: 'top top', end: '28% top', scrub: true }
-    });
-    // 玻璃 HELLO 随滚动轻微上浮：退场有纵深，不再是平面滑走
-    gsap.to('.hero__warp', {
-      yPercent: -12, ease: 'none',
-      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 55%', scrub: true }
-    });
 
     /* ---------- 作品卡封面视差：图片在卡框内随滚动上下漂移 ---------- */
     gsap.utils.toArray('.deck-card__media img').forEach((img) => {
@@ -2087,7 +2078,8 @@
       const CHAPTERS = [
         ['#about', '01', '关于'], ['#services', '02', '服务'], ['#skills', '03', '技能'],
         ['#work', '04', '作品'], ['#exp', '05', '经历'], ['#voices', '06', '评价'],
-        ['#lab', '07', '实验室'], ['#play', '08', '彩蛋'], ['#contact', '09', '联系']
+        ['#lab', '07', '实验室'], ['#play', '08', '彩蛋'], ['#stack', '09', '技术栈'],
+        ['#contact', '10', '联系']
       ];
       CHAPTERS.forEach(([sel, num, name], i) => {
         const trig = document.querySelector(sel);
