@@ -104,14 +104,14 @@
     ctx.lineWidth = 1;
     // 同心环
     for (let k = 1; k <= 6; k++) {
-      ctx.strokeStyle = 'rgba(124,139,255,.07)';
+      ctx.strokeStyle = 'rgba(157,140,255,.07)';
       ctx.beginPath(); ctx.arc(cx, cy, RMAX * k / 6, 0, Math.PI * 2); ctx.stroke();
     }
     // 放射线（标准数学方位：0° 右、90° 上）
     for (let deg = 0; deg < 360; deg += 30) {
       const a = deg * Math.PI / 180;
       const dx = Math.cos(a), dy = -Math.sin(a);
-      ctx.strokeStyle = 'rgba(124,139,255,.05)';
+      ctx.strokeStyle = 'rgba(157,140,255,.05)';
       ctx.beginPath();
       ctx.moveTo(cx - dx * RMAX, cy - dy * RMAX);
       ctx.lineTo(cx + dx * RMAX, cy + dy * RMAX);
@@ -121,7 +121,7 @@
     for (let k = 0; k < 9; k++) {
       const a = (k * GA) % (Math.PI * 2);
       const dx = Math.cos(a), dy = -Math.sin(a);
-      ctx.strokeStyle = 'rgba(124,139,255,.045)';
+      ctx.strokeStyle = 'rgba(157,140,255,.045)';
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(cx + dx * RMAX * 0.9, cy + dy * RMAX * 0.9);
@@ -133,7 +133,7 @@
       const dx = Math.cos(a), dy = -Math.sin(a);
       const big = deg % 30 === 0;
       const r0 = RMAX * 0.90, len = big ? 7 : 3;
-      ctx.strokeStyle = big ? 'rgba(124,139,255,.32)' : 'rgba(124,139,255,.14)';
+      ctx.strokeStyle = big ? 'rgba(157,140,255,.32)' : 'rgba(157,140,255,.14)';
       ctx.beginPath();
       ctx.moveTo(cx + dx * r0, cy + dy * r0);
       ctx.lineTo(cx + dx * (r0 + len), cy + dy * (r0 + len));
@@ -145,16 +145,16 @@
       const a = deg * Math.PI / 180;
       const lx = RMAX * 0.94 * Math.cos(a), ly = -RMAX * 0.94 * Math.sin(a);
       ctx.font = '9px ' + MONO;
-      ctx.fillStyle = 'rgba(124,139,255,.38)';
+      ctx.fillStyle = 'rgba(157,140,255,.38)';
       ctx.fillText(deg + '°', cx + lx, cy + ly);
       ctx.font = 'italic 9px ' + MATH_IT;
-      ctx.fillStyle = 'rgba(124,139,255,.45)';
+      ctx.fillStyle = 'rgba(157,140,255,.45)';
       ctx.fillText(RAD[deg / 30], cx + lx * 0.92, cy + ly * 0.92);
     }
     // 黄金角主射线：加亮 + 端点标注
     ctx.font = 'italic 10px ' + MATH_IT;
-    ctx.fillStyle = 'rgba(124,139,255,.72)';
-    ctx.strokeStyle = 'rgba(124,139,255,.5)';
+    ctx.fillStyle = 'rgba(157,140,255,.72)';
+    ctx.strokeStyle = 'rgba(157,140,255,.5)';
     {
       const dx = Math.cos(GA), dy = -Math.sin(GA);
       ctx.beginPath();
@@ -176,13 +176,13 @@
       const pB = scr(goldRect.x1, goldRect.y0, cosR, sinR);
       const pC = scr(goldRect.x1, goldRect.y1, cosR, sinR);
       const pD = scr(goldRect.x0, goldRect.y1, cosR, sinR);
-      ctx.strokeStyle = 'rgba(124,139,255,.20)';
+      ctx.strokeStyle = 'rgba(157,140,255,.20)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(pA[0], pA[1]); ctx.lineTo(pB[0], pB[1]); ctx.lineTo(pC[0], pC[1]); ctx.lineTo(pD[0], pD[1]); ctx.closePath();
       ctx.stroke();
       // 对角线，强调矩形比例
-      ctx.strokeStyle = 'rgba(124,139,255,.10)';
+      ctx.strokeStyle = 'rgba(157,140,255,.10)';
       ctx.beginPath(); ctx.moveTo(pA[0], pA[1]); ctx.lineTo(pC[0], pC[1]); ctx.stroke();
     }
     for (const sq of fibSquares) {
@@ -193,13 +193,13 @@
       ctx.beginPath();
       ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p3[0], p3[1]);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(124,139,255,.075)';
+      ctx.fillStyle = 'rgba(157,140,255,.075)';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(124,139,255,.38)';
+      ctx.strokeStyle = 'rgba(157,140,255,.38)';
       ctx.lineWidth = 1;
       ctx.stroke();
       // 对角线微光，强调方阵自相似
-      ctx.strokeStyle = 'rgba(124,139,255,.14)';
+      ctx.strokeStyle = 'rgba(157,140,255,.14)';
       ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
     }
     ctx.restore();
@@ -209,7 +209,7 @@
     ctx.save();
     ctx.font = '11px ' + MONO;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(58,72,168,.92)';
+    ctx.fillStyle = 'rgba(74,58,138,.92)';
     for (const L of fibLabels) {
       const p = scr(L.x, L.y, cosR, sinR);
       ctx.fillText(String(L.n), p[0], p[1]);
@@ -225,21 +225,21 @@
     // 光核
     const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, CR * 3.2);
     g.addColorStop(0, gradCss(0.5));
-    g.addColorStop(0.35, 'rgba(124,139,255,' + (0.16 + pulse * 0.1) + ')');
-    g.addColorStop(1, 'rgba(124,139,255,0)');
+    g.addColorStop(0.35, 'rgba(157,140,255,' + (0.16 + pulse * 0.1) + ')');
+    g.addColorStop(1, 'rgba(157,140,255,0)');
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(cx, cy, CR * 3.2, 0, Math.PI * 2); ctx.fill();
     // 脉冲环
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(124,139,255,' + (0.5 + pulse * 0.3) + ')';
+    ctx.strokeStyle = 'rgba(157,140,255,' + (0.5 + pulse * 0.3) + ')';
     ctx.beginPath(); ctx.arc(cx, cy, CR, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = 'rgba(124,139,255,' + (0.28 + pulse * 0.16) + ')';
+    ctx.strokeStyle = 'rgba(157,140,255,' + (0.28 + pulse * 0.16) + ')';
     ctx.beginPath(); ctx.arc(cx, cy, CR * 1.7, 0, Math.PI * 2); ctx.stroke();
     // 同心 φ 环（虚线，读数用）
     ctx.setLineDash([2, 5]);
     for (let k = 1; k <= 4; k++) {
       const rr = RMAX * Math.pow(1 / P, k);
-      ctx.strokeStyle = 'rgba(124,139,255,' + (0.14 - k * 0.025) + ')';
+      ctx.strokeStyle = 'rgba(157,140,255,' + (0.14 - k * 0.025) + ')';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2); ctx.stroke();
     }
@@ -358,13 +358,13 @@
     const cosR = Math.cos(R), sinR = Math.sin(R);
     // 极坐标构建线：轴心 → 锚点，标注半径占比（A）
     for (const n of chipAnchors) {
-      ctx.strokeStyle = 'rgba(124,139,255,.16)';
+      ctx.strokeStyle = 'rgba(157,140,255,.16)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(n.x, n.y); ctx.stroke();
       const midx = cx + (n.x - cx) * 0.5, midy = cy + (n.y - cy) * 0.5;
       ctx.font = '9px ' + MONO;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'rgba(124,139,255,.5)';
+      ctx.fillStyle = 'rgba(157,140,255,.5)';
       const ratio = (n.d.radius / RMAX).toFixed(2);
       ctx.fillText(ratio + 'R', midx, midy - 5);
     }
@@ -372,7 +372,7 @@
     if (chipAnchors.length > 1) {
       ctx.lineWidth = 1;
       for (let i = 0; i < chipAnchors.length - 1; i++) {
-        ctx.strokeStyle = 'rgba(124,139,255,' + (hover ? 0.4 : 0.2) + ')';
+        ctx.strokeStyle = 'rgba(157,140,255,' + (hover ? 0.4 : 0.2) + ')';
         ctx.beginPath();
         ctx.moveTo(chipAnchors[i].x, chipAnchors[i].y);
         ctx.lineTo(chipAnchors[i + 1].x, chipAnchors[i + 1].y);

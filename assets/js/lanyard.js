@@ -40,7 +40,9 @@
     if (started || !en[0].isIntersecting) return;
     started = true;
     gate.disconnect();
-    window.__f8kThree = window.__f8kThree || loadScript('assets/vendor/three.min.js');
+    // three.min.js 已在 index.html 静态引入时，直接复用 window.THREE，不重复下载（避免双实例）
+    window.__f8kThree = window.__f8kThree ||
+      (window.THREE ? Promise.resolve() : loadScript('assets/vendor/three.min.js'));
     window.__f8kThree.then(init).catch(() => stage.classList.add('is-failed'));
   }, { rootMargin: '600px' });
   gate.observe(stage);
@@ -81,7 +83,7 @@
         sun: readHex('--accent-sun', 0xf2a93b)
       };
       // 页脚恒为深底，卡面穿 Brand 奶油/墨色（与明暗主题无耦合）
-      const INK = '#171512', CREAM = '#f7f5ee', MUTED = '#6f6c63';
+      const INK = '#241b2f', CREAM = '#f4eedf', MUTED = '#7e7484';
 
       /* ---------------- 渲染器 / 场景 / 相机 ---------------- */
       const renderer = new T.WebGLRenderer({
@@ -104,11 +106,11 @@
         c.width = 256; c.height = 128;
         const g = c.getContext('2d');
         const grad = g.createLinearGradient(0, 0, 0, 128);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.5, '#a9b3dd');
-        grad.addColorStop(1, '#141a3d');
+        grad.addColorStop(0, '#fdf9ef');
+        grad.addColorStop(0.5, '#c9b8ec');
+        grad.addColorStop(1, '#181232');
         g.fillStyle = grad; g.fillRect(0, 0, 256, 128);
-        g.globalAlpha = 0.92; g.fillStyle = '#ffffff';
+        g.globalAlpha = 0.92; g.fillStyle = '#fdf9ef';
         g.beginPath(); g.ellipse(56, 40, 24, 14, 0, 0, Math.PI * 2); g.fill();
         g.beginPath(); g.ellipse(206, 38, 24, 14, 0, 0, Math.PI * 2); g.fill();
         g.globalAlpha = 1;
@@ -255,7 +257,7 @@
       const bandCanvas = document.createElement('canvas');
       bandCanvas.width = 1024; bandCanvas.height = 160;
       const bg = bandCanvas.getContext('2d');
-      bg.fillStyle = '#f6f1e4';
+      bg.fillStyle = '#f4eedf';
       bg.fillRect(0, 0, 1024, 160);
       bg.fillStyle = 'rgba(23,21,18,.05)';
       bg.fillRect(0, 0, 1024, 7); bg.fillRect(0, 153, 1024, 7);

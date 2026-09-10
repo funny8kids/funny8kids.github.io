@@ -3,6 +3,8 @@
    纯静态站无 React：data-* 驱动，入场景 + 指针拖尾回声 + 模糊/淡出。
    根元素含 .echo-text__kw：正面彩虹“会呼吸”渐变，回声层保留 tint 混色
    （渐变只作用在 crisp 前层，避免彩色渗进拖尾）。
+   语言切换（f8k-lang）：按 data-i18n-html 重取当前语言标记并整体重建，
+   拖尾回声状态不残留，入场/指针交互即时复位。
    ========================================================= */
 (() => {
   'use strict';
@@ -25,7 +27,18 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  document.querySelectorAll('.echo-text').forEach((root) => {
+  const roots = [];
+  const cleanups = new Map();
+
+  const build = (root) => {
+    // 拆除上一次实例（动画帧 + 指针监听），避免语言切换后叠加
+    const prev = cleanups.get(root);
+    if (prev) { prev(); cleanups.delete(root); }
+    root.textContent = '';
+
+    // 同步当前语言标记（默认英文；i18n.js 跳过 .echo-text，由本模块自取）
+    if (root.dataset.i18nHtml && window.F8K_T) root.innerHTML = F8K_T(root.dataset.i18nHtml);
+
     const markup = root.innerHTML.trim(); // 保留含 .echo-text__kw 的标记，前层与回声层共用
     if (!markup) return;
 
@@ -34,7 +47,7 @@
     const vector = directionVectors[root.dataset.direction] || directionVectors.right;
     const fade = clamp(Number(root.dataset.fade) || 0.64, 0.1, 0.95);
     const blur = clamp(Number(root.dataset.blur) || 0, 0, 16);
-    const tint = root.dataset.tint || '#a98fff';
+    const tint = root.dataset.tint || '#b3a1f2';
     const mode = root.dataset.mode || 'both';
     const cursorRadius = clamp(Number(root.dataset.cursorRadius) || 320, 40, 1200);
     const duration = Math.max(0, Number(root.dataset.duration) || 0);
@@ -42,7 +55,7 @@
     const lag = clamp(Number(root.dataset.lag) || 0.16, 0.02, 0.5);
     const entranceEnabled = mode === 'entrance' || mode === 'both';
     const pointerEnabled = mode === 'pointer' || mode === 'both';
-    const color = getComputedStyle(root).color || '#f8fafc';
+    const color = getComputedStyle(root).color || '#241b2f';
 
     const positions = Array.from({ length: echoCount + 1 }, (_, index) => {
       const entranceAmount = entranceEnabled ? offset * (index + 0.35) : 0;
@@ -81,7 +94,7 @@
     root.appendChild(front);
     copyRefs[0] = front;
 
-    if (reduceMotion) return; // CSS 媒体查询已隐藏回声层，仅展示 crisp 前层
+    if (reduceMotion) { cleanups.set(root, () => {}); return; } // CSS 媒体查询已隐藏回声层，仅展示 crisp 前层
 
     let cleanupPointer = () => {};
     if (pointerEnabled && finePointer) {
@@ -161,5 +174,17 @@
       }
     };
     frameId = requestAnimationFrame(renderFrame);
+
+    cleanups.set(root, () => {
+      cancelAnimationFrame(frameId);
+      cleanupPointer();
+    });
+  };
+
+  document.querySelectorAll('.echo-text').forEach((root) => {
+    roots.push(root);
+    build(root);
   });
+
+  document.addEventListener('f8k-lang', () => roots.forEach(build));
 })();

@@ -14,7 +14,7 @@
   const HELLO_PROPS = {
     text: 'hello',
     colorVar: '--ink',               // 主题变量名，亮/暗自动重光栅化
-    fallbackColor: '#171512',
+    fallbackColor: '#241b2f',
     fontFamily: "'Instrument Serif', 'Songti SC', serif",
     fontStyle: 'italic',
     fontWeight: 400,
@@ -31,9 +31,10 @@
   };
 
   const TAGLINE_PROPS = {
-    text: '我在训练代码的灵魂',
+    text: 'breathing life into code',
+    i18nKey: 'hero.tagline',       // 随 f8k-lang 重光栅化（默认英文）
     colorVar: '--ink',
-    fallbackColor: '#171512',
+    fallbackColor: '#241b2f',
     /* 艺术字：站酷小薇体（自托管子集）→ 行楷/楷体兜底，优雅手书感 */
     fontFamily: "'ZCOOL XiaoWei', 'STXingkai', 'KaiTi', 'STKaiti', 'Kaiti SC', 'Songti SC', serif",
     fontStyle: 'normal',
@@ -55,6 +56,12 @@
     ['taglineWarp', TAGLINE_PROPS]
   ].filter(([id]) => document.getElementById(id));
 
+  // 文案解析：带 i18nKey 的 warp 随当前语言取词（默认英文），否则用静态 text
+  const getText = (props) => {
+    if (props.i18nKey && window.F8K_T) return window.F8K_T(props.i18nKey);
+    return props.text;
+  };
+
   const fallback = () => WARPS.forEach(([id]) => document.getElementById(id).classList.add('is-fallback'));
 
   // 减少动效：WebGL 让位，静态降级
@@ -69,8 +76,10 @@
   });
 
   document.addEventListener('f8k-idle', () => {
-    // 与 lab3d.js 共享同一次 three.js 加载（避免双实例）
-    window.__f8kThree = window.__f8kThree || loadScript('assets/vendor/three.min.js');
+    // 与 lab3d.js 共享同一次 three.js 加载（避免双实例）；
+    // three.min.js 已在 index.html 静态引入时，直接复用 window.THREE，不重复下载
+    window.__f8kThree = window.__f8kThree ||
+      (window.THREE ? Promise.resolve() : loadScript('assets/vendor/three.min.js'));
     window.__f8kThree.then(() => WARPS.forEach(([id, props]) => initWarpText(document.getElementById(id), props)))
       .catch(fallback);
   }, { once: true });
@@ -271,7 +280,7 @@
         if (!ctx) return;
 
         const probe = document.createElement('span');
-        probe.textContent = PROPS.text;
+        probe.textContent = getText(PROPS);
         Object.assign(probe.style, {
           position: 'absolute', visibility: 'hidden', pointerEvents: 'none',
           whiteSpace: 'pre', inset: '0 auto auto 0',
@@ -297,7 +306,7 @@
         ctx.fillStyle = readColor();
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        const lines = String(PROPS.text || '').split('\n');
+        const lines = String(getText(PROPS) || '').split('\n');
         const applyFont = () => { ctx.font = fontStyle + ' ' + fontWeight + ' ' + fontSizePx + 'px ' + fontFamily; };
         applyFont();
 
@@ -347,6 +356,7 @@
       if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onReduce);
 
       document.addEventListener('f8k-theme', () => { program.uniforms.uMotion.value = 1; rasterize(); });
+      document.addEventListener('f8k-lang', () => { rasterize(); });
 
       let running = false, inView = true, rafId = 0, rendered = false, lastRs = 0;
       const renderOnce = () => { if (running) renderer.render(scene, camera); };
