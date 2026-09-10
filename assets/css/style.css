@@ -1120,61 +1120,67 @@ html.has-anim .marquee__track { animation: none; }
   color: var(--muted);
 }
 
-/* 场景轨道（左下）：六景切换 */
-.play-rail {
+/* 时间旋钮（左下）：时间尺度 0.1×–2× */
+.play-time {
   position: absolute;
   left: 1rem;
   bottom: 1rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: .4rem;
-  max-width: 62%;
-}
-.play-chip {
-  display: inline-flex;
   align-items: center;
-  gap: .45rem;
-  font-family: var(--font-mono);
-  font-size: .72rem;
-  letter-spacing: .08em;
-  padding: .5rem .85rem;
+  gap: .8rem;
+  padding: .5rem .95rem;
   border: 1px solid var(--lab-line);
   border-radius: 999px;
   background: color-mix(in srgb, var(--lab-surface) 86%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  color: var(--muted);
-  cursor: pointer;
-  transition: color .3s, border-color .3s, background-color .4s var(--ease-out), transform .3s var(--ease-out);
 }
-.play-chip i { font-style: normal; color: var(--accent); opacity: .72; transition: opacity .3s; }
-.play-chip:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
-.play-chip.is-active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.play-chip.is-active i { color: rgba(255, 255, 255, .9); opacity: 1; }
-
-/* 动作按钮（右下） */
-.play-actions {
-  position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  display: flex;
-  gap: .55rem;
-}
-.play-btn {
+.play-time__label {
   font-family: var(--font-mono);
-  font-size: .76rem;
-  letter-spacing: .1em;
-  padding: .55rem 1.05rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--ink);
-  cursor: pointer;
-  transition: color .3s, border-color .3s, background-color .5s var(--ease-out);
+  font-size: .68rem;
+  letter-spacing: .16em;
+  color: var(--muted);
 }
-.play-btn:hover { color: var(--accent); border-color: var(--accent); }
+.play-time__value {
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  letter-spacing: .05em;
+  color: var(--accent);
+  min-width: 3.2em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.play-time__range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(6rem, 12vw, 10rem);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lab-line);
+  outline: none;
+  cursor: ew-resize;
+}
+.play-time__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--lab-surface);
+  box-shadow: 0 1px 4px rgba(36, 27, 47, .35);
+  transition: transform .25s var(--ease-out);
+}
+.play-time__range::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.play-time__range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--lab-surface);
+  box-shadow: 0 1px 4px rgba(36, 27, 47, .35);
+}
 
 /* ---------- 点击迸发（Click Spark，呼应品牌斜线语言） ---------- */
 .spark {
@@ -2166,21 +2172,19 @@ html.is-vt *::after {
   .lab__stage { height: clamp(300px, 70vw, 400px); }
 }
 
-/* 标本柜：窄屏重排题签 / 动作 / 轨道，避免重叠 */
+/* 时间的摆：窄屏收敛题签与时间旋钮 */
 @media (max-width: 640px) {
   .play-caption { top: .75rem; left: .75rem; padding: .5rem .75rem; }
   .play-caption__text strong { font-size: .96rem; }
-  .play-caption__text span { display: none; }
-  .play-actions { right: .75rem; top: .75rem; bottom: auto; }
-  .play-rail { left: .75rem; right: .75rem; bottom: .75rem; max-width: none; }
-  .play-chip { padding: .42rem .72rem; }
-  .play-btn { padding: .5rem .9rem; }
+  .play-caption__text span { font-size: .7rem; }
+  .play-time { left: .75rem; bottom: .75rem; padding: .45rem .8rem; }
+  .play-time__range { width: 5.5rem; }
 }
 
 /* ---------- 打印（Ctrl+P 导出纸质简历） ---------- */
 @media print {
   .grain, .cursor, .preloader, .preloader-slat, .header, .menu, .marquee, .hero__scroll, .hero__xy,
-  .hero__warp, #playCanvas, .play-caption, .play-rail, .play-actions, .more-list__arrow, .skill-widget,
+  .hero__warp, #playCanvas, .play-caption, .play-time, .more-list__arrow, .skill-widget,
   #labCanvas, .lab__badge, .lab__hint, .footer__mark, .pixel,
   #lanyardCanvas, .lanyard__stage,
   .scene-aura, .petals, .prism, .scroll-progress, .chapter-hud, .sys-hud { display: none !important; }

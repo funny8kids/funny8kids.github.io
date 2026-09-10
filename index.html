@@ -48,7 +48,7 @@
       document.documentElement.dataset.theme = t;
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="assets/css/style.css?v=47">
+  <link rel="stylesheet" href="assets/css/style.css?v=48">
   <noscript><style>.preloader,.preloader-slat,.scene-aura,.petals,.prism,.scroll-progress,.chapter-hud,.lanyard__stage{display:none}html.loading{overflow:auto}.hero__warp{opacity:1}#heroWarp::before,#taglineWarp::before{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-serif);font-style:italic;line-height:1;color:var(--ink);opacity:.9}#heroWarp::before{content:'hello';font-size:clamp(7.5rem,33vw,28.5rem)}#taglineWarp::before{content:'breathing life into code';white-space:pre-line;text-align:center;line-height:1.25;font-family:var(--font-art);font-style:normal;font-size:clamp(2.2rem,7vw,4.5rem)}</style></noscript>
 </head>
 <body>
@@ -493,26 +493,26 @@
       </div>
     </section>
 
-    <!-- ⑧ 彩蛋：物理标本柜（Matter.js 经典演示精选 · 六景） -->
+    <!-- ⑧ 彩蛋：时间的摆（低重力双摆 + 时间尺度） -->
     <section class="section" id="play">
       <div class="sec-head" data-reveal data-line="b">
         <span class="sec-head__num">08</span>
-        <div class="sec-head__labels"><h2 data-i18n="sec.play">Playground</h2><span>PHYSICS PLAYGROUND</span></div>
+        <div class="sec-head__labels"><h2 data-i18n="sec.play">Motion Study</h2><span>DOUBLE PENDULUM</span></div>
       </div>
-      <p class="play-hint" data-reveal data-i18n="play.hint">Six signature Matter.js experiments, re-staged in the garden's palette — cradle, double pendulum, cloth, slingshot, soft body, avalanche. Grab anything; the laws of motion do the rest.</p>
+      <p class="play-hint" data-reveal data-i18n="play.hint">A double pendulum in low gravity, its chaos traced in ink — violet when slow, gold when fast. Drag an arm to set it spinning; the dial dilates time.</p>
       <div class="play-stage" data-reveal="zoom" data-i18n-cursor="cursor.drag" data-cursor-label="Drag">
         <canvas id="playCanvas"></canvas>
         <header class="play-caption" aria-hidden="true">
-          <span class="play-caption__index" id="playIndex">01</span>
+          <span class="play-caption__index">×</span>
           <div class="play-caption__text">
-            <strong id="playName">Newton's Cradle</strong>
-            <span id="playHint">drag a sphere &amp; release</span>
+            <strong id="playName">Double Pendulum</strong>
+            <span id="playHint">drag an arm · dilate time</span>
           </div>
         </header>
-        <div class="play-rail" id="playRail" role="tablist" aria-label="Physics scenes"></div>
-        <div class="play-actions">
-          <button class="play-btn" id="playAdd" data-hover data-i18n="play.add">Add[+]</button>
-          <button class="play-btn" id="playReset" data-hover data-i18n="play.reset">Reset[↺]</button>
+        <div class="play-time">
+          <span class="play-time__label">TIME</span>
+          <input class="play-time__range" id="playTime" type="range" min="0.1" max="2" step="0.05" value="1" aria-label="Time scale">
+          <span class="play-time__value" id="playTimeVal">×1.00</span>
         </div>
       </div>
     </section>
@@ -720,10 +720,10 @@
   <script defer src="assets/vendor/lenis.min.js?v=17"></script>
   <!-- three.min.js 置于各 3D 模块之前常驻加载：hero3d / lab3d / lanyard 复用 window.THREE，避免重复注入造成双实例 -->
   <script defer src="assets/vendor/three.min.js?v=17"></script>
-  <script defer src="assets/js/i18n.js?v=3"></script>
+  <script defer src="assets/js/i18n.js?v=4"></script>
   <script defer src="assets/js/hero3d.js?v=20"></script>
   <script defer src="assets/js/lab3d.js?v=19"></script>
-  <script defer src="assets/js/playground.js?v=20"></script>
+  <script defer src="assets/js/playground.js?v=21"></script>
   <script defer src="assets/js/pendulums.js?v=17"></script>
   <script defer src="assets/js/secret.js?v=18"></script>
   <script defer src="assets/js/petals.js?v=1"></script>

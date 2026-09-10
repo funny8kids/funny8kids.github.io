@@ -40,7 +40,7 @@
 
       'sec.about': 'About', 'sec.services': 'Services', 'sec.skills': 'Skills',
       'sec.work': 'Selected Work', 'sec.exp': 'Experience', 'sec.voices': 'Kind Words',
-      'sec.lab': 'Lab', 'sec.play': 'Playground', 'sec.secret': 'Secret Level', 'sec.stack': 'Tech Stack',
+      'sec.lab': 'Lab', 'sec.play': 'Motion Study', 'sec.secret': 'Secret Level', 'sec.stack': 'Tech Stack',
       'sec.contact': 'Contact',
 
       'lock.prompt': 'PASSCODE — enter passcode to unlock this project',
@@ -125,8 +125,7 @@
       'lab.fact.2.name': 'Interactive camera', 'lab.fact.2.note': 'drag orbit · wheel zoom · click lock',
       'lab.fact.3.name': 'Zero assets', 'lab.fact.3.note': 'procedural textures · 30fps · off-screen pause',
 
-      'play.hint': "Six signature Matter.js experiments, re-staged in the garden's palette — cradle, double pendulum, cloth, slingshot, soft body, avalanche. Grab anything; the laws of motion do the rest.",
-      'play.add': 'Add[+]', 'play.reset': 'Reset[↺]',
+      'play.hint': "A double pendulum in low gravity, its chaos traced in ink — violet when slow, gold when fast. Drag an arm to set it spinning; the dial dilates time.",
 
       'secret.lead': "Passcode accepted. Light the three brand colors in order to prove you found the way: <b>mint → sun → klein blue</b>.",
       'secret.pad.mint': 'mint', 'secret.pad.mintAria': 'mint light',
@@ -199,7 +198,7 @@
 
       'sec.about': '关于', 'sec.services': '服务', 'sec.skills': '技能',
       'sec.work': '精选作品', 'sec.exp': '经历', 'sec.voices': '评价',
-      'sec.lab': '实验室', 'sec.play': '彩蛋', 'sec.secret': '秘密关卡', 'sec.stack': '技术栈',
+      'sec.lab': '实验室', 'sec.play': '运动研究', 'sec.secret': '秘密关卡', 'sec.stack': '技术栈',
       'sec.contact': '联系',
 
       'lock.prompt': 'PASSCODE — 输入口令解锁该项目',
@@ -284,8 +283,7 @@
       'lab.fact.2.name': '交互镜头', 'lab.fact.2.note': '拖拽环绕 · 滚轮缩放 · 点击锁定',
       'lab.fact.3.name': '零资源加载', 'lab.fact.3.note': '程序化纹理 · 30fps · 离屏暂停',
 
-      'play.hint': '六个来自 Matter.js 的经典实验，在花园色板里重新布景 —— 牛顿摆、双摆、织物、弹弓、软体、雪崩。抓住任何物体，其余交给运动定律。',
-      'play.add': '添加[+]', 'play.reset': '重置[↺]',
+      'play.hint': '低重力下的双摆，以墨迹描摹混沌 —— 慢时紫，快时金。拽动摆臂让它旋转；旋钮可拉长或压缩时间。',
 
       'secret.lead': '口令正确。按顺序点亮三盏品牌色，证明你走对了路：<b>薄荷 → 暖阳 → 克莱因</b>。',
       'secret.pad.mint': '薄荷', 'secret.pad.mintAria': '薄荷色灯',
