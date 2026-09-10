@@ -163,17 +163,17 @@
         return t;
       };
 
-      /* ---------- 行星数据（艺术化比例，非真实比例） ---------- */
+      /* ---------- 行星数据（真实比例参照：相对半径 / Titius-Bode 间距 / Kepler 速度 / 自转轴倾角） ---------- */
       const PLANETS = [
-        { key: 'sun',      name: { en: 'Sun', zh: '太阳' },   fact: { en: 'the star at the center', zh: '恒星 · 中心之火' },  radius: 1.05, dist: 0,    speed: 0,   color: 0xf4c469, emissive: 0xeaa14f, bands: null, specks: null, glow: 6.4 },
-        { key: 'mercury',  name: { en: 'Mercury', zh: '水星' }, fact: { en: 'smallest · fastest planet', zh: '最小 · 最快' },  radius: 0.16, dist: 2.0,  speed: 0.9,  color: 0xb7b1c9, bands: null, specks: [[0x8f88a6, 12, 3]], glow: 0 },
-        { key: 'venus',    name: { en: 'Venus', zh: '金星' },   fact: { en: 'the hottest planet', zh: '最炽热的行星' },         radius: 0.28, dist: 2.9,  speed: 0.72, color: 0xe7cf9b, bands: null, specks: [[0xcaa66a, 10, 4]], glow: 0 },
-        { key: 'earth',    name: { en: 'Earth', zh: '地球' },   fact: { en: 'our home', zh: '我们的家园' },                      radius: 0.3,  dist: 3.8,  speed: 0.6,  color: 0x4f7fd6, bands: null, specks: [[0x58a86b, 14, 6], [0xd8e6f2, 10, 5]], glow: 0 },
-        { key: 'mars',     name: { en: 'Mars', zh: '火星' },    fact: { en: 'the red planet', zh: '红色星球' },                  radius: 0.22, dist: 4.7,  speed: 0.5,  color: 0xc96f6f, bands: null, specks: [[0x8f4a4a, 12, 4]], glow: 0 },
-        { key: 'jupiter',  name: { en: 'Jupiter', zh: '木星' }, fact: { en: 'the largest planet', zh: '最大的行星' },            radius: 0.85, dist: 6.6,  speed: 0.34, color: 0xd9c7a8, bands: [[0, '#d9c7a8'], [0.25, '#c9b28f'], [0.45, '#a88a72'], [0.62, '#d9c7a8'], [0.8, '#b3926f'], [1, '#e4d6bd']], specks: null, glow: 0 },
-        { key: 'saturn',   name: { en: 'Saturn', zh: '土星' },  fact: { en: 'the ringed giant', zh: '带光环的巨行星' },           radius: 0.72, dist: 8.6,  speed: 0.26, color: 0xe5d0a2, bands: [[0, '#e5d0a2'], [0.3, '#d6bd8c'], [0.55, '#c8ab7c'], [0.8, '#e8d6ad'], [1, '#d9c292']], specks: null, ring: { inner: 1.05, outer: 1.75, color: 0xd8c49a }, glow: 0 },
-        { key: 'uranus',   name: { en: 'Uranus', zh: '天王星' }, fact: { en: 'the tilted ice giant', zh: '倾斜的冰巨星' },         radius: 0.5,  dist: 10.4, speed: 0.2,  color: 0x8fd3d8, bands: [[0, '#8fd3d8'], [0.5, '#9fdcdf'], [1, '#7fc2c8']], specks: null, glow: 0 },
-        { key: 'neptune',  name: { en: 'Neptune', zh: '海王星' }, fact: { en: 'the farthest planet', zh: '最遥远的行星' },        radius: 0.48, dist: 12.0, speed: 0.16, color: 0x5a7fd6, bands: [[0, '#5a7fd6'], [0.4, '#4a6cc2'], [0.7, '#668bd8'], [1, '#5274c8']], specks: null, glow: 0 }
+        { key: 'sun',      name: { en: 'Sun', zh: '太阳' },   fact: { en: 'the star at the center', zh: '恒星 · 中心之火' },  radius: 1.15, dist: 0,    spin: 0.05, tilt: 0,     color: 0xffe3ad, emissive: 0xeaa14f, bands: null, specks: null, glow: 6.8 },
+        { key: 'mercury',  name: { en: 'Mercury', zh: '水星' }, fact: { en: 'smallest · fastest planet', zh: '最小 · 最快' },  radius: 0.12, dist: 2.2,  spin: 0.15, tilt: 0.001, color: 0xb7b1c9, specks: [[0x8f88a6, 12, 3]], glow: 0 },
+        { key: 'venus',    name: { en: 'Venus', zh: '金星' },   fact: { en: 'the hottest planet', zh: '最炽热的行星' },         radius: 0.27, dist: 3.0,  spin: -0.06, tilt: 3.09, color: 0xe7cf9b, specks: [[0xcaa66a, 10, 4]], glow: 0 },
+        { key: 'earth',    name: { en: 'Earth', zh: '地球' },   fact: { en: 'our home', zh: '我们的家园' },                      radius: 0.3,  dist: 3.9,  spin: 0.6,  tilt: 0.41, color: 0x4f7fd6, specks: [[0x58a86b, 14, 6], [0xd8e6f2, 10, 5]], moon: { radius: 0.08, dist: 0.6, speed: 1.8 }, glow: 0 },
+        { key: 'mars',     name: { en: 'Mars', zh: '火星' },    fact: { en: 'the red planet', zh: '红色星球' },                  radius: 0.16, dist: 5.0,  spin: 0.55, tilt: 0.44, color: 0xc96f6f, specks: [[0x8f4a4a, 12, 4]], glow: 0 },
+        { key: 'jupiter',  name: { en: 'Jupiter', zh: '木星' }, fact: { en: 'the largest planet', zh: '最大的行星' },            radius: 1.0,  dist: 7.6,  spin: 1.2,  tilt: 0.05, color: 0xd9c7a8, bands: [[0, '#d9c7a8'], [0.25, '#c9b28f'], [0.45, '#a88a72'], [0.62, '#d9c7a8'], [0.8, '#b3926f'], [1, '#e4d6bd']], glow: 0 },
+        { key: 'saturn',   name: { en: 'Saturn', zh: '土星' },  fact: { en: 'the ringed giant', zh: '带光环的巨行星' },           radius: 0.84, dist: 10.2, spin: 1.05, tilt: 0.47, color: 0xe5d0a2, bands: [[0, '#e5d0a2'], [0.3, '#d6bd8c'], [0.55, '#c8ab7c'], [0.8, '#e8d6ad'], [1, '#d9c292']], ring: { inner: 1.02, outer: 1.95, color: 0xd8c49a }, glow: 0 },
+        { key: 'uranus',   name: { en: 'Uranus', zh: '天王星' }, fact: { en: 'the tilted ice giant', zh: '倾斜的冰巨星' },         radius: 0.36, dist: 12.6, spin: -0.7, tilt: 1.71, color: 0x8fd3d8, bands: [[0, '#8fd3d8'], [0.5, '#9fdcdf'], [1, '#7fc2c8']], glow: 0 },
+        { key: 'neptune',  name: { en: 'Neptune', zh: '海王星' }, fact: { en: 'the farthest planet', zh: '最遥远的行星' },        radius: 0.34, dist: 14.6, spin: 0.6,  tilt: 0.49, color: 0x5a7fd6, bands: [[0, '#5a7fd6'], [0.4, '#4a6cc2'], [0.7, '#668bd8'], [1, '#5274c8']], glow: 0 }
       ];
 
       /* ---------- 构建轨道 + 行星 ---------- */
@@ -193,10 +193,27 @@
         return g;
       };
 
-      // 太阳
+      // 太阳（程序化日面颗粒纹理，缓慢自转）
+      const sunTexture = (() => {
+        const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+        const g = c.getContext('2d');
+        const base = g.createLinearGradient(0, 0, 0, 128);
+        base.addColorStop(0, '#ffe3a6'); base.addColorStop(0.6, '#f7b95c'); base.addColorStop(1, '#e89a3f');
+        g.fillStyle = base; g.fillRect(0, 0, 256, 128);
+        for (let i = 0; i < 260; i++) {
+          g.globalAlpha = 0.05 + Math.random() * 0.13;
+          g.fillStyle = Math.random() < 0.5 ? '#fff3cf' : '#c96f2e';
+          const x = Math.random() * 256, y = Math.random() * 128, r = 1 + Math.random() * 7;
+          g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+        }
+        g.globalAlpha = 1;
+        const t = new T.CanvasTexture(c);
+        t.colorSpace = T.SRGBColorSpace;
+        return t;
+      })();
       const sunMesh = new T.Mesh(
         new T.SphereGeometry(PLANETS[0].radius, 40, 26),
-        new T.MeshBasicMaterial({ color: PLANETS[0].color })
+        new T.MeshBasicMaterial({ color: 0xffffff, map: sunTexture })
       );
       orbitGroup.add(sunMesh);
       pickables.push(sunMesh);
@@ -224,6 +241,10 @@
 
       PLANETS.slice(1).forEach((def) => {
         const orbit = new T.Group();
+        const tilt = new T.Group();                 // 自转轴倾角（真实轴向倾斜）
+        tilt.position.x = def.dist;
+        tilt.rotation.z = def.tilt || 0;
+        orbit.add(tilt);
         const mesh = new T.Mesh(
           new T.SphereGeometry(def.radius, lowPower ? 24 : 40, lowPower ? 16 : 26),
           new T.MeshStandardMaterial({
@@ -231,8 +252,7 @@
             map: def.bands ? bandTexture(def.bands) : (def.specks ? speckTexture(def.color, def.specks) : null)
           })
         );
-        mesh.position.x = def.dist;
-        orbit.add(mesh);
+        tilt.add(mesh);
         // 轨道线
         const line = new T.LineLoop(
           orbitGeo(),
@@ -240,19 +260,33 @@
         );
         line.scale.setScalar(def.dist);
         orbit.add(line);
-        // 土星环
+        // 土星环（位于赤道面，随行星轴倾角一同倾斜）
         if (def.ring) {
           const ring = new T.Mesh(
-            new T.RingGeometry(def.ring.inner, def.ring.outer, 72),
-            new T.MeshBasicMaterial({ color: def.ring.color, side: T.DoubleSide, transparent: true, opacity: 0.55, depthWrite: false })
+            new T.RingGeometry(def.ring.inner, def.ring.outer, 96),
+            new T.MeshBasicMaterial({ color: def.ring.color, side: T.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false })
           );
-          ring.rotation.x = Math.PI / 2.35;
-          ring.position.x = def.dist;
+          ring.rotation.x = -Math.PI / 2;
           mesh.add(ring);
+        }
+        // 地球的月亮：绕地球公转（不随地球自转，约 5° 轨道倾角）
+        let mOrbit = null;
+        if (def.moon) {
+          mOrbit = new T.Group();
+          const m = new T.Mesh(
+            new T.SphereGeometry(def.moon.radius, 20, 14),
+            new T.MeshStandardMaterial({ color: 0xbfc2d6, roughness: 0.9, metalness: 0.02 })
+          );
+          m.position.x = def.moon.dist;
+          mOrbit.add(m);
+          mOrbit.rotation.z = 0.09;
+          tilt.add(mOrbit);
         }
         orbitGroup.add(orbit);
         pickables.push(mesh);
-        planets.push({ def, mesh, orbit });
+        // Kepler 第三定律：角速度 ∝ 距离^-1.5（以地球 ≈ 0.6 rad/s 归一）
+        const speed = 4.62 / Math.pow(def.dist, 1.5);
+        planets.push({ def, mesh, orbit, speed, moon: mOrbit });
       });
 
       // 小行星带（火星与木星之间，Points 环带）
@@ -261,8 +295,8 @@
         const pos = new Float32Array(n * 3);
         for (let i = 0; i < n; i++) {
           const a = Math.random() * Math.PI * 2;
-          const r = 7.1 + (Math.random() - 0.5) * 1.3;
-          const y = (Math.random() - 0.5) * 0.42;
+          const r = 6.2 + (Math.random() - 0.5) * 1.1;
+          const y = (Math.random() - 0.5) * 0.5;
           pos[i * 3] = Math.cos(a) * r;
           pos[i * 3 + 1] = y;
           pos[i * 3 + 2] = Math.sin(a) * r;
@@ -279,7 +313,7 @@
       scene.add(orbitGroup);
 
       /* ---------- 交互状态 ---------- */
-      let yaw = 0.4, pitch = 0.42, dist = 16.5;
+      let yaw = 0.4, pitch = 0.42, dist = 17.5;
       let yawVel = 0, pitchVel = 0;
       let dragging = false, lastX = 0, lastY = 0, moved = 0;
       let hovered = null, focused = null;   // planet runtime ref
@@ -374,7 +408,7 @@
       canvas.addEventListener('pointerleave', () => { if (!dragging) setHover(null); });
       canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
-        dist = Math.min(26, Math.max(7, dist + e.deltaY * 0.012));
+        dist = Math.min(30, Math.max(6.5, dist + e.deltaY * 0.012));
       }, { passive: false });
 
       /* ---------- 帧循环 ---------- */
@@ -395,12 +429,12 @@
         yawVel *= damp; pitchVel *= damp;
         pitch = Math.min(1.32, Math.max(0.06, pitch));
 
-        // 公转
+        // 公转（Kepler 速度）＋自转（各行星球速/方向）＋月亮公转
         planets.forEach((p) => {
-          if (p.orbit) p.orbit.rotation.y += p.def.speed * dt;
-          if (p.mesh) p.mesh.rotation.y += 0.25 * dt;
+          if (p.orbit) p.orbit.rotation.y += p.speed * dt;
+          if (p.mesh) p.mesh.rotation.y += (p.def.spin || 0.25) * dt;
+          if (p.moon) p.moon.rotation.y += p.def.moon.speed * dt;
         });
-        sunRef.mesh.rotation.y += 0.1 * dt;
         orbitGroup.rotation.y += 0.025 * dt; // 极缓慢整体自旋（星野相对运动）
         stars.rotation.y += 0.012 * dt;
 

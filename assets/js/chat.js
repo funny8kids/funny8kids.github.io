@@ -23,6 +23,7 @@
     row.textContent = text;
     log.appendChild(row);
     log.scrollTop = log.scrollHeight;
+    if (who === 'bot') document.dispatchEvent(new CustomEvent('f8k-chat-bot'));
     return row;
   };
 
@@ -45,6 +46,7 @@
     toggle.classList.add('is-on');
     if (!reduced) panel.classList.add('is-in');
     if (!log.children.length) boot();
+    document.dispatchEvent(new CustomEvent('f8k-chat-open'));
     input.focus();
   };
   const shut = () => {
@@ -52,6 +54,7 @@
     toggle.setAttribute('aria-expanded', 'false');
     toggle.classList.remove('is-on');
     panel.classList.remove('is-in');
+    document.dispatchEvent(new CustomEvent('f8k-chat-close'));
   };
   toggle.addEventListener('click', () => (panel.hidden ? open() : shut()));
   close.addEventListener('click', shut);
