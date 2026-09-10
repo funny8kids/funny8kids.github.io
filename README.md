@@ -31,7 +31,7 @@ python -m http.server 8000
 - **免费 API 接入**（全部懒加载 + 缓存 + 失败静默回退）：一言 hitokoto 页脚每日一句（按天缓存）、ipwho.is 访客城市（sessionStorage 缓存，坐标预留给天气接入）、不蒜子访问量（唯一外部脚本依赖，数据未到达时整行隐藏）
 - 参考设计文档：`REFERENCE-JIEJOE-CIAO.md`（jiejoe.com 物理交互语法 + ciaoenergy.com 明亮金属 3D 配方，含证据说明）
 - **错误边界**：任何脚本故障都会解锁页面（绝不卡死在预加载屏），并有 7 秒看门狗兜底
-- **性能**：全部 canvas 场景（3D / 物理 / 钟摆）遵循同一套纪律 —— 空闲懒加载、IntersectionObserver 进出暂停、`visibilitychange` 后台暂停、物理休眠零计算、DPR 上限、3D 隔帧 30fps；GSAP 动效只用 transform/opacity + quickTo（见 gsap-performance 技能）
+- **性能**：全部 canvas 场景（3D / 物理 / 钟摆）遵循同一套纪律 —— 空闲懒加载、IntersectionObserver 进出暂停、`visibilitychange` 后台暂停、物理休眠零计算、DPR 上限、3D 隔帧 30fps；GSAP 动效只用 transform/opacity + quickTo（见 gsap-performance 技能）；滚动体感中枢带速度死区（静止帧跳过歪斜/摆动写入）、一次性入场触发器播完即销毁（`once`）、`f8k-layout` 刷新 rAF 合并，滚动全程低开销
 - **hash 路由**：锚点写入地址栏，链接可分享、浏览器后退可用；`href="#"` 占位链接不再跳顶
 - 预加载进度绑定真实 `window.load`（超时 3.5s + 点击/按键可跳过）；触屏可拖拽彩蛋刚体与技能钟摆（仅命中时锁定滚动）
 - 无障碍：THEME 按钮 `aria-pressed`、菜单 Esc 关闭 + 焦点归还、`prefers-reduced-motion` 全量降级、无 JS 时系统光标可用

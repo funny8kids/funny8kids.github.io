@@ -597,7 +597,8 @@
   /* ---------- GSAP 流程（整体包错误边界） ---------- */
   try {
     gsap.registerPlugin(ScrollTrigger);
-    ScrollTrigger.config({ ignoreMobileResize: true });
+    // limitCallbacks：scrub 回调每 tick 最多触发一次，滚动驱动的更新更平滑、开销更低
+    ScrollTrigger.config({ ignoreMobileResize: true, limitCallbacks: true });
     // 授予描画线动画态（无 JS / 减少动效时线条保持完整呈现）
     doc.classList.add('has-anim');
 
@@ -606,7 +607,8 @@
 
     /* Lenis 平滑滚动 */
     if (window.Lenis) {
-      lenis = new window.Lenis({ duration: 0.75, smoothWheel: true });
+      // syncTouch:false = 触屏走原生滚动（跟手性最好，避免触屏平滑带来的合成抖动）
+      lenis = new window.Lenis({ duration: 0.75, smoothWheel: true, syncTouch: false });
       lenis.on('scroll', ScrollTrigger.update);
       gsap.ticker.add((t) => lenis.raf(t * 1000));
       gsap.ticker.lagSmoothing(0);
@@ -1654,58 +1656,59 @@
 
     /* ---------- 入场编排：一章一性格（data-reveal 变体系统） ----------
        裸 data-reveal 保持默认上浮；带值的元素按章节性格入场。
-       全部只用 transform / opacity / clip-path，与全站性能纪律一致 */
+       全部只用 transform / opacity / clip-path；一次性触发播完即销毁（once），
+       滚动时存活触发器更少，scrub 驱动的翻章/视差更顺滑 */
     const REVEALS = {
       // 默认：上浮淡入
       up: (el) => gsap.from(el, {
         y: 34, autoAlpha: 0, duration: 1, ease: 'power3.out',
         delay: parseFloat(el.dataset.delay || 0),
-        scrollTrigger: { trigger: el, start: 'top 88%' }
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true }
       }),
       // 侧向滑入（data-side 控制方向；技能三列左右交替）
       side: (el) => gsap.from(el, {
         x: (el.dataset.side === 'right' ? 56 : -56), autoAlpha: 0,
         duration: 1.05, ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 86%' }
+        scrollTrigger: { trigger: el, start: 'top 86%', once: true }
       }),
       // 中心向外擦除展开（实验室舞台）
       iris: (el) => gsap.fromTo(el,
         { clipPath: 'inset(42% 42% 42% 42%)', autoAlpha: 0 },
         {
           clipPath: 'inset(0% 0% 0% 0%)', autoAlpha: 1, duration: 1.25, ease: 'power4.out',
-          scrollTrigger: { trigger: el, start: 'top 82%' }
+          scrollTrigger: { trigger: el, start: 'top 82%', once: true }
         }),
       // 缩放浮现（物理舞台）
       zoom: (el) => gsap.from(el, {
         scale: .955, autoAlpha: 0, duration: 1.1, ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 85%' }
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true }
       }),
       // 子项依次上浮（服务卡 / 更多项目列表）
       stagger: (el) => gsap.from(el.children, {
         y: 30, autoAlpha: 0, duration: .95, ease: 'power3.out', stagger: .09,
-        scrollTrigger: { trigger: el, start: 'top 85%' }
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true }
       }),
       // 子项依次上擦除（关于段数据卡）
       'stagger-clip': (el) => gsap.from(el.children, {
         clipPath: 'inset(0 0 100% 0)', y: 18, autoAlpha: 0,
         duration: 1, ease: 'power4.out', stagger: .1,
-        scrollTrigger: { trigger: el, start: 'top 85%' }
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true }
       }),
       // 子项带微旋转错峰落位（评价三卡）
       'stagger-rot': (el) => gsap.from(el.children, {
         y: 44, rotation: -2.2, autoAlpha: 0, duration: 1.05, ease: 'power3.out', stagger: .1,
-        scrollTrigger: { trigger: el, start: 'top 85%' }
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true }
       }),
       // 扇形入场：横滑卡组从右侧带交替微旋错峰落位（clearProps 让 CSS hover 重新接管）
       fan: (el) => gsap.from(el.querySelectorAll('.deck-card'), {
         x: 130, rotation: (i) => (i % 2 ? 1.6 : -1.6), autoAlpha: 0,
         duration: .95, ease: 'power3.out', stagger: .09,
         clearProps: 'transform,opacity,visibility',
-        scrollTrigger: { trigger: el, start: 'top 85%' }
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true }
       }),
       // 经历行：整行上浮 + 时间列左入、内容列右入
       exp: (el) => {
-        const st = { trigger: el, start: 'top 84%' };
+        const st = { trigger: el, start: 'top 84%', once: true };
         gsap.from(el.children, { y: 26, autoAlpha: 0, duration: .9, ease: 'power3.out', stagger: .1, scrollTrigger: st });
         gsap.from(el.querySelectorAll('.exp-row__time'), { x: -26, autoAlpha: 0, duration: .9, ease: 'power3.out', stagger: .1, scrollTrigger: st });
         gsap.from(el.querySelectorAll('.exp-row__main'), { x: 26, autoAlpha: 0, duration: .9, ease: 'power3.out', stagger: .1, scrollTrigger: st });
@@ -1814,7 +1817,7 @@
         const tw = gsap.fromTo(el.querySelectorAll('.blur-char'),
           { filter: 'blur(12px)', opacity: 0, y: 14 },
           { filter: 'blur(0px)', opacity: 1, y: 0, duration: .85, ease: 'power3.out', stagger: .05,
-            scrollTrigger: { trigger: el, start: 'top 90%' } });
+            scrollTrigger: { trigger: el, start: 'top 90%', once: true } });
         blurTitleTweens.push(tw);
       });
     };
@@ -1833,7 +1836,7 @@
         v: num,
         duration: 1.8,
         ease: 'power2.out',
-        scrollTrigger: { trigger: el, start: 'top 90%' },
+        scrollTrigger: { trigger: el, start: 'top 90%', once: true },
         onUpdate: () => { el.textContent = String(Math.round(o.v)).padStart(pad, '0') + suffix; }
       });
     });
@@ -1892,21 +1895,31 @@
     }
 
     let velLast = gsap.ticker.time;
+    let velResting = true; // 歪斜/摆动已回正：静止帧跳过写入，让合成器彻底闲下来
     gsap.ticker.add(() => {
       const dt = Math.min(0.05, gsap.ticker.time - velLast);
       velLast = gsap.ticker.time;
+      if (Math.abs(scrollVel) < 3) scrollVel = 0; // 速度死区：指数衰减永远到不了 0，这里钳住
       const v = gsap.utils.clamp(-2400, 2400, scrollVel);
       if (mqState.length) {
         mqState.forEach((s) => {
           s.offset += (72 + v * 0.85) * s.dir * dt;
           const x = ((s.offset % s.setW) + s.setW) % s.setW; // 负向位移同样落在 [0, setW)
           s.track.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
-          s.skew(gsap.utils.clamp(-8, 8, v / 260) * s.dir);
         });
+        // 跑马灯歪斜只在有速度时写；静止后补一次回正即停（quickTo 自行缓动到位）
+        if (v !== 0 || !velResting) {
+          const mSkew = gsap.utils.clamp(-8, 8, v / 260);
+          mqState.forEach((s) => s.skew(mSkew * s.dir));
+        }
       }
-      const skewTarget = gsap.utils.clamp(-2.2, 2.2, v / 1100);
-      sectionSkews.forEach((q) => q(skewTarget));
-      if (auraX) auraX(gsap.utils.clamp(-46, 46, v / 60));
+      // 章节歪斜 + 光晕摆动：同上，静止后只写一次 0 即休眠（每帧省掉十余次 quickTo）
+      if (v !== 0 || !velResting) {
+        const skewTarget = gsap.utils.clamp(-2.2, 2.2, v / 1100);
+        sectionSkews.forEach((q) => q(skewTarget));
+        if (auraX) auraX(gsap.utils.clamp(-46, 46, v / 60));
+      }
+      velResting = v === 0;
       scrollVel *= 0.9; // 无滚动时缓慢回正
     });
 
@@ -1962,7 +1975,7 @@
       duration: 1,
       ease: 'power4.out',
       stagger: .08,
-      scrollTrigger: { trigger: '.footer', start: 'top 72%' }
+      scrollTrigger: { trigger: '.footer', start: 'top 72%', once: true }
     });
 
     /* ---------- 页脚大字随光标起伏（React Bits "Text Pressure"，字符中心缓存避免布局抖动） ---------- */
@@ -2028,8 +2041,12 @@
     };
     initTextPressure();
 
-    /* ---------- 懒加载模块改变布局后刷新 ScrollTrigger 测量 ---------- */
-    document.addEventListener('f8k-layout', () => { if (hasST) ScrollTrigger.refresh(); });
+    /* ---------- 懒加载模块改变布局后刷新 ScrollTrigger 测量（rAF 合并突发事件） ---------- */
+    let layoutRaf = 0;
+    document.addEventListener('f8k-layout', () => {
+      if (!hasST || layoutRaf) return;
+      layoutRaf = requestAnimationFrame(() => { layoutRaf = 0; ScrollTrigger.refresh(); });
+    });
 
     /* ---------- 自定义光标（has-cursor 由 JS 授予，无 JS 时系统光标可用） ---------- */
     if (finePointer) {
