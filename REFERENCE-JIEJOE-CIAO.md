@@ -60,8 +60,8 @@ JIEJOE 把 Matter.js（bundled 于 app bundle，`import k from matter-js`）拆�
 | jiejoe 技能挂件 | 技能列软绳钟摆（stiffness .1），甩速达标迸火花 | assets/js/pendulums.js |
 | jiejoe 抛掷测速反馈 | 挂件松手测速 → 火花粒子 + 微抖 | assets/js/pendulums.js |
 | jiejoe 生命周期 | 全部场景 IntersectionObserver 进出暂停、休眠零计算、后台暂停 | 各模块 |
-| ciao 金属罐材质 | 程序化"F8K 罐"：metalness .92 / roughness .28 / sheen .6 / clearcoat .6 + 三点影棚布光 | assets/js/lab3d.js |
-| ciao 常驻倾斜 + 慢旋 | 拖拽惯性旋转（松手滑行）+ 呼吸缩放 | assets/js/lab3d.js |
+| ciao 金属罐材质 | 已升级为「迷你太阳系」：太阳辉光 + 八大行星公转 + 土星环 + 小行星带，程序化纹理零资源 | assets/js/lab3d.js |
+| ciao 常驻倾斜 + 慢旋 | 拖拽环绕镜头（松手惯性）+ 滚轮缩放 + 点击锁定跟随 | assets/js/lab3d.js |
 | jiejoe Lottie logo | 页脚 F8K 动态徽标（lottie_light 懒加载 + 视口暂停） | assets/js/main.js / assets/lottie/ |
 
 ## 五、可复用规则（Agent Prompt Guide）

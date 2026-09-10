@@ -191,13 +191,15 @@
     row.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation(); // 不交给锚点路由
-      const pass = window.prompt('PASSCODE — 输入口令解锁该项目');
+      const pass = window.prompt(typeof window.F8K_T === 'function' ? F8K_T('lock.prompt') : 'PASSCODE — enter passcode to unlock this project');
       if (pass === '2026') {
         row.classList.remove('is-locked');
         row.removeAttribute('data-cursor-label');
-        row.setAttribute('aria-label', '已解锁项目');
-        row.querySelector('.more-list__name').textContent = 'SECRET LAB — 秘密项目';
-        row.querySelector('.more-list__meta').textContent = '已解锁 · 2026';
+        row.removeAttribute('data-i18n-cursor');
+        const tk = (k) => (typeof window.F8K_T === 'function' ? F8K_T(k) : k);
+        row.setAttribute('aria-label', tk('lock.unlockedAria'));
+        row.querySelector('.more-list__name').textContent = tk('lock.unlockedName');
+        row.querySelector('.more-list__meta').textContent = tk('lock.unlockedMeta');
         if (window.__f8kSound) window.__f8kSound(660, .16, 'triangle');
         document.dispatchEvent(new CustomEvent('f8k-unlock'));
       } else if (pass !== null) {
@@ -209,16 +211,18 @@
   };
   initLock();
 
-  /* ---------- 一言 hitokoto：页脚每日一句（按天缓存，失败回退静态句） ---------- */
+  /* ---------- 一言 hitokoto：页脚每日一句（按天缓存；英文默认展示静态句，中文才请求接口） ---------- */
   const initHitokoto = () => {
     const el = document.getElementById('hitokoto');
     if (!el) return;
     const KEY = 'f8k-hito:v1';
     const today = new Date().toISOString().slice(0, 10);
-    const fallback = '「把想法做成会呼吸的界面。」 —— 本站';
+    const localQuote = () => (typeof window.F8K_T === 'function' ? F8K_T('footer.quote') : '「把想法做成会呼吸的界面。」 —— 本站');
     const render = (text) => { el.textContent = text; };
     let cache = null;
     try { cache = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { /* 隐私模式 */ }
+    // 非中文界面：不请求中文一言接口，直接展示静态句（i18n 随语言更新）
+    if (window.F8K_LANG !== 'zh') { render(localQuote()); return; }
     if (cache && cache.d === today && cache.t) { render(cache.t); return; }
     const boot = () => {
       fetch('https://v1.hitokoto.cn/?c=d&c=i&c=k&max_length=30')
@@ -229,7 +233,7 @@
           render(text);
           try { localStorage.setItem(KEY, JSON.stringify({ d: today, t: text })); } catch (e) { /* 隐私模式 */ }
         })
-        .catch(() => render(fallback));
+        .catch(() => render(localQuote()));
     };
     if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 3500 });
     else setTimeout(boot, 1800);
@@ -321,94 +325,101 @@
     }
   };
 
-  /* ---------- 项目横滑叠放卡组（学习 pxpush.com，修正其跟手延迟） ----------
-     拖拽期间 1:1 跟指针（不加任何插值层），惯性只出现在松手之后；
-     触屏走 CSS 原生滚动 + 吸附，见 style.css 的 coarse 指针分支 */
+  /* ---------- 作品横滑长卷（Awwwards 式 sticky 横向滚动） ----------
+     桌面：滚动驱动 —— 进入 #work 后舞台吸顶，滚动进度映射为卡组的横向位移；
+     触屏：CSS 原生横滑 + 吸附（见 style.css coarse 分支）。 */
   const initDeck = () => {
     const deck = document.getElementById('deck');
     const strip = document.getElementById('deckStrip');
     const idxEl = document.getElementById('deckIdx');
-    if (!deck || !strip) return;
+    if (!deck || !strip) return null;
 
-    let x = 0, minX = 0, dragging = false, moved = false;
-    let lastX = 0, velocity = 0, rafId = 0, target = 0, suppressClick = false;
-
-    const clampX = (v) => Math.min(0, Math.max(minX, v));
-    let cardMids = []; // 每张卡在 strip 内的中心偏移（缓存，避免拖拽时逐帧读布局）
+    const st = { deck, strip, idxEl, x: 0, minX: 0, cardMids: [] };
+    const clampX = (v) => Math.min(0, Math.max(st.minX, v));
     const measure = () => {
-      minX = Math.min(0, deck.clientWidth - strip.scrollWidth - 24);
-      cardMids = Array.from(strip.children).map((c) => c.offsetLeft + c.offsetWidth / 2);
+      st.minX = Math.min(0, deck.clientWidth - strip.scrollWidth - 24);
+      st.cardMids = Array.from(strip.children).map((c) => c.offsetLeft + c.offsetWidth / 2);
     };
     const apply = () => {
-      strip.style.transform = 'translate3d(' + Math.round(x) + 'px,0,0)';
-      if (!idxEl || !cardMids.length) return;
+      strip.style.transform = 'translate3d(' + Math.round(st.x) + 'px,0,0)';
+      if (!idxEl || !st.cardMids.length) return;
       // 视口中点相对 strip 的坐标 = deck 半宽 - x（getBoundingClientRect 换成缓存数学，零布局读）
-      const mid = deck.clientWidth / 2 - x;
+      const mid = deck.clientWidth / 2 - st.x;
       let active = 0, best = Infinity;
-      for (let i = 0; i < cardMids.length; i++) {
-        const d = Math.abs(cardMids[i] - mid);
+      for (let i = 0; i < st.cardMids.length; i++) {
+        const d = Math.abs(st.cardMids[i] - mid);
         if (d < best) { best = d; active = i; }
       }
-      idxEl.textContent = String(active + 1).padStart(2, '0') + ' / ' + String(cardMids.length).padStart(2, '0');
+      idxEl.textContent = String(active + 1).padStart(2, '0') + ' / ' + String(st.cardMids.length).padStart(2, '0');
     };
-    const glide = () => {
-      rafId = 0;
-      if (dragging) return;
-      x += (target - x) * 0.16;
-      if (Math.abs(target - x) < 0.5) { x = target; apply(); return; }
-      apply();
-      rafId = requestAnimationFrame(glide);
-    };
-
-    // 拖拽与点击的判定：位移超过 6px 才算拖拽，否则放行点击
-    deck.addEventListener('pointerdown', (e) => {
-      if (e.pointerType !== 'mouse' || e.button !== 0) return;
-      dragging = false; moved = false;
-      lastX = e.clientX; velocity = 0;
-      cancelAnimationFrame(rafId); rafId = 0;
-      const onMove = (ev) => {
-        const dx = ev.clientX - lastX;
-        if (!moved && Math.abs(ev.clientX - startX) < 6) return;
-        moved = true;
-        if (!dragging) { dragging = true; deck.setPointerCapture(e.pointerId); }
-        lastX = ev.clientX;
-        velocity = velocity * 0.75 - dx * 0.25; // 松手惯性用
-        x = clampX(x + dx);                     // 1:1 跟手，无插值
-        apply();
-      };
-      const startX = e.clientX;
-      const onUp = () => {
-        deck.removeEventListener('pointermove', onMove);
-        deck.removeEventListener('pointerup', onUp);
-        deck.removeEventListener('pointercancel', onUp);
-        if (dragging) {
-          suppressClick = true;
-          target = clampX(x + velocity * 14); // 松手后的惯性尾巴
-          if (!rafId) rafId = requestAnimationFrame(glide);
-        }
-      };
-      deck.addEventListener('pointermove', onMove);
-      deck.addEventListener('pointerup', onUp);
-      deck.addEventListener('pointercancel', onUp);
-    });
-    deck.addEventListener('click', (e) => {
-      if (suppressClick) {
-        e.preventDefault();
-        e.stopPropagation();
-        suppressClick = false;
-      }
-    }, true);
+    st.measure = measure;
+    st.apply = apply;
 
     let dRsz;
     window.addEventListener('resize', () => {
       clearTimeout(dRsz);
-      dRsz = setTimeout(() => { measure(); x = clampX(x); apply(); }, 200);
+      dRsz = setTimeout(() => { measure(); st.x = clampX(st.x); apply(); }, 200);
     });
     window.addEventListener('load', () => { measure(); apply(); });
     measure();
     apply();
+    return st;
   };
-  initDeck();
+  const deckState = initDeck();
+
+  /* 桌面 sticky 横向长卷：ScrollTrigger scrub（须在 registerPlugin 之后调用） */
+  const initDeckScroll = (st) => {
+    if (!st || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+    gsap.matchMedia().add('(hover: hover) and (pointer: fine)', () => {
+      const hscroll = st.deck.closest('.hscroll');
+      if (!hscroll) return;
+      const setHeight = () => {
+        st.measure();
+        hscroll.style.height = (window.innerHeight + Math.abs(st.minX) + 160) + 'px';
+        ScrollTrigger.refresh(); // 高度变化后重算 start/end，保证 scrub 与 sticky 行程一致
+      };
+      setHeight();
+      let hRsz = null;
+      const onResize = () => {
+        clearTimeout(hRsz);
+        hRsz = setTimeout(setHeight, 200);
+      };
+      window.addEventListener('resize', onResize);
+      const trig = ScrollTrigger.create({
+        trigger: hscroll,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => { st.x = self.progress * st.minX; st.apply(); }
+      });
+      return () => {
+        trig.kill();
+        window.removeEventListener('resize', onResize);
+        clearTimeout(hRsz);
+        hscroll.style.height = '';
+      };
+    });
+  };
+
+  /* ---------- 火漆封缄：盖章 → 花瓣信风 + 棱镜闪亮 + 微音效（紫罗兰手札签名彩蛋） ---------- */
+  const initSeal = () => {
+    const seal = document.getElementById('seal');
+    if (!seal) return;
+    let busy = false;
+    seal.addEventListener('click', () => {
+      if (busy) return;
+      busy = true;
+      seal.classList.remove('is-stamping');
+      void seal.offsetWidth; // 强制回流以重启动画
+      seal.classList.add('is-stamping');
+      if (window.__f8kSound) window.__f8kSound(210, .22, 'triangle');
+      if (window.F8K_PETALS && window.F8K_PETALS.gust) window.F8K_PETALS.gust();
+      if (window.F8K_PRISM && window.F8K_PRISM.boost) window.F8K_PRISM.boost();
+      setTimeout(() => { seal.classList.remove('is-stamping'); busy = false; }, 750);
+    });
+  };
+  initSeal();
 
   /* ---------- 点击迸发（React Bits "Click Spark" 的品牌化实现：斜线粒子） ---------- */
   const initSpark = () => {
@@ -590,6 +601,9 @@
     // 授予描画线动画态（无 JS / 减少动效时线条保持完整呈现）
     doc.classList.add('has-anim');
 
+    /* 作品横向长卷：滚动驱动（依赖已注册的 ScrollTrigger） */
+    initDeckScroll(deckState);
+
     /* Lenis 平滑滚动 */
     if (window.Lenis) {
       lenis = new window.Lenis({ duration: 0.75, smoothWheel: true });
@@ -629,7 +643,7 @@
       resize();
       window.addEventListener('resize', resize);
 
-      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2c43f5';
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#6b56d3';
       const rgba = (a) => {
         if (accent[0] !== '#') return accent;
         return `rgba(${parseInt(accent.slice(1, 3), 16)},${parseInt(accent.slice(3, 5), 16)},${parseInt(accent.slice(5, 7), 16)},${a})`;
@@ -878,7 +892,7 @@
               if (k > 0.02) {
                 const gri = Math.max(5, d.r * 0.8);
                 const grd = g.createRadialGradient(px, py, 0, px, py, gri);
-                grd.addColorStop(0, d.emerald ? 'rgba(80,220,180,' + (k * 0.18).toFixed(3) + ')' : 'rgba(124,139,255,' + (k * 0.16).toFixed(3) + ')');
+                grd.addColorStop(0, d.emerald ? 'rgba(233,150,178,' + (k * 0.18).toFixed(3) + ')' : 'rgba(157,140,255,' + (k * 0.16).toFixed(3) + ')');
                 grd.addColorStop(1, 'rgba(255,255,255,0)');
                 g.fillStyle = grd;
                 g.beginPath(); g.arc(px, py, gri, 0, Math.PI * 2); g.fill();
@@ -886,13 +900,13 @@
             }
             if (d.glyph) {
               g.font = Math.round(d.r) + 'px Georgia, "Times New Roman", serif';
-              g.fillStyle = d.emerald ? 'rgba(40,170,145,' + alpha.toFixed(3) + ')' : rgba(alpha * 0.85);
+              g.fillStyle = d.emerald ? 'rgba(181,101,127,' + alpha.toFixed(3) + ')' : rgba(alpha * 0.85);
               g.textAlign = 'center'; g.textBaseline = 'middle';
               g.fillText(d.glyph, px, py);
             } else {
               g.fillStyle = d.emerald
-                ? 'rgba(24,178,130,' + alpha.toFixed(3) + ')'
-                : (layer === 2 ? 'rgba(124,139,255,' + alpha.toFixed(3) + ')' : 'rgba(70,95,255,' + (alpha * 0.85).toFixed(3) + ')');
+                ? 'rgba(181,101,127,' + alpha.toFixed(3) + ')'
+                : (layer === 2 ? 'rgba(157,140,255,' + alpha.toFixed(3) + ')' : 'rgba(107,86,211,' + (alpha * 0.85).toFixed(3) + ')');
               g.beginPath(); g.arc(px, py, d.r * 0.14, 0, Math.PI * 2); g.fill();
             }
           }
@@ -1187,7 +1201,7 @@
         pmrem.dispose();
 
         /* ---------- 灯光：半球 + 主光（真实软阴影）+ 边缘光 ---------- */
-        scene.add(new T.HemisphereLight(0xffffff, 0xd4dcd6, 0.5));
+        scene.add(new T.HemisphereLight(0xffffff, 0xd8d0e2, 0.5));
         const key = new T.DirectionalLight(0xffffff, 2.4);
         key.position.set(2.4, 3.4, 3.8);
         key.castShadow = true;
@@ -1197,7 +1211,7 @@
         key.shadow.camera.near = 1; key.shadow.camera.far = 12;
         key.shadow.bias = -0.0004;
         scene.add(key);
-        const rim = new T.DirectionalLight(0xe8f4ff, 0.9);
+        const rim = new T.DirectionalLight(0xeae3ff, 0.9);
         rim.position.set(-3.0, -1.0, 2.2);
         scene.add(rim);
 
@@ -1258,13 +1272,13 @@
         }
         bandGeo.setIndex(new T.BufferAttribute(bandIdx, 1));
         const glassMat = new T.MeshPhysicalMaterial({
-          color: 0x2fbf94,
+          color: 0x6b56d3,
           metalness: 0,
           roughness: 0.08,
           transmission: 1,
           thickness: 0.6,
           ior: 1.5,
-          attenuationColor: 0x0c7f5c,
+          attenuationColor: 0x3a2f8f,
           attenuationDistance: 0.85,
           clearcoat: 1,
           clearcoatRoughness: 0.06,
@@ -1288,18 +1302,18 @@
         orbitTilt.add(orbitSquash);
         const ringCore = new T.Mesh(
           new T.TorusGeometry(ORB.ax, 0.014, 10, 240),
-          new T.MeshBasicMaterial({ color: 0x2440ff, transparent: true, opacity: 1, toneMapped: false, depthWrite: false })
+          new T.MeshBasicMaterial({ color: 0x5a44d6, transparent: true, opacity: 1, toneMapped: false, depthWrite: false })
         );
         const ringHalo = new T.Mesh(
           new T.TorusGeometry(ORB.ax, 0.045, 8, 200),
-          new T.MeshBasicMaterial({ color: 0x7c8bff, transparent: true, opacity: 0.1, toneMapped: false, blending: T.AdditiveBlending, depthWrite: false })
+          new T.MeshBasicMaterial({ color: 0x9d8cff, transparent: true, opacity: 0.1, toneMapped: false, blending: T.AdditiveBlending, depthWrite: false })
         );
         orbitSquash.add(ringCore);
         orbitSquash.add(ringHalo);
 
         // 充能弧（彗星身后随进度生长的段；几何随角度每帧重建，旧几何即时释放）
-        const chargeMat = new T.MeshBasicMaterial({ color: 0xa9bcff, transparent: true, opacity: 0.95, toneMapped: false, depthWrite: false });
-        const chargeHaloMat = new T.MeshBasicMaterial({ color: 0x7c8bff, transparent: true, opacity: 0.35, toneMapped: false, blending: T.AdditiveBlending, depthWrite: false });
+        const chargeMat = new T.MeshBasicMaterial({ color: 0xb9a8ff, transparent: true, opacity: 0.95, toneMapped: false, depthWrite: false });
+        const chargeHaloMat = new T.MeshBasicMaterial({ color: 0x9d8cff, transparent: true, opacity: 0.35, toneMapped: false, blending: T.AdditiveBlending, depthWrite: false });
         const chargeMesh = new T.Mesh(undefined, chargeMat);
         const chargeHalo = new T.Mesh(undefined, chargeHaloMat);
         orbitSquash.add(chargeHalo);
@@ -1322,13 +1336,13 @@
         const comet = new T.Mesh(
           new T.SphereGeometry(0.075, 24, 18),
           new T.MeshPhysicalMaterial({
-            color: 0xbfe4ff,
+            color: 0xc9b8ff,
             metalness: 0,
             roughness: 0.05,
             transmission: 1,
             thickness: 0.25,
             ior: 1.5,
-            attenuationColor: 0x88b6ff,
+            attenuationColor: 0x9d8cff,
             attenuationDistance: 0.55,
             envMapIntensity: 1.4,
             specularIntensity: 1,
@@ -1344,8 +1358,8 @@
           const g = cv.getContext('2d');
           const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
           gr.addColorStop(0, 'rgba(255,255,255,1)');
-          gr.addColorStop(0.3, 'rgba(190,215,255,0.55)');
-          gr.addColorStop(1, 'rgba(190,215,255,0)');
+          gr.addColorStop(0.3, 'rgba(201,184,255,0.55)');
+          gr.addColorStop(1, 'rgba(201,184,255,0)');
           g.fillStyle = gr;
           g.fillRect(0, 0, 64, 64);
           const tex = new T.CanvasTexture(cv);
@@ -1353,12 +1367,12 @@
           return tex;
         })();
         const glowSprite = new T.Sprite(new T.SpriteMaterial({
-          map: glowTex, color: 0xcfe0ff, transparent: true, opacity: 0.6,
+          map: glowTex, color: 0xcab8ff, transparent: true, opacity: 0.6,
           blending: T.AdditiveBlending, depthWrite: false
         }));
         glowSprite.scale.set(0.38, 0.38, 1);
         comet.add(glowSprite);
-        const cometLight = new T.PointLight(0xcdeaff, 14, 5, 2);
+        const cometLight = new T.PointLight(0xc9b4ff, 14, 5, 2);
         comet.add(cometLight);
 
         let orbAngle = -Math.PI / 2;
@@ -1440,14 +1454,14 @@
         scene.add(ground);
         const bounce = new T.Mesh(
           new T.PlaneGeometry(6.5, 3),
-          new T.MeshBasicMaterial({ color: 0x17936e, transparent: true, opacity: 0.05, blending: T.AdditiveBlending, depthWrite: false })
+          new T.MeshBasicMaterial({ color: 0x6b56d3, transparent: true, opacity: 0.05, blending: T.AdditiveBlending, depthWrite: false })
         );
         bounce.rotation.x = -Math.PI / 2;
         bounce.position.set(0, -0.975, 0);
         scene.add(bounce);
 
         /* ---------- 100% 撞击涟漪（三层扩散环 + 灯光尖峰；置于玻璃前方避免穿模） ---------- */
-        const rippleMat = () => new T.MeshBasicMaterial({ color: 0xbdd0ff, transparent: true, opacity: 0, toneMapped: false, depthWrite: false, side: T.DoubleSide });
+        const rippleMat = () => new T.MeshBasicMaterial({ color: 0xb9a8ff, transparent: true, opacity: 0, toneMapped: false, depthWrite: false, side: T.DoubleSide });
         const ripples = [];
         for (let i = 0; i < 3; i++) {
           const rm = new T.Mesh(new T.RingGeometry(0.94, 1.0, 96), rippleMat());
@@ -1601,8 +1615,10 @@
     (async () => {
       // 计数走到 90 后等真实就绪（或超时/跳过），再收尾到 100
       let formulaShown = false;
+      const pctEl = document.getElementById('preloaderPct');
       const updateHud = () => {
         if (barEl) barEl.style.transform = 'scaleX(' + (counter.v / 100) + ')';
+        if (pctEl) pctEl.textContent = String(Math.round(counter.v)).padStart(2, '0');
         preloaderProgress = counter.v / 100; // 供画布充能环读取
         // 进度过半，数学公式淡入 —— 与画布并作"美在至简"的收束点
         if (!formulaShown && counter.v >= 42 && formulaEl) {
@@ -1627,6 +1643,7 @@
         }
       });
       tl.to('.preloader__brand', { y: -26, autoAlpha: 0, duration: .4, ease: 'power2.in' }, 0)
+        .to('.preloader__pct', { y: -26, autoAlpha: 0, duration: .4, ease: 'power2.in' }, 0)
         .to(formulaEl, { y: -22, autoAlpha: 0, duration: .4, ease: 'power2.in' }, 0)
         .to(barEl, { autoAlpha: 0, duration: .3 }, 0)
         .to(preloader, { yPercent: -100, duration: .85, ease: 'power4.inOut' }, .15)
@@ -1717,45 +1734,56 @@
       });
     });
 
-    /* ---------- 关于段落：逐字点亮（中文按字、英文按词） ---------- */
-    document.querySelectorAll('[data-split]').forEach((p) => {
-      const frag = document.createDocumentFragment();
-      const splitNode = (node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          node.textContent.split(/(\s+)/).forEach((tok) => {
-            if (!tok) return;
-            if (/^\s+$/.test(tok)) {
-              frag.appendChild(document.createTextNode(' '));
-              return;
-            }
-            if (/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(tok)) {
-              Array.from(tok).forEach((ch) => {
+    /* ---------- 关于段落：逐字点亮（中文按字、英文按词；f8k-lang 时重建） ---------- */
+    let wordSplitTweens = [];
+    const initWordSplit = () => {
+      wordSplitTweens.forEach((tw) => { if (tw) { if (tw.scrollTrigger) tw.scrollTrigger.kill(); tw.kill(); } });
+      wordSplitTweens = [];
+      document.querySelectorAll('[data-split]').forEach((p) => {
+        if (p.dataset.i18n && window.F8K_T) p.textContent = F8K_T(p.dataset.i18n);
+        const frag = document.createDocumentFragment();
+        const splitNode = (node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            node.textContent.split(/(\s+)/).forEach((tok) => {
+              if (!tok) return;
+              if (/^\s+$/.test(tok)) {
+                frag.appendChild(document.createTextNode(' '));
+                return;
+              }
+              if (/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(tok)) {
+                Array.from(tok).forEach((ch) => {
+                  const s = document.createElement('span');
+                  s.className = 'word';
+                  s.textContent = ch;
+                  frag.appendChild(s);
+                });
+              } else {
                 const s = document.createElement('span');
                 s.className = 'word';
-                s.textContent = ch;
+                s.textContent = tok;
                 frag.appendChild(s);
-              });
-            } else {
-              const s = document.createElement('span');
-              s.className = 'word';
-              s.textContent = tok;
-              frag.appendChild(s);
-            }
+              }
+            });
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            Array.from(node.childNodes).forEach(splitNode);
+          }
+        };
+        Array.from(p.childNodes).forEach(splitNode);
+        p.innerHTML = '';
+        p.appendChild(frag);
+        // 逐词揭示：透明度 + 微上浮 + 模糊三重（Bombon 式，scrub 随滚动推进）
+        const tw = gsap.fromTo(p.querySelectorAll('.word'),
+          { opacity: .12, y: '.28em', filter: 'blur(4px)' },
+          {
+            opacity: 1, y: 0, filter: 'blur(0px)',
+            ease: 'none',
+            stagger: .03,
+            scrollTrigger: { trigger: p, start: 'top 82%', end: 'top 30%', scrub: true }
           });
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-          Array.from(node.childNodes).forEach(splitNode);
-        }
-      };
-      Array.from(p.childNodes).forEach(splitNode);
-      p.innerHTML = '';
-      p.appendChild(frag);
-      gsap.fromTo(p.querySelectorAll('.word'), { opacity: .14 }, {
-        opacity: 1,
-        ease: 'none',
-        stagger: .03,
-        scrollTrigger: { trigger: p, start: 'top 82%', end: 'top 28%', scrub: true }
+        wordSplitTweens.push(tw);
       });
-    });
+    };
+    initWordSplit();
 
     /* ---------- 作品卡组视差已由横滑叠放（initDeck）取代 ---------- */
 
@@ -1768,21 +1796,29 @@
       });
     });
 
-    /* ---------- 章节标题逐字清晰浮现（React Bits "Blur Text"） ---------- */
-    document.querySelectorAll('.sec-head__labels h2').forEach((el) => {
-      const chars = Array.from(el.textContent);
-      el.innerHTML = '';
-      chars.forEach((ch) => {
-        const s = document.createElement('span');
-        s.className = 'blur-char';
-        s.textContent = ch;
-        el.appendChild(s);
+    /* ---------- 章节标题逐字清晰浮现（React Bits "Blur Text"；f8k-lang 时重建） ---------- */
+    let blurTitleTweens = [];
+    const initBlurTitles = () => {
+      blurTitleTweens.forEach((tw) => { if (tw) { if (tw.scrollTrigger) tw.scrollTrigger.kill(); tw.kill(); } });
+      blurTitleTweens = [];
+      document.querySelectorAll('.sec-head__labels h2').forEach((el) => {
+        if (el.dataset.i18n && window.F8K_T) el.textContent = F8K_T(el.dataset.i18n);
+        const chars = Array.from(el.textContent);
+        el.innerHTML = '';
+        chars.forEach((ch) => {
+          const s = document.createElement('span');
+          s.className = 'blur-char';
+          s.textContent = ch;
+          el.appendChild(s);
+        });
+        const tw = gsap.fromTo(el.querySelectorAll('.blur-char'),
+          { filter: 'blur(12px)', opacity: 0, y: 14 },
+          { filter: 'blur(0px)', opacity: 1, y: 0, duration: .85, ease: 'power3.out', stagger: .05,
+            scrollTrigger: { trigger: el, start: 'top 90%' } });
+        blurTitleTweens.push(tw);
       });
-      gsap.fromTo(el.querySelectorAll('.blur-char'),
-        { filter: 'blur(12px)', opacity: 0, y: 14 },
-        { filter: 'blur(0px)', opacity: 1, y: 0, duration: .85, ease: 'power3.out', stagger: .05,
-          scrollTrigger: { trigger: el, start: 'top 90%' } });
-    });
+    };
+    initBlurTitles();
 
     /* ---------- 数字滚动（React Bits "Count Up"，保留前导零与后缀） ---------- */
     document.querySelectorAll('.stat strong').forEach((el) => {
@@ -1806,31 +1842,37 @@
     let scrollVel = 0;
     ScrollTrigger.create({ onUpdate: (self) => { scrollVel = self.getVelocity(); } });
 
-    /* ---------- 跑马灯：速度驱动 + 桌面 pin 驻留（首屏与关于之间的翻章停顿） ----------
+    /* ---------- 跑马灯（GSAP 官网式）：速度驱动 + 桌面 pin 驻留（首屏与关于之间的翻章停顿） ----------
        has-anim 已停用 CSS 无限动画；空闲慢漂 72px/s，滚动按速度加速/反向，
-       位移按单套内容宽度取模循环（负向同样无缝） */
-    const marquee = document.querySelector('.marquee');
-    const track = document.querySelector('.marquee__track');
-    let mqSkew = null, mqOffset = 0, setW = 1;
-    if (marquee && track && track.children[0]) {
-      const measure = () => { setW = Math.max(1, track.children[0].offsetWidth); };
-      measure();
-      let mqRsz;
-      window.addEventListener('resize', () => {
-        clearTimeout(mqRsz);
-        mqRsz = setTimeout(measure, 200);
-      });
-      mqSkew = gsap.quickTo(marquee, 'skewX', { duration: .5, ease: 'power3' });
-      // 桌面：跑马灯带在视口上部驻留一段滚动，期间速度直接转化为文字流速
-      if (typeof gsap.matchMedia === 'function') {
-        gsap.matchMedia().add('(min-width: 901px)', () => {
-          const st = ScrollTrigger.create({
-            trigger: marquee, start: 'top 14%', end: '+=42%',
-            pin: true, anticipatePin: 1, refreshPriority: -1
-          });
-          return () => st.kill();
+       data-direction="right" 反向流动；位移按单套内容宽度取模循环（负向同样无缝） */
+    const mqState = Array.from(document.querySelectorAll('.marquee')).map((el) => {
+      const track = el.querySelector('.marquee__track');
+      if (!track || !track.children[0]) return null;
+      return {
+        marquee: el,
+        track,
+        offset: 0,
+        setW: 1,
+        dir: el.dataset.direction === 'right' ? -1 : 1,
+        skew: gsap.quickTo(el, 'skewX', { duration: .5, ease: 'power3' })
+      };
+    }).filter(Boolean);
+    const mqMeasure = () => mqState.forEach((s) => { s.setW = Math.max(1, s.track.children[0].offsetWidth); });
+    mqMeasure();
+    let mqRsz;
+    window.addEventListener('resize', () => {
+      clearTimeout(mqRsz);
+      mqRsz = setTimeout(mqMeasure, 200);
+    });
+    // 桌面：首段跑马灯在视口上部驻留一段滚动，期间速度直接转化为文字流速
+    if (mqState.length && typeof gsap.matchMedia === 'function') {
+      gsap.matchMedia().add('(min-width: 901px)', () => {
+        const st = ScrollTrigger.create({
+          trigger: mqState[0].marquee, start: 'top 14%', end: '+=42%',
+          pin: true, anticipatePin: 1, refreshPriority: -1
         });
-      }
+        return () => st.kill();
+      });
     }
 
     /* ---------- 章节 velocity 歪斜：滚动越快整章微倾（液体感，仅精确指针设备） ---------- */
@@ -1854,11 +1896,13 @@
       const dt = Math.min(0.05, gsap.ticker.time - velLast);
       velLast = gsap.ticker.time;
       const v = gsap.utils.clamp(-2400, 2400, scrollVel);
-      if (track) {
-        mqOffset += (72 + v * 0.85) * dt;
-        const x = ((mqOffset % setW) + setW) % setW; // 负向位移同样落在 [0, setW)
-        track.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
-        if (mqSkew) mqSkew(gsap.utils.clamp(-8, 8, v / 260));
+      if (mqState.length) {
+        mqState.forEach((s) => {
+          s.offset += (72 + v * 0.85) * s.dir * dt;
+          const x = ((s.offset % s.setW) + s.setW) % s.setW; // 负向位移同样落在 [0, setW)
+          s.track.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
+          s.skew(gsap.utils.clamp(-8, 8, v / 260) * s.dir);
+        });
       }
       const skewTarget = gsap.utils.clamp(-2.2, 2.2, v / 1100);
       sectionSkews.forEach((q) => q(skewTarget));
@@ -2066,34 +2110,41 @@
     const hudName = document.getElementById('chapterName');
     if (hudNum && hudName) {
       let hudCur = -2;
-      const setChapter = (i, num, name) => {
+      const nameOf = (key) => (key === 'HELLO' ? 'HELLO' : (typeof window.F8K_T === 'function' ? F8K_T(key) : key));
+      const setChapter = (i, num, key) => {
         if (i === hudCur) return;
         hudCur = i;
         hudNum.textContent = num;
-        hudName.textContent = name;
+        hudName.textContent = nameOf(key);
         gsap.fromTo([hudNum, hudName],
           { y: 8, autoAlpha: 0 },
           { y: 0, autoAlpha: 1, duration: .45, ease: 'power3.out', stagger: .04, overwrite: true });
       };
       const CHAPTERS = [
-        ['#about', '01', '关于'], ['#services', '02', '服务'], ['#skills', '03', '技能'],
-        ['#work', '04', '作品'], ['#exp', '05', '经历'], ['#voices', '06', '评价'],
-        ['#lab', '07', '实验室'], ['#play', '08', '彩蛋'], ['#stack', '09', '技术栈'],
-        ['#contact', '10', '联系']
+        ['#about', '01', 'sec.about'], ['#services', '02', 'sec.services'], ['#skills', '03', 'sec.skills'],
+        ['#work', '04', 'sec.work'], ['#exp', '05', 'sec.exp'], ['#voices', '06', 'sec.voices'],
+        ['#lab', '07', 'sec.lab'], ['#play', '08', 'sec.play'], ['#stack', '09', 'sec.stack'],
+        ['#contact', '10', 'sec.contact']
       ];
-      CHAPTERS.forEach(([sel, num, name], i) => {
+      CHAPTERS.forEach(([sel, num, key], i) => {
         const trig = document.querySelector(sel);
         if (!trig) return;
         ScrollTrigger.create({
           trigger: trig, start: 'top 60%',
           // 末章（页脚）end 钉到滚动尽头：pin 占位会使其 bottom 计算偏短，滚到底会失活
           end: i === CHAPTERS.length - 1 ? 'max' : 'bottom 60%',
-          onToggle: (self) => { if (self.isActive) setChapter(i, num, name); }
+          onToggle: (self) => { if (self.isActive) setChapter(i, num, key); }
         });
       });
       ScrollTrigger.create({
         trigger: '.hero', start: 'top top', end: 'bottom 60%',
         onToggle: (self) => { if (self.isActive) setChapter(-1, '00', 'HELLO'); }
+      });
+      // 语言切换：仅刷新当前章节读数，不重放动画
+      document.addEventListener('f8k-lang', () => {
+        if (hudCur === -1) { hudName.textContent = 'HELLO'; return; }
+        const entry = CHAPTERS[hudCur];
+        if (entry) hudName.textContent = nameOf(entry[2]);
       });
       // 滚入深色页脚时 HUD 反白
       const footer = document.querySelector('.footer');
@@ -2206,6 +2257,15 @@
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+
+    /* ---------- 语言切换：重建逐字揭示 / 章节标题 / 页脚一言 / 跑马灯宽度 ---------- */
+    document.addEventListener('f8k-lang', () => {
+      if (typeof window.F8K_T !== 'function') return;
+      initWordSplit();
+      initBlurTitles();
+      initHitokoto();
+      if (typeof mqMeasure === 'function') mqMeasure();
+    });
 
     /* ---------- 布局变化后刷新测量 ---------- */
     window.addEventListener('load', () => ScrollTrigger.refresh());

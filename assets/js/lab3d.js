@@ -1,9 +1,11 @@
 /* =========================================================
-   F8K® — 实验室 3D（借鉴 ciaoenergy.com 的金属罐 WebGL 质感）
-   MeshPhysicalMaterial：metalness/roughness/sheen/clearcoat，
-   明亮影棚三点布光（键光 + 薄荷轮廓 + 暖阳补光）；
-   交互：按住拖动旋转（带惯性滑行，学 jiejoe.com 的"甩"手感），
-   悬停视差倾斜，离屏/后台暂停，30fps 隔帧渲染省一半 GPU。
+   F8K® — 实验室 3D：迷你太阳系（可交互太空场景）
+   —— 太阳 + 八大行星 + 土星环 + 小行星带 + 星野，紫罗兰色板。
+   交互：
+     · 拖动旋转镜头（带惯性）    · 滚轮缩放
+     · 悬停行星高亮 + 双语铭牌    · 点击行星锁定跟随，点空白复位
+   纪律：共享 three.js 单例、离屏/后台暂停、30fps 隔帧渲染、
+         prefers-reduced-motion 直接让位静态降级。
    ========================================================= */
 (() => {
   'use strict';
@@ -21,10 +23,14 @@
   });
 
   document.addEventListener('f8k-idle', () => {
-    // 与 hero3d.js 共享同一次 three.js 加载（避免双实例）
-    window.__f8kThree = window.__f8kThree || loadScript('assets/vendor/three.min.js');
+    // 与 hero3d.js 共享同一次 three.js 加载（避免双实例）；
+    // three.min.js 已在 index.html 静态引入时，直接复用 window.THREE，不重复下载
+    window.__f8kThree = window.__f8kThree ||
+      (window.THREE ? Promise.resolve() : loadScript('assets/vendor/three.min.js'));
     window.__f8kThree.then(init).catch(() => { /* 静默放弃 3D */ });
   }, { once: true });
+
+  const lang = () => (window.F8K_LANG === 'zh' ? 'zh' : 'en');
 
   function init() {
     if (!window.THREE) return;
@@ -35,184 +41,416 @@
         const s = getComputedStyle(doc);
         const hex = (v, fb) => { const t = s.getPropertyValue(v).trim(); return t.startsWith('#') ? parseInt(t.slice(1), 16) : fb; };
         return {
-          accent: hex('--accent', 0x2c43f5),
+          accent: hex('--accent', 0x6b56d3),
           mint: hex('--accent-mint', 0x12b77e),
           sun: hex('--accent-sun', 0xf2a93b)
         };
       };
       let V = readVars();
-      // ciaoenergy 式低功耗预算：iOS / 小屏关 AA、降材质、DPR 分级（桌面 1.5 / 移动 2）
       const lowPower = /iPad|iPhone|iPod/.test(navigator.userAgent) || window.innerWidth < 1024;
 
       const renderer = new T.WebGLRenderer({
         canvas,
-        alpha: true,
+        alpha: false,
         antialias: !lowPower,
         powerPreference: 'low-power'
       });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 2 : 1.5));
       renderer.outputColorSpace = T.SRGBColorSpace;
-      renderer.toneMapping = T.ACESFilmicToneMapping; // 影棚级色调映射（ciaoenergy 同款）
-      renderer.toneMappingExposure = 1.0;
+      renderer.toneMapping = T.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
 
       const scene = new T.Scene();
-      const camera = new T.PerspectiveCamera(40, 1, 0.1, 60);
-      camera.position.set(0, 0.35, 6.6);
-      camera.lookAt(0, 0, 0);
+      scene.background = new T.Color('#0b0918');
 
-      /* ---------- 程序化环境贴图（无外网 HDRI，仅 Canvas 渐变 → PMREM；金属反射的"天光"） ---------- */
-      const makeEnv = () => {
-        const c = document.createElement('canvas');
-        c.width = 256; c.height = 128;
-        const g = c.getContext('2d');
-        const grad = g.createLinearGradient(0, 0, 0, 128);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.5, '#9aa4cf');
-        grad.addColorStop(1, '#161b2e');
-        g.fillStyle = grad; g.fillRect(0, 0, 256, 128);
-        g.globalAlpha = 0.9; g.fillStyle = '#ffffff';
-        g.beginPath(); g.ellipse(52, 42, 22, 14, 0, 0, Math.PI * 2); g.fill();
-        g.beginPath(); g.ellipse(204, 40, 22, 14, 0, 0, Math.PI * 2); g.fill();
-        g.globalAlpha = 1;
-        const tex = new T.CanvasTexture(c);
-        tex.mapping = T.EquirectangularReflectionMapping;
-        tex.colorSpace = T.SRGBColorSpace;
-        const pmrem = new T.PMREMGenerator(renderer);
-        const env = pmrem.fromEquirectangular(tex).texture;
-        tex.dispose(); pmrem.dispose();
-        return env;
+      const camera = new T.PerspectiveCamera(40, 1, 0.1, 140);
+      camera.position.set(0, 5, 17);
+
+      /* ---------- 深空背景：内面球体，顶点色纵向渐变（紫罗兰星云） ---------- */
+      const mkSpaceBg = () => {
+        const geo = new T.SphereGeometry(46, 32, 24);
+        const mat = new T.ShaderMaterial({
+          side: T.BackSide,
+          depthWrite: false,
+          depthTest: false,
+          uniforms: {
+            uTop: { value: new T.Color('#0b0918') },
+            uMid: { value: new T.Color('#241a4d') },
+            uBot: { value: new T.Color('#3b2a63') }
+          },
+          vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: [
+            'uniform vec3 uTop; uniform vec3 uMid; uniform vec3 uBot;',
+            'varying vec3 vP;',
+            'void main(){',
+            '  float t = clamp(vP.y / 46.0, -1.0, 1.0);',
+            '  vec3 c = t > 0.0 ? mix(uMid, uTop, pow(t, 0.8)) : mix(uMid, uBot, pow(-t, 0.8));',
+            '  gl_FragColor = vec4(c, 1.0);',
+            '}'
+          ].join('\n')
+        });
+        return new T.Mesh(geo, mat);
       };
-      try { scene.environment = makeEnv(); } catch (e) { /* PMREM 失败则仅靠灯光 */ }
+      const spaceBg = mkSpaceBg();
+      scene.add(spaceBg);
 
-      /* ---------- 明亮影棚布光 ---------- */
-      scene.add(new T.AmbientLight(0xffffff, 0.5));
-      const key = new T.DirectionalLight(0xffffff, 1.8);
-      key.position.set(5, 6, 4);
-      scene.add(key);
-      const rim = new T.DirectionalLight(V.mint, 1.1);
-      rim.position.set(-4, 2, -3);
+      /* ---------- 星野：两层 Points，轻微视差 ---------- */
+      const stars = new T.Group();
+      const mkStars = (count, rMin, rMax, size, opacity) => {
+        const pos = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+          const r = rMin + Math.random() * (rMax - rMin);
+          const th = Math.random() * Math.PI * 2;
+          const ph = Math.acos(2 * Math.random() - 1);
+          pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+          pos[i * 3 + 1] = r * Math.sin(ph) * Math.sin(th);
+          pos[i * 3 + 2] = r * Math.cos(ph);
+        }
+        const g = new T.BufferGeometry();
+        g.setAttribute('position', new T.BufferAttribute(pos, 3));
+        const m = new T.PointsMaterial({
+          color: 0xdfd7ff, size, sizeAttenuation: true, transparent: true,
+          opacity, depthWrite: false, blending: T.AdditiveBlending
+        });
+        return new T.Points(g, m);
+      };
+      stars.add(mkStars(lowPower ? 260 : 520, 26, 44, 0.16, 0.75));
+      stars.add(mkStars(lowPower ? 140 : 260, 18, 26, 0.1, 0.5));
+      scene.add(stars);
+
+      /* ---------- 光照：太阳点光 + 环境 + 冷色轮廓 ---------- */
+      scene.add(new T.AmbientLight(0x8d85c9, 0.5));
+      const sunLight = new T.PointLight(0xfff3d6, 3.0, 0, 0);
+      scene.add(sunLight);
+      const rim = new T.DirectionalLight(V.mint, 0.7);
+      rim.position.set(-8, 6, -6);
       scene.add(rim);
-      const fill = new T.DirectionalLight(V.sun, 0.8);
-      fill.position.set(0, -3, 2);
-      scene.add(fill);
 
-      /* ---------- 金属罐（ciao 罐体思路：主体 + 顶底环 + 标签带） ---------- */
-      const root = new T.Group();
-      const can = new T.Group();
+      /* ---------- 程序化贴图：带状（气态巨行星）与斑块（类地行星） ---------- */
+      const texCache = {};
+      const bandTexture = (stops) => {
+        const key = 'band' + stops.map((s) => s[0]).join(',');
+        if (texCache[key]) return texCache[key];
+        const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+        const g = c.getContext('2d');
+        const grad = g.createLinearGradient(0, 0, 0, 64);
+        stops.forEach(([t, col]) => grad.addColorStop(t, col));
+        g.fillStyle = grad; g.fillRect(0, 0, 128, 64);
+        const t = new T.CanvasTexture(c);
+        t.colorSpace = T.SRGBColorSpace;
+        texCache[key] = t;
+        return t;
+      };
+      const speckTexture = (base, specks) => {
+        const key = 'speck' + base.toString(16) + specks.length;
+        if (texCache[key]) return texCache[key];
+        const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+        const g = c.getContext('2d');
+        g.fillStyle = '#' + base.toString(16).padStart(6, '0'); g.fillRect(0, 0, 128, 64);
+        specks.forEach(([col, n, rMax]) => {
+          g.fillStyle = '#' + col.toString(16).padStart(6, '0');
+          for (let i = 0; i < n; i++) {
+            g.globalAlpha = 0.25 + Math.random() * 0.5;
+            g.beginPath();
+            g.arc(Math.random() * 128, Math.random() * 64, 1 + Math.random() * rMax, 0, Math.PI * 2);
+            g.fill();
+          }
+        });
+        g.globalAlpha = 1;
+        const t = new T.CanvasTexture(c);
+        t.colorSpace = T.SRGBColorSpace;
+        texCache[key] = t;
+        return t;
+      };
 
-      // ciaoenergy 式 makeMaterial：低功耗自动去掉 clearcoat/sheen/ior，回落 MeshStandardMaterial
-      const makeMat = (c, extra) => {
-        const base = Object.assign({ color: c, metalness: 0.9, roughness: 0.22, envMapIntensity: 3 }, extra || {});
-        if (lowPower) return new T.MeshStandardMaterial(base);
-        return new T.MeshPhysicalMaterial(Object.assign({}, base, {
-          sheen: 0.8, sheenColor: 0xffffff, sheenRoughness: 0.2,
-          clearcoat: 1, clearcoatRoughness: 0.1, reflectivity: 1, ior: 2
+      /* ---------- 行星数据（真实比例参照：相对半径 / Titius-Bode 间距 / Kepler 速度 / 自转轴倾角） ---------- */
+      const PLANETS = [
+        { key: 'sun',      name: { en: 'Sun', zh: '太阳' },   fact: { en: 'the star at the center', zh: '恒星 · 中心之火' },  radius: 1.15, dist: 0,    spin: 0.05, tilt: 0,     color: 0xffe3ad, emissive: 0xeaa14f, bands: null, specks: null, glow: 6.8 },
+        { key: 'mercury',  name: { en: 'Mercury', zh: '水星' }, fact: { en: 'smallest · fastest planet', zh: '最小 · 最快' },  radius: 0.12, dist: 2.2,  spin: 0.15, tilt: 0.001, color: 0xb7b1c9, specks: [[0x8f88a6, 12, 3]], glow: 0 },
+        { key: 'venus',    name: { en: 'Venus', zh: '金星' },   fact: { en: 'the hottest planet', zh: '最炽热的行星' },         radius: 0.27, dist: 3.0,  spin: -0.06, tilt: 3.09, color: 0xe7cf9b, specks: [[0xcaa66a, 10, 4]], glow: 0 },
+        { key: 'earth',    name: { en: 'Earth', zh: '地球' },   fact: { en: 'our home', zh: '我们的家园' },                      radius: 0.3,  dist: 3.9,  spin: 0.6,  tilt: 0.41, color: 0x4f7fd6, specks: [[0x58a86b, 14, 6], [0xd8e6f2, 10, 5]], moon: { radius: 0.08, dist: 0.6, speed: 1.8 }, glow: 0 },
+        { key: 'mars',     name: { en: 'Mars', zh: '火星' },    fact: { en: 'the red planet', zh: '红色星球' },                  radius: 0.16, dist: 5.0,  spin: 0.55, tilt: 0.44, color: 0xc96f6f, specks: [[0x8f4a4a, 12, 4]], glow: 0 },
+        { key: 'jupiter',  name: { en: 'Jupiter', zh: '木星' }, fact: { en: 'the largest planet', zh: '最大的行星' },            radius: 1.0,  dist: 7.6,  spin: 1.2,  tilt: 0.05, color: 0xd9c7a8, bands: [[0, '#d9c7a8'], [0.25, '#c9b28f'], [0.45, '#a88a72'], [0.62, '#d9c7a8'], [0.8, '#b3926f'], [1, '#e4d6bd']], glow: 0 },
+        { key: 'saturn',   name: { en: 'Saturn', zh: '土星' },  fact: { en: 'the ringed giant', zh: '带光环的巨行星' },           radius: 0.84, dist: 10.2, spin: 1.05, tilt: 0.47, color: 0xe5d0a2, bands: [[0, '#e5d0a2'], [0.3, '#d6bd8c'], [0.55, '#c8ab7c'], [0.8, '#e8d6ad'], [1, '#d9c292']], ring: { inner: 1.02, outer: 1.95, color: 0xd8c49a }, glow: 0 },
+        { key: 'uranus',   name: { en: 'Uranus', zh: '天王星' }, fact: { en: 'the tilted ice giant', zh: '倾斜的冰巨星' },         radius: 0.36, dist: 12.6, spin: -0.7, tilt: 1.71, color: 0x8fd3d8, bands: [[0, '#8fd3d8'], [0.5, '#9fdcdf'], [1, '#7fc2c8']], glow: 0 },
+        { key: 'neptune',  name: { en: 'Neptune', zh: '海王星' }, fact: { en: 'the farthest planet', zh: '最遥远的行星' },        radius: 0.34, dist: 14.6, spin: 0.6,  tilt: 0.49, color: 0x5a7fd6, bands: [[0, '#5a7fd6'], [0.4, '#4a6cc2'], [0.7, '#668bd8'], [1, '#5274c8']], glow: 0 }
+      ];
+
+      /* ---------- 构建轨道 + 行星 ---------- */
+      const orbitGroup = new T.Group();     // 整体绕太阳公转的容器
+      const pickables = [];                 // 可悬停/点击的网格（含太阳）
+      const planets = [];                   // { def, mesh, orbit } 运行时状态
+
+      const orbitGeo = () => {
+        const seg = 128;
+        const pts = new Float32Array((seg + 1) * 3);
+        for (let i = 0; i <= seg; i++) {
+          const a = (i / seg) * Math.PI * 2;
+          pts[i * 3] = Math.cos(a); pts[i * 3 + 1] = 0; pts[i * 3 + 2] = Math.sin(a);
+        }
+        const g = new T.BufferGeometry();
+        g.setAttribute('position', new T.BufferAttribute(pts, 3));
+        return g;
+      };
+
+      // 太阳（程序化日面颗粒纹理，缓慢自转）
+      const sunTexture = (() => {
+        const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+        const g = c.getContext('2d');
+        const base = g.createLinearGradient(0, 0, 0, 128);
+        base.addColorStop(0, '#ffe3a6'); base.addColorStop(0.6, '#f7b95c'); base.addColorStop(1, '#e89a3f');
+        g.fillStyle = base; g.fillRect(0, 0, 256, 128);
+        for (let i = 0; i < 260; i++) {
+          g.globalAlpha = 0.05 + Math.random() * 0.13;
+          g.fillStyle = Math.random() < 0.5 ? '#fff3cf' : '#c96f2e';
+          const x = Math.random() * 256, y = Math.random() * 128, r = 1 + Math.random() * 7;
+          g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+        }
+        g.globalAlpha = 1;
+        const t = new T.CanvasTexture(c);
+        t.colorSpace = T.SRGBColorSpace;
+        return t;
+      })();
+      const sunMesh = new T.Mesh(
+        new T.SphereGeometry(PLANETS[0].radius, 40, 26),
+        new T.MeshBasicMaterial({ color: 0xffffff, map: sunTexture })
+      );
+      orbitGroup.add(sunMesh);
+      pickables.push(sunMesh);
+      // 太阳辉光
+      const glow = (() => {
+        const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+        const g = c.getContext('2d');
+        const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+        grad.addColorStop(0, 'rgba(255,214,140,0.95)');
+        grad.addColorStop(0.25, 'rgba(244,171,90,0.55)');
+        grad.addColorStop(0.6, 'rgba(150,90,160,0.18)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = grad; g.fillRect(0, 0, 128, 128);
+        const t = new T.CanvasTexture(c);
+        const s = new T.Sprite(new T.SpriteMaterial({
+          map: t, color: 0xf4c469, blending: T.AdditiveBlending, transparent: true, depthWrite: false
         }));
-      };
-      const metal = makeMat; // 保留旧变量名，后续引用不用改
+        s.scale.setScalar(PLANETS[0].glow);
+        return s;
+      })();
+      orbitGroup.add(glow);
+      const sunRef = { def: PLANETS[0], mesh: sunMesh, orbit: null, glow };
 
-      const bodyMat = metal(V.accent);
-      can.add(new T.Mesh(new T.CylinderGeometry(1, 1, 2.5, 48), bodyMat));
-      const bandMat = metal(V.mint, { sheen: 0.2, clearcoat: 0.3, emissive: V.mint, emissiveIntensity: 0.12 });
-      can.add(new T.Mesh(new T.CylinderGeometry(1.045, 1.045, 1.05, 48), bandMat));
-      const rimGeo = new T.TorusGeometry(1, 0.055, 12, 48);
-      const rimMat = metal(V.sun, { roughness: 0.18, sheen: 0.9 });
-      const rimTop = new T.Mesh(rimGeo, rimMat);
-      rimTop.position.y = 1.25;
-      const rimBottom = rimTop.clone();
-      rimBottom.position.y = -1.25;
-      can.add(rimTop, rimBottom);
+      planets.push(sunRef);
 
-      root.add(can);
-
-      // 追加小金属罐簇（共享几何/材质，仅新增变换，成本极低，随 root 自转形成罐群）
-      const addMiniCan = (s, x, y, z, deg) => {
-        const m = can.clone();
-        m.scale.setScalar(s);
-        m.position.set(x, y, z);
-        m.rotation.z = (deg * Math.PI) / 180;
-        root.add(m);
-      };
-      addMiniCan(0.42, 2.15, -1.3, 0.2, 18);
-      addMiniCan(0.34, -2.3, -0.95, -0.4, -22);
-      addMiniCan(0.27, 0.2, -2.15, 0.55, 10);
-
-      /* ---------- 轨道环 + 三颗卫星（呼应站点三色） ---------- */
-      const ringMat = metal(V.sun, { roughness: 0.15, sheen: 0.9, clearcoat: 0.8 });
-      const ring = new T.Mesh(new T.TorusGeometry(1.75, 0.045, 10, 64), ringMat);
-      ring.rotation.x = Math.PI / 2.6;
-      root.add(ring);
-
-      const satColors = [V.mint, V.sun, 0xffffff];
-      const sats = [];
-      const satGeo = new T.SphereGeometry(0.11, 20, 14);
-      for (let i = 0; i < 3; i++) {
-        const m = new T.Mesh(satGeo, metal(satColors[i], { roughness: 0.2 }));
-        const holder = new T.Group();
-        m.position.x = 2.15;
-        holder.rotation.y = (i / 3) * Math.PI * 2;
-        holder.add(m);
-        root.add(holder);
-        sats.push(holder);
-      }
-
-      scene.add(root);
-
-      document.addEventListener('f8k-theme', () => {
-        V = readVars();
-        bodyMat.color.setHex(V.accent);
-        bandMat.color.setHex(V.mint);
-        bandMat.emissive.setHex(V.mint);
-        rimMat.color.setHex(V.sun);
-        ringMat.color.setHex(V.sun);
-        rim.color.setHex(V.mint);
-        fill.color.setHex(V.sun);
-        sats.forEach((h, i) => { h.children[0].material.color.setHex(satColors[i]); });
-        satColors[1] = V.sun; satColors[0] = V.mint;
+      PLANETS.slice(1).forEach((def) => {
+        const orbit = new T.Group();
+        const tilt = new T.Group();                 // 自转轴倾角（真实轴向倾斜）
+        tilt.position.x = def.dist;
+        tilt.rotation.z = def.tilt || 0;
+        orbit.add(tilt);
+        const mesh = new T.Mesh(
+          new T.SphereGeometry(def.radius, lowPower ? 24 : 40, lowPower ? 16 : 26),
+          new T.MeshStandardMaterial({
+            color: def.color, roughness: 0.85, metalness: 0.05,
+            map: def.bands ? bandTexture(def.bands) : (def.specks ? speckTexture(def.color, def.specks) : null)
+          })
+        );
+        tilt.add(mesh);
+        // 轨道线
+        const line = new T.LineLoop(
+          orbitGeo(),
+          new T.LineBasicMaterial({ color: 0x9a8fe0, transparent: true, opacity: 0.16 })
+        );
+        line.scale.setScalar(def.dist);
+        orbit.add(line);
+        // 土星环（位于赤道面，随行星轴倾角一同倾斜）
+        if (def.ring) {
+          const ring = new T.Mesh(
+            new T.RingGeometry(def.ring.inner, def.ring.outer, 96),
+            new T.MeshBasicMaterial({ color: def.ring.color, side: T.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false })
+          );
+          ring.rotation.x = -Math.PI / 2;
+          mesh.add(ring);
+        }
+        // 地球的月亮：绕地球公转（不随地球自转，约 5° 轨道倾角）
+        let mOrbit = null;
+        if (def.moon) {
+          mOrbit = new T.Group();
+          const m = new T.Mesh(
+            new T.SphereGeometry(def.moon.radius, 20, 14),
+            new T.MeshStandardMaterial({ color: 0xbfc2d6, roughness: 0.9, metalness: 0.02 })
+          );
+          m.position.x = def.moon.dist;
+          mOrbit.add(m);
+          mOrbit.rotation.z = 0.09;
+          tilt.add(mOrbit);
+        }
+        orbitGroup.add(orbit);
+        pickables.push(mesh);
+        // Kepler 第三定律：角速度 ∝ 距离^-1.5（以地球 ≈ 0.6 rad/s 归一）
+        const speed = 4.62 / Math.pow(def.dist, 1.5);
+        planets.push({ def, mesh, orbit, speed, moon: mOrbit });
       });
 
-      /* ---------- 交互：拖拽旋转（惯性）+ 悬停视差 ---------- */
-      let vel = 0, dragging = false, lastX = 0, tx = 0, ty = 0;
+      // 小行星带（火星与木星之间，Points 环带）
+      const belt = (() => {
+        const n = lowPower ? 300 : 700;
+        const pos = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const r = 6.2 + (Math.random() - 0.5) * 1.1;
+          const y = (Math.random() - 0.5) * 0.5;
+          pos[i * 3] = Math.cos(a) * r;
+          pos[i * 3 + 1] = y;
+          pos[i * 3 + 2] = Math.sin(a) * r;
+        }
+        const g = new T.BufferGeometry();
+        g.setAttribute('position', new T.BufferAttribute(pos, 3));
+        return new T.Points(g, new T.PointsMaterial({
+          color: 0xc9bfe8, size: 0.05, transparent: true, opacity: 0.7,
+          depthWrite: false, sizeAttenuation: true
+        }));
+      })();
+      orbitGroup.add(belt);
+
+      scene.add(orbitGroup);
+
+      /* ---------- 交互状态 ---------- */
+      let yaw = 0.4, pitch = 0.42, dist = 17.5;
+      let yawVel = 0, pitchVel = 0;
+      let dragging = false, lastX = 0, lastY = 0, moved = 0;
+      let hovered = null, focused = null;   // planet runtime ref
+      const camTarget = new T.Vector3(0, 0, 0);
+      const focusTarget = new T.Vector3(0, 0, 0);
+
+      // 行星铭牌：若 HTML 未提供则动态创建（挂在 stage 内，绝对定位）
+      let tooltip = document.getElementById('labTooltip');
+      if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'labTooltip';
+        tooltip.className = 'lab__tooltip';
+        tooltip.setAttribute('aria-hidden', 'true');
+        (canvas.parentElement || document.body).appendChild(tooltip);
+      }
+      const showTooltip = (p) => {
+        if (!tooltip) return;
+        const l = lang();
+        tooltip.innerHTML = '<b>' + p.def.name[l] + '</b><span>' + p.def.fact[l] + '</span>';
+        tooltip.classList.add('is-on');
+        const world = new T.Vector3();
+        p.mesh.getWorldPosition(world);
+        const v = world.clone().project(camera);
+        const r = canvas.getBoundingClientRect();
+        let x = (v.x * 0.5 + 0.5) * r.width + 14;
+        let y = (-v.y * 0.5 + 0.5) * r.height - 8;
+        x = Math.min(Math.max(x, 12), r.width - tooltip.offsetWidth - 12);
+        y = Math.min(Math.max(y, 12), r.height - tooltip.offsetHeight - 12);
+        tooltip.style.transform = 'translate(' + x.toFixed(0) + 'px,' + y.toFixed(0) + 'px)';
+      };
+      const hideTooltip = () => { if (tooltip) tooltip.classList.remove('is-on'); };
+
+      const raycaster = new T.Raycaster();
+      const ndc = new T.Vector2();
+      const pick = (e) => {
+        const r = canvas.getBoundingClientRect();
+        ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+        ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+        raycaster.setFromCamera(ndc, camera);
+        const hits = raycaster.intersectObjects(pickables, false);
+        return hits.length ? hits[0].object : null;
+      };
+      const applyHighlight = (p, on) => {
+        if (!p || p.def.key === 'sun') return;
+        p.mesh.material.emissive = new T.Color(on ? 0x6b56d3 : 0x000000);
+        p.mesh.material.emissiveIntensity = on ? 0.55 : 0;
+      };
+      const setHover = (p) => {
+        if (hovered === p) return;
+        if (hovered) applyHighlight(hovered, false);
+        hovered = p;
+        if (p) { applyHighlight(p, true); showTooltip(p); }
+        else hideTooltip();
+      };
+      const setFocus = (p) => {
+        focused = p;
+        hideTooltip();
+        if (p && tooltip) { showTooltip(p); }
+      };
+
       canvas.addEventListener('pointerdown', (e) => {
-        dragging = true;
-        lastX = e.clientX;
+        dragging = true; moved = 0;
+        lastX = e.clientX; lastY = e.clientY;
         canvas.setPointerCapture(e.pointerId);
       });
       canvas.addEventListener('pointermove', (e) => {
         if (dragging) {
-          vel += (e.clientX - lastX) * 0.0055;
-          vel = Math.max(-0.5, Math.min(0.5, vel));
-          lastX = e.clientX;
+          const dx = e.clientX - lastX, dy = e.clientY - lastY;
+          lastX = e.clientX; lastY = e.clientY;
+          moved += Math.abs(dx) + Math.abs(dy);
+          // 1:1 跟手：直接转动相机，同时记录速度供松手惯性滑行
+          yaw -= dx * 0.0045;
+          pitch += dy * 0.0032;
+          yawVel = -dx * 0.0045;
+          pitchVel = dy * 0.0032;
         } else {
-          const r = canvas.getBoundingClientRect();
-          tx = ((e.clientX - r.left) / r.width - 0.5) * 0.5;
-          ty = ((e.clientY - r.top) / r.height - 0.5) * 0.4;
+          const hit = pick(e);
+          setHover(hit ? planets.find((p) => p.mesh === hit) || null : null);
         }
       });
-      const endDrag = () => { dragging = false; };
+      const endDrag = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        if (moved < 6) { // 视为点击：锁定跟随 / 复位
+          const hit = pick(e);
+          const p = hit ? planets.find((pp) => pp.mesh === hit) : null;
+          setFocus(p);
+        }
+      };
       canvas.addEventListener('pointerup', endDrag);
       canvas.addEventListener('pointercancel', endDrag);
-      canvas.addEventListener('pointerleave', () => { tx = 0; ty = 0; });
+      canvas.addEventListener('pointerleave', () => { if (!dragging) setHover(null); });
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        dist = Math.min(30, Math.max(6.5, dist + e.deltaY * 0.012));
+      }, { passive: false });
 
-      /* ---------- 循环：离屏/后台暂停 + 隔帧 30fps ---------- */
+      /* ---------- 帧循环 ---------- */
+      const mkVec = () => new T.Vector3();
       let running = false, inView = false, rafId = 0, frame = 0, rendered = false;
+      let lastT = 0;
       const tick = (t) => {
         if (!running) return;
-        const idle = 0.005;
-        if (dragging) {
-          root.rotation.y += vel;
-          vel *= 0.94;
-        } else {
-          vel += (idle - vel) * 0.02;
-          root.rotation.y += vel;
+        const dt = lastT ? Math.min((t - lastT) / 1000, 0.05) : 0.016;
+        lastT = t;
+
+        // 相机：拖动惯性 + 空闲缓慢漂移（与刷新率无关，按 dt 积分）
+        if (!dragging) {
+          yaw += (yawVel + 0.05) * dt;   // 0.05 rad/s 慢漂 + 惯性
+          pitch += pitchVel * dt;
         }
-        const s = 1 + Math.sin(t * 0.0016) * 0.03;
-        root.scale.setScalar(s);
-        root.position.y = Math.sin(t * 0.0011) * 0.14;
-        ring.rotation.z += 0.0035;
-        sats.forEach((h) => { h.rotation.y += 0.004 + (h === sats[2] ? 0.002 : 0); });
-        root.rotation.x += (ty * 0.6 - root.rotation.x) * 0.05;
-        root.rotation.z += (tx * 0.3 - root.rotation.z) * 0.05;
+        const damp = Math.pow(0.0016, dt); // 每秒衰减到 0.16%：约 0.9^60
+        yawVel *= damp; pitchVel *= damp;
+        pitch = Math.min(1.32, Math.max(0.06, pitch));
+
+        // 公转（Kepler 速度）＋自转（各行星球速/方向）＋月亮公转
+        planets.forEach((p) => {
+          if (p.orbit) p.orbit.rotation.y += p.speed * dt;
+          if (p.mesh) p.mesh.rotation.y += (p.def.spin || 0.25) * dt;
+          if (p.moon) p.moon.rotation.y += p.def.moon.speed * dt;
+        });
+        orbitGroup.rotation.y += 0.025 * dt; // 极缓慢整体自旋（星野相对运动）
+        stars.rotation.y += 0.012 * dt;
+
+        // 相机目标：锁定行星则跟随其世界坐标
+        const target = focused ? focused.mesh.getWorldPosition(mkVec()) : focusTarget.set(0, 0, 0);
+        camTarget.lerp(target, 0.08);
+        camera.position.set(
+          camTarget.x + dist * Math.cos(pitch) * Math.cos(yaw),
+          camTarget.y + dist * Math.sin(pitch),
+          camTarget.z + dist * Math.cos(pitch) * Math.sin(yaw)
+        );
+        camera.lookAt(camTarget);
+
+        // 悬停铭牌跟随（行星在动）
+        if (hovered && !dragging && tooltip && tooltip.classList.contains('is-on')) showTooltip(hovered);
+
         if ((frame++ & 1) === 0) {
           renderer.render(scene, camera);
           if (!rendered) { rendered = true; canvas.classList.add('is-on'); }
@@ -223,25 +461,20 @@
         const want = on && inView && !document.hidden;
         if (want === running) return;
         running = want;
+        lastT = 0; // 重置时间基准，避免恢复瞬间大步长跳变
         if (running) rafId = requestAnimationFrame(tick);
         else cancelAnimationFrame(rafId);
       };
 
       canvas.addEventListener('webglcontextlost', (e) => {
         e.preventDefault();
-        running = false;
-        cancelAnimationFrame(rafId);
+        running = false; cancelAnimationFrame(rafId);
         canvas.classList.remove('is-on');
       }, false);
-      canvas.addEventListener('webglcontextrestored', () => {
-        resize();
-        frame = 0;
-        setRunning(true);
-      }, false);
+      canvas.addEventListener('webglcontextrestored', () => { resize(); frame = 0; setRunning(true); }, false);
 
       const resize = () => {
-        const w = canvas.clientWidth || 300;
-        const h = canvas.clientHeight || 300;
+        const w = canvas.clientWidth || 300, h = canvas.clientHeight || 300;
         renderer.setSize(w, h, false);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
@@ -257,6 +490,24 @@
         setRunning(true);
       }, { rootMargin: '120px' }).observe(canvas);
       document.addEventListener('visibilitychange', () => setRunning(true));
+
+      /* ---------- 主题联动 ---------- */
+      document.addEventListener('f8k-theme', () => {
+        V = readVars();
+        rim.color.setHex(V.mint);
+        sunRef.mesh.material.color.setHex(PLANETS[0].color);
+        glow.material.color.setHex(V.sun);
+        sunLight.color.setHex(0xfff3d6);
+        spaceBg.material.uniforms.uMid.value.setHex(V.accent);
+        spaceBg.material.uniforms.uTop.value.set(new T.Color('#0b0918'));
+        spaceBg.material.uniforms.uBot.value.set(new T.Color('#2a1d4d'));
+      });
+
+      /* ---------- 语言切换：刷新铭牌 ---------- */
+      document.addEventListener('f8k-lang', () => {
+        if (hovered && tooltip && tooltip.classList.contains('is-on')) showTooltip(hovered);
+        else if (focused && tooltip) { /* 聚焦态下一帧重新定位 */ setTimeout(() => { if (focused) showTooltip(focused); }, 60); }
+      });
 
       window.__f8kLab = true; // 调试验证标记
     } catch (e) { /* WebGL 不可用则静默跳过 */ }

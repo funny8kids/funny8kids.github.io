@@ -1,6 +1,7 @@
 /* AI 分身：大模型对话面板
    端点从 window.F8K_CHAT_ENDPOINT 读取（需你接的代理函数，见 functions/ai/chat.js）。
-   未配置端点 / 拉取失败时优雅降级：面板照常可用，返回本站内置示例话术，不弹错。 */
+   未配置端点 / 拉取失败时优雅降级：面板照常可用，返回本站内置示例话术，不弹错。
+   文案走 i18n.js（F8K_T），随 f8k-lang 实时取当前语言。 */
 (function () {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const toggle = document.getElementById('chatToggle');
@@ -11,24 +12,33 @@
   const input = document.getElementById('chatInput');
   if (!toggle || !panel || !log || !form) return;
 
+  const t = (key) => (window.F8K_T ? window.F8K_T(key) : key);
   const ENDPOINT = window.F8K_CHAT_ENDPOINT || '';
-  const SYS_HINT = ENDPOINT
-    ? '已接入 AI 分身后端 · 问问关于我的技能/经历/项目。'
-    : 'AI 未接入——配置代理端点后即可对话（见 functions/ai/chat.js）。以下是本站内置示例，可先感受交互。';
+  const SYS_HINT = () => ENDPOINT ? t('chat.sysHint.on') : t('chat.sysHint.off');
+  const FALLBACK = () => [t('chat.fb.1'), t('chat.fb.2'), t('chat.fb.3')];
 
-  const say = (text, who) => {
+  const say = (text, who, kind) => {
     const row = document.createElement('div');
-    row.className = 'chat-line chat-line--' + who;
+    row.className = 'chat-line chat-line--' + who + (kind ? ' chat-line--' + kind : '');
     row.textContent = text;
     log.appendChild(row);
     log.scrollTop = log.scrollHeight;
+    if (who === 'bot') document.dispatchEvent(new CustomEvent('f8k-chat-bot'));
     return row;
   };
 
   const boot = () => {
-    say(SYS_HINT, 'bot');
-    say('你好，我是 F8K 的 AI 分身 ✦ 试着问我：做过哪些项目？', 'bot');
+    say(SYS_HINT(), 'bot', 'boot');
+    say(t('chat.boot'), 'bot', 'boot');
   };
+
+  // 语言切换：面板已打开时，仅就地重译系统引导行（用户历史消息不动）
+  document.addEventListener('f8k-lang', () => {
+    const texts = [SYS_HINT(), t('chat.boot')];
+    log.querySelectorAll('.chat-line--boot').forEach((el, i) => {
+      if (texts[i] != null) el.textContent = texts[i];
+    });
+  });
 
   const open = () => {
     panel.hidden = false;
@@ -36,6 +46,7 @@
     toggle.classList.add('is-on');
     if (!reduced) panel.classList.add('is-in');
     if (!log.children.length) boot();
+    document.dispatchEvent(new CustomEvent('f8k-chat-open'));
     input.focus();
   };
   const shut = () => {
@@ -43,6 +54,7 @@
     toggle.setAttribute('aria-expanded', 'false');
     toggle.classList.remove('is-on');
     panel.classList.remove('is-in');
+    document.dispatchEvent(new CustomEvent('f8k-chat-close'));
   };
   toggle.addEventListener('click', () => (panel.hidden ? open() : shut()));
   close.addEventListener('click', shut);
@@ -50,12 +62,6 @@
     if (e.key === 'Escape' && !panel.hidden) shut();
   });
 
-  /* 内置示例话术（未接入后端时兜底，循环复用） */
-  const FALLBACK = [
-    '我是本地示例回复。接入后端后，我会基于你的真实经历回答。',
-    '目前还没有连到模型。把 API 端到 functions/ai/chat.js 代理后，这里就会用你的资料作答。',
-    '你可以先感受交互：这条也是内置话术。',
-  ];
   let fb = 0;
 
   const streamIn = async (res, row) => {
@@ -76,8 +82,8 @@
         if (data === '[DONE]') return;
         try {
           const j = JSON.parse(data);
-          const t = j.reply != null ? j.reply : j.delta;
-          if (t) { row.textContent += t; log.scrollTop = log.scrollHeight; }
+          const val = j.reply != null ? j.reply : j.delta;
+          if (val) { row.textContent += val; log.scrollTop = log.scrollHeight; }
         } catch (e) { continue; }
       }
     }
@@ -91,7 +97,7 @@
     input.value = '';
     const row = say('…', 'bot');
     if (!ENDPOINT) {
-      row.textContent = FALLBACK[fb++ % FALLBACK.length];
+      row.textContent = FALLBACK()[fb++ % FALLBACK().length];
       return;
     }
     try {
@@ -104,10 +110,10 @@
       if ((res.headers.get('content-type') || '').includes('text/event-stream')) await streamIn(res, row);
       else {
         const j = await res.json();
-        row.textContent = j.reply || '（空回复）';
+        row.textContent = j.reply || t('chat.empty');
       }
     } catch (err) {
-      row.textContent = '连接后端失败（' + err.message + '）。请检查代理端点配置。';
+      row.textContent = t('chat.error').replace('msg', err.message);
     }
     log.scrollTop = log.scrollHeight;
   });

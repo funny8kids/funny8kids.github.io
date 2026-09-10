@@ -38,11 +38,11 @@
       const C = {};
       const readColors = () => {
         const s = getComputedStyle(doc);
-        C.accent = s.getPropertyValue('--accent').trim() || '#2c43f5';
-        C.mint = s.getPropertyValue('--accent-mint').trim() || '#12b77e';
-        C.sun = s.getPropertyValue('--accent-sun').trim() || '#f2a93b';
-        C.ink = s.getPropertyValue('--ink').trim() || '#171512';
-        C.muted = s.getPropertyValue('--muted').trim() || '#6f6c63';
+        C.accent = s.getPropertyValue('--accent').trim() || '#6b56d3';
+        C.mint = s.getPropertyValue('--accent-mint').trim() || '#b5657f';
+        C.sun = s.getPropertyValue('--accent-sun').trim() || '#c19a44';
+        C.ink = s.getPropertyValue('--ink').trim() || '#241b2f';
+        C.muted = s.getPropertyValue('--muted').trim() || '#7e7484';
       };
       readColors();
       const colorOf = (name) => name === 'mint' ? C.mint : name === 'sun' ? C.sun : C.accent;

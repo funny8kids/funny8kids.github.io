@@ -1,25 +1,13 @@
 /* =========================================================
-   F8K® — 彩蛋物理游乐场 v3
-   场景 = brm.io/matter-js/demo/#constraints 的 8 组约束设施，
-   坐标与参数与官方 examples/constraints.js 逐项一致：
-     ① 刚性全局约束（五边形）   ② 软性全局约束（三角形）
-     ③ 阻尼软性全局约束（方形） ④ 转动约束（销钉转板 + 球）
-     ⑤ 转动多体约束（转板 + 球，同组不互撞）
-     ⑥ 刚性多体约束（六边形 + 1 边形）⑦ 软性多体约束（方形 + 三角形）
-     ⑧ 阻尼软性多体约束（六边形 + 七边形）
-   渲染复刻官方 Render：bodyColorPalette 色板、约束线 + 锚点圆、
-   showAngleIndicator 角度指示线、showSleeping 睡眠半透明、
-   鼠标 angularStiffness:0（拖拽时刚体可旋转）、拖拽约束不可见。
-   世界坐标固定 800×600，等比例缩放居中（官方 Render.lookAt 同款思路）。
-
-   站点性能/手感改进（相对 v2）：
-     · 时间步进改为真实 rAF 时间差（clamp ≤33.3ms），模拟速度与刷新率无关；
-     · 开启 enableSleeping，睡眠体半透明真正生效，全静止时省 CPU；
-     · 鼠标约束 stiffness 0.2（官方默认 0.1）+ 拖拽阻尼，甩动手感更"软"；
-     · 新增 ResizeObserver，布局变化即时重算鼠标映射；
-     · prefers-reduced-motion 降级：只渲染单帧、不跑循环、不自动 kick；
-     · 与 pendulums.js 共享 matter 加载 promise；
-     · 新增「目标[ON]」计分小游戏：往下方目标带投掷刚体得分。
+   F8K® — 彩蛋 · 时间的摆（Double Pendulum × Time Scale）
+   单景、无多场景、无计分、无简单几何体 —— 只留一件「墨笔」。
+   · 物理：brm.io/matter-js/demo/#doublePendulum 逐项同参
+     （低重力 0.002、同组不互撞、frictionAir 0、chain 0.9/0/0.7、
+       首臂销钉 + 次臂 -0.3π 起手）。
+   · 渲染：摆臂画成渐细的墨色笔触（不是矩形），摆锤是一点镀金
+     光晕，尾迹按速度由鸢尾紫渐染至镀金 —— 混沌如墨迹晕染。
+   · 时间：#timescale 思路 —— 时间尺度旋钮在 0.1×–2× 间平滑缓动
+     （bullet-time 慢镜），静置即可、不喧哗。
    ========================================================= */
 (() => {
   'use strict';
@@ -37,60 +25,102 @@
   });
 
   document.addEventListener('f8k-idle', () => {
-    // 与 pendulums.js 共享同一个加载 promise,避免重复注入脚本
+    // 与 pendulums.js 共享同一个加载 promise，避免重复注入脚本
     window.__f8kMatter = window.__f8kMatter || loadScript('assets/vendor/matter.min.js');
     window.__f8kMatter.then(init).catch(() => { /* 静默放弃 */ });
   }, { once: true });
 
+  /* ---------- 题签文案（EN/ZH 内联，随 f8k-lang 重渲染） ---------- */
+  const TXT = {
+    en: { name: 'Double Pendulum', hint: 'drag an arm · dilate time' },
+    zh: { name: '双摆', hint: '拽动摆臂 · 拉伸时间' }
+  };
+
   function init() {
     if (!window.Matter) return;
     const M = window.Matter;
-    const { Engine, Bodies, Body, Composite, Constraint, Mouse, MouseConstraint, Query, Events, Sleeping } = M;
+    const { Engine, Bodies, Body, Composite, Composites, Constraint, Mouse, MouseConstraint } = M;
+
     try {
-      const doc = document.documentElement;
-      // enableSleeping：睡眠体半透明 + 静止时零计算（官方演示不启用，这里为了手感与省电）
-      const engine = Engine.create({ enableSleeping: true });
-      engine.gravity.y = 1;
       const ctx = canvas.getContext('2d');
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-      /* ---------- 官方演示世界：800×600，等比缩放居中 ---------- */
       const WORLD_W = 800, WORLD_H = 600;
+      const TWO_PI = Math.PI * 2;
+      const LENGTH = 200;
       let W = 0, H = 0, S = 1, OX = 0, OY = 0;
 
-      /* ---------- 官方 bodyColorPalette（matter-js 0.19 Render 源码提取） ---------- */
-      const PALETTE = ['#f19648', '#f5d259', '#f55a3c', '#063e7b', '#ececd1'];
-      const fillOf = (b) => b.isStatic ? '#171512' : PALETTE[b.id % PALETTE.length];
-      const strokeOf = (b) => (b.isStatic ? '#555' : 'rgba(23,21,18,.0)'); // 官方动态体 stroke #ccc 但 lineWidth 0（不描边）
-
+      /* ---------- 色板（读 CSS 变量，随明暗主题联动） ---------- */
       const C = {};
       const readColors = () => {
-        const s = getComputedStyle(doc);
-        C.accent = s.getPropertyValue('--accent').trim() || '#2c43f5';
-        C.wire = s.getPropertyValue('--muted').trim() || '#6f6c63';
-        C.ink = s.getPropertyValue('--ink').trim() || '#171512';
+        const s = getComputedStyle(document.documentElement);
+        const v = (n, fb) => (s.getPropertyValue(n) || '').trim() || fb;
+        C.ink = v('--ink', '#241b2f');
+        C.muted = v('--muted', '#7e7484');
+        C.accent = v('--accent', '#6b56d3');
+        C.sun = v('--accent-sun', '#c19a44');
       };
+      const toRgb = (c) => {
+        const h = String(c).replace('#', '');
+        const p = h.length === 3 ? h.split('').map((x) => x + x).join('') : h;
+        return [parseInt(p.slice(0, 2), 16), parseInt(p.slice(2, 4), 16), parseInt(p.slice(4, 6), 16)];
+      };
+      const mix = (a, b, t) => {
+        const A = toRgb(a), B = toRgb(b);
+        return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * t).toString(16).padStart(2, '0')).join('');
+      };
+      const rgba = (c, a) => 'rgba(' + toRgb(c).join(',') + ',' + a + ')';
       readColors();
 
-      let bodies = []; // 全部动态体（渲染与激活判定用）
-      let mc = null;
-      let wireframe = false; // 样式[线]：官方 wireframes:true 渲染模式
+      /* ---------- 引擎 + 双摆（官方同参） ---------- */
+      const engine = Engine.create({ enableSleeping: false });
+      engine.gravity.y = 1;
+      engine.gravity.scale = 0.002; // 官方低重力：缓慢、优雅
 
-      /* ---------- 目标计分小游戏 ---------- */
-      let goalMode = false;
-      let score = 0;
-      const scoreEl = document.getElementById('playScore');
-      const goalBtn = document.getElementById('playGoal');
-      const goalTop = 505, goalBottom = 548;
-      const scoreCooldown = new Map(); // bodyId -> time 已计分的时间戳（冷却）
-      let goalFlashUntil = 0;
-      const paintScore = () => {
-        if (scoreEl) scoreEl.textContent = 'SCORE ' + String(score).padStart(2, '0');
+      const mouse = Mouse.create(canvas);
+      mouse.pixelRatio = dpr; // 与 canvas 后备缓冲 dpr 放大保持一致（HiDPI 命中校正）
+      const mc = MouseConstraint.create(engine, {
+        mouse,
+        constraint: { stiffness: 0.2, angularStiffness: 0, render: { visible: false } }
+      });
+      Composite.add(engine.world, mc);
+
+      const group = Body.nextGroup(true);
+      const pendulum = Composites.stack(350, 160, 2, 1, -20, 0, (x, y) =>
+        Bodies.rectangle(x, y, LENGTH, 22, { collisionFilter: { group }, frictionAir: 0, chamfer: 5 }));
+      Composites.chain(pendulum, 0.45, 0, -0.45, 0, {
+        stiffness: 0.9, length: 0, angularStiffness: 0.7, render: { visible: false }
+      });
+      Composite.add(pendulum, Constraint.create({
+        bodyB: pendulum.bodies[0],
+        pointB: { x: -LENGTH * 0.42, y: 0 },
+        pointA: { x: pendulum.bodies[0].position.x - LENGTH * 0.42, y: pendulum.bodies[0].position.y },
+        stiffness: 0.9, length: 0, render: { visible: false }
+      }));
+      const lowerArm = pendulum.bodies[1];
+      Body.rotate(lowerArm, -Math.PI * 0.3, { x: lowerArm.position.x - 100, y: lowerArm.position.y });
+      Composite.add(engine.world, pendulum);
+
+      const pivot = { x: 350 - LENGTH * 0.42, y: 160 };
+      const tipOf = (body) => {
+        const h = LENGTH / 2;
+        return { x: body.position.x + Math.cos(body.angle) * h, y: body.position.y + Math.sin(body.angle) * h };
       };
-      const resetGoal = () => { score = 0; scoreCooldown.clear(); paintScore(); };
+      const trail = [];
 
-      const wakeAll = () => Composite.allBodies(engine.world).forEach((b) => Sleeping.set(b, false));
+      /* ---------- 时间尺度旋钮（bullet-time 平滑缓动） ---------- */
+      let timeScale = 1, timeScaleTarget = 1;
+      const timeRange = document.getElementById('playTime');
+      const timeVal = document.getElementById('playTimeVal');
+      const paintTime = () => { if (timeVal) timeVal.textContent = '×' + timeScaleTarget.toFixed(2); };
+      if (timeRange) {
+        timeRange.addEventListener('input', () => {
+          timeScaleTarget = parseFloat(timeRange.value);
+          paintTime();
+        });
+      }
+      paintTime();
 
+      /* ---------- 测量 / 缩放 ---------- */
       const measure = () => {
         W = canvas.clientWidth;
         H = canvas.clientHeight;
@@ -99,261 +129,77 @@
         S = Math.min(W / WORLD_W, H / WORLD_H);
         OX = (W - WORLD_W * S) / 2;
         OY = (H - WORLD_H * S) / 2;
-        // 官方 Mouse 坐标换算钩子：position = absolute × scale + offset → 世界坐标
-        if (mc && mc.mouse) {
-          mc.mouse.scale = { x: 1 / S, y: 1 / S };
-          mc.mouse.offset = { x: -OX / S, y: -OY / S };
-        }
-      };
-      const toWorld = (p) => ({ x: (p.x - OX) / S, y: (p.y - OY) / S });
-
-      /* ---------- 官方 8 组约束设施（参数与 examples/constraints.js 一致） ---------- */
-      // ① 刚性全局约束：五边形，锚点钉在头顶（stiffness 默认 1）
-      const addStiffGlobal = () => {
-        const body = Bodies.polygon(150, 200, 5, 30);
-        const c = Constraint.create({ pointA: { x: 150, y: 100 }, bodyB: body, pointB: { x: -10, y: -10 } });
-        return [body, c];
-      };
-      // ② 软性全局约束：三角形，弹性绳索
-      const addSoftGlobal = () => {
-        const body = Bodies.polygon(280, 100, 3, 30);
-        const c = Constraint.create({ pointA: { x: 280, y: 120 }, bodyB: body, pointB: { x: -10, y: -7 }, stiffness: 0.001 });
-        return [body, c];
-      };
-      // ③ 阻尼软性全局约束：方形，软绳 + 阻尼
-      const addDampedSoftGlobal = () => {
-        const body = Bodies.polygon(400, 100, 4, 30);
-        const c = Constraint.create({ pointA: { x: 400, y: 120 }, bodyB: body, pointB: { x: -10, y: -10 }, stiffness: 0.001, damping: 0.05 });
-        return [body, c];
-      };
-      // ④ 转动约束：销钉转板（length 0 → 绕钉自由旋转）+ 自由小球
-      const addRevolute = () => {
-        const body = Bodies.rectangle(600, 200, 200, 20);
-        const ball = Bodies.circle(550, 150, 20);
-        const c = Constraint.create({ pointA: { x: 600, y: 200 }, bodyB: body, length: 0 });
-        return [body, ball, c];
-      };
-      // ⑤ 转动多体约束：板与球相互约束（同组 -1 互不碰撞）
-      const addRevoluteMulti = () => {
-        const body = Bodies.rectangle(500, 400, 100, 20, { collisionFilter: { group: -1 } });
-        const ball = Bodies.circle(600, 400, 20, { collisionFilter: { group: -1 } });
-        const c = Constraint.create({ bodyA: body, bodyB: ball });
-        return [body, ball, c];
-      };
-      // ⑥ 刚性多体约束：六边形 ↔ 1 边形（刚性杆）
-      const addStiffMulti = () => {
-        const a = Bodies.polygon(100, 400, 6, 20);
-        const b = Bodies.polygon(200, 400, 1, 50);
-        const c = Constraint.create({ bodyA: a, pointA: { x: -10, y: -10 }, bodyB: b, pointB: { x: -10, y: -10 } });
-        return [a, b, c];
-      };
-      // ⑦ 软性多体约束：方形 ↔ 三角形（软绳）
-      const addSoftMulti = () => {
-        const a = Bodies.polygon(300, 400, 4, 20);
-        const b = Bodies.polygon(400, 400, 3, 30);
-        const c = Constraint.create({ bodyA: a, pointA: { x: -10, y: -10 }, bodyB: b, pointB: { x: -10, y: -7 }, stiffness: 0.001 });
-        return [a, b, c];
-      };
-      // ⑧ 阻尼软性多体约束：六边形 ↔ 七边形（软绳 + 阻尼）
-      const addDampedSoftMulti = () => {
-        const a = Bodies.polygon(500, 400, 6, 30);
-        const b = Bodies.polygon(600, 400, 7, 60);
-        const c = Constraint.create({ bodyA: a, pointA: { x: -10, y: -10 }, bodyB: b, pointB: { x: -10, y: -10 }, stiffness: 0.001, damping: 0.1 });
-        return [a, b, c];
+        mc.mouse.scale = { x: 1 / S, y: 1 / S };
+        mc.mouse.offset = { x: -OX / S, y: -OY / S };
       };
 
-      /* ---------- 组装（官方 walls + 8 组设施 + 鼠标约束） ---------- */
-      const build = () => {
-        Composite.clear(engine.world, false);
-        const walls = [
-          Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
-          Bodies.rectangle(400, 600, 800, 50, { isStatic: true }),
-          Bodies.rectangle(800, 300, 50, 600, { isStatic: true }),
-          Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
-        ];
-        Composite.add(engine.world, [].concat(
-          addStiffGlobal(), addSoftGlobal(), addDampedSoftGlobal(),
-          addRevolute(), addRevoluteMulti(),
-          addStiffMulti(), addSoftMulti(), addDampedSoftMulti(),
-          walls, [mc]
-        ));
-        bodies = Composite.allBodies(engine.world).filter((b) => !b.isStatic);
-      };
-
-      /* ---------- 鼠标：官方 angularStiffness:0（拖拽可旋转）+ 约束不可见 ----------
-         stiffness 0.1 → 0.2：让被拖拽刚体带一点松软跟随（jiejoe 甩动手感） */
-      const mouse = Mouse.create(canvas);
-      mc = MouseConstraint.create(engine, {
-        mouse,
-        constraint: { angularStiffness: 0, stiffness: 0.2, render: { visible: false } }
-      });
-      Events.on(mc, 'startdrag', () => wakeAll()); // 拖拽唤醒全场（约束链不会因睡眠断裂）
-
-      /* ---------- 触屏：Matter.Mouse 不含触摸，命中即接管（仅平移） ---------- */
-      let touchDrag = null;
-      const relPos = (t) => {
-        const r = canvas.getBoundingClientRect();
-        return { x: t.clientX - r.left, y: t.clientY - r.top };
-      };
-      canvas.addEventListener('touchstart', (e) => {
-        const hit = Query.point(bodies, toWorld(relPos(e.touches[0])))[0];
-        if (!hit) return;
-        e.preventDefault();
-        Sleeping.set(hit, false);
-        touchDrag = hit;
-      }, { passive: false });
-      canvas.addEventListener('touchmove', (e) => {
-        if (!touchDrag) return;
-        e.preventDefault();
-        const p = toWorld(relPos(e.touches[0]));
-        Body.setVelocity(touchDrag, { x: 0, y: 0 });
-        Body.setPosition(touchDrag, p);
-      }, { passive: false });
-      const endTouch = () => { touchDrag = null; };
-      canvas.addEventListener('touchend', endTouch);
-      canvas.addEventListener('touchcancel', endTouch);
-
-      /* ---------- 渲染：复刻官方 Render（约束 / 色板填充 / 角度指示 / 睡眠半透明） ---------- */
-      const drawConstraints = () => {
-        ctx.lineCap = 'round';
-        for (const c of Composite.allConstraints(engine.world)) {
-          if (!c.render.visible || !c.pointA || !c.pointB) continue;
-          const a = c.bodyA ? { x: c.bodyA.position.x + c.pointA.x, y: c.bodyA.position.y + c.pointA.y } : c.pointA;
-          const b = c.bodyB ? { x: c.bodyB.position.x + c.pointB.x, y: c.bodyB.position.y + c.pointB.y } : c.pointB;
-          ctx.strokeStyle = C.wire;          // 官方默认白线（暗底）→ 亮底用墨灰
-          ctx.lineWidth = c.render.lineWidth || 2;
-          if (c.render.type === 'pin') {     // 官方 pin：仅在 pointA 画 3px 圆
-            ctx.beginPath();
-            ctx.arc(a.x, a.y, 3, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.stroke();
-            continue;
-          }
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-          if (c.render.anchors) {            // 官方 anchors：两端 3px 实心圆
-            ctx.fillStyle = C.wire;
-            ctx.beginPath();
-            ctx.arc(a.x, a.y, 3, 0, Math.PI * 2);
-            ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.fill();
-          }
-        }
-      };
-
-      const traceBody = (b) => {
-        const v = b.vertices;
+      /* ---------- 渲染：墨笔摆臂 + 镀金摆锤 + 尾迹 ---------- */
+      const armStroke = (body, wA, wB) => {
+        const dir = { x: Math.cos(body.angle), y: Math.sin(body.angle) };
+        const h = LENGTH / 2;
+        const ax = body.position.x - dir.x * h, ay = body.position.y - dir.y * h;
+        const bx = body.position.x + dir.x * h, by = body.position.y + dir.y * h;
+        const px = -dir.y, py = dir.x;
+        ctx.fillStyle = C.ink;
         ctx.beginPath();
-        ctx.moveTo(v[0].x, v[0].y);
-        for (let i = 1; i < v.length; i++) ctx.lineTo(v[i].x, v[i].y);
+        ctx.moveTo(ax + px * wA / 2, ay + py * wA / 2);
+        ctx.lineTo(ax - px * wA / 2, ay - py * wA / 2);
+        ctx.lineTo(bx - px * wB / 2, by - py * wB / 2);
+        ctx.lineTo(bx + px * wB / 2, by + py * wB / 2);
         ctx.closePath();
-      };
-
-      const drawBodySolid = (b) => {
-        ctx.globalAlpha = b.isSleeping ? 0.5 : 1; // 官方 showSleeping：睡眠体半透明
-        traceBody(b);
-        ctx.fillStyle = fillOf(b);
-        ctx.strokeStyle = strokeOf(b);
-        ctx.lineWidth = b.isStatic ? 1 : 0;      // 官方：动态体不描边，静态体 1px 描边
         ctx.fill();
-        if (b.isStatic) ctx.stroke();
-        ctx.globalAlpha = 1;
-      };
-
-      const drawBodyWire = (b) => {
-        traceBody(b);
-        ctx.strokeStyle = C.ink;                 // 官方线框模式：#ccc → 亮底用墨色
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      };
-
-      const drawAngleIndicators = () => {
-        // 官方 bodyAxes：从质心到 v0 与末顶点的中点；线框 indianred/1px，实体白色 overlay/2px
-        ctx.strokeStyle = C.accent;
-        ctx.globalAlpha = wireframe ? 0.9 : 0.45;
-        ctx.lineWidth = wireframe ? 1 : 2;
-        ctx.beginPath();
-        for (const b of bodies) {
-          const v = b.vertices;
-          ctx.moveTo(b.position.x, b.position.y);
-          ctx.lineTo((v[0].x + v[v.length - 1].x) / 2, (v[0].y + v[v.length - 1].y) / 2);
-        }
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      };
-
-      const drawGoal = () => {
-        if (!goalMode) return;
-        const h = goalBottom - goalTop;
-        const flashing = performance.now() < goalFlashUntil;
-        ctx.save();
-        ctx.fillStyle = flashing ? C.accent : C.ink;
-        ctx.globalAlpha = flashing ? 0.10 : 0.06;
-        ctx.fillRect(0, goalTop, WORLD_W, h);
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = flashing ? C.accent : C.wire;
-        ctx.lineWidth = 2;
-        ctx.setLineDash([8, 8]);
-        ctx.beginPath();
-        ctx.moveTo(0, goalTop); ctx.lineTo(WORLD_W, goalTop);
-        ctx.moveTo(0, goalBottom); ctx.lineTo(WORLD_W, goalBottom);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        // 目标中标签
-        ctx.fillStyle = flashing ? C.accent : C.ink;
-        ctx.font = '10px ui-monospace, monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.globalAlpha = 0.7;
-        ctx.fillText('GOAL', WORLD_W / 2, goalTop + h / 2);
-        ctx.globalAlpha = 1;
-        ctx.restore();
-      };
-
-      // 计分：动态体向下穿过目标带 + 冷却
-      const checkScore = () => {
-        if (!goalMode) return;
-        const now = performance.now();
-        for (const b of bodies) {
-          if (b.isStatic || b.isSleeping) continue;
-          const last = scoreCooldown.get(b.id) || 0;
-          if (now - last < 600) continue;
-          if (b.position.y >= goalTop && b.position.y <= goalBottom && b.velocity.y > 0.3) {
-            score++;
-            scoreCooldown.set(b.id, now);
-            goalFlashUntil = now + 400;
-            paintScore();
-          }
-        }
       };
 
       const draw = () => {
         ctx.setTransform(dpr * S, 0, 0, dpr * S, dpr * OX, dpr * OY);
         ctx.clearRect(0, 0, WORLD_W, WORLD_H);
-        drawConstraints();
-        if (wireframe) for (const b of bodies) drawBodyWire(b);
-        else for (const b of bodies) drawBodySolid(b);
-        drawAngleIndicators();
-        drawGoal();
+
+        // 销钉
+        ctx.fillStyle = C.muted;
+        ctx.beginPath(); ctx.arc(pivot.x, pivot.y, 3.5, 0, TWO_PI); ctx.fill();
+
+        // 摆臂（销钉端粗 → 自由端细）
+        armStroke(pendulum.bodies[0], 9, 4);
+        armStroke(pendulum.bodies[1], 4, 2.5);
+
+        // 镀金摆锤（光晕 + 芯）
+        const tip = tipOf(lowerArm);
+        const glow = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 18);
+        glow.addColorStop(0, rgba(C.sun, 0.55));
+        glow.addColorStop(1, rgba(C.sun, 0));
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(tip.x, tip.y, 18, 0, TWO_PI); ctx.fill();
+        ctx.fillStyle = C.sun;
+        ctx.beginPath(); ctx.arc(tip.x, tip.y, 4.5, 0, TWO_PI); ctx.fill();
+
+        // 尾迹：慢→鸢尾紫，快→镀金，逐帧淡出
+        const n = trail.length;
+        for (let i = 0; i < n; i += 2) {
+          const p = trail[i];
+          const t = Math.min(1, p.speed / 12);
+          ctx.globalAlpha = Math.max(0, 1 - i / n) * 0.9;
+          ctx.fillStyle = mix(C.accent, C.sun, t);
+          ctx.fillRect(p.x, p.y, 1.8, 1.8);
+        }
+        ctx.globalAlpha = 1;
       };
 
-      /* ---------- 渲染循环：真实时间步长 + 离屏/后台零计算 ---------- */
+      /* ---------- 循环：真实时间步长 × 时间尺度，离屏零计算 ---------- */
       let running = false, inView = false, rafId = 0, last = 0;
       const loop = (ts) => {
         if (!running) return;
         if (last === 0) last = ts;
-        const delta = Math.min(ts - last, 33.3); // 与刷新率无关；后台恢复时 clamp 防跳变
+        const delta = Math.min(ts - last, 33.3);
         last = ts;
-        Engine.update(engine, delta);
-        checkScore();
+        timeScale += (timeScaleTarget - timeScale) * 0.12; // 平滑缓动（bullet-time）
+        Engine.update(engine, delta * timeScale);
+        trail.unshift({ x: tipOf(lowerArm).x, y: tipOf(lowerArm).y, speed: lowerArm.speed });
+        if (trail.length > 1600) trail.pop();
         draw();
         rafId = requestAnimationFrame(loop);
       };
       const setRunning = (on) => {
-        if (reducedMotion) { draw(); return; }  // 降级：只渲染单帧，不跑连续循环
+        if (reducedMotion) { draw(); return; } // 降级：只渲染单帧
         const want = on && inView && !document.hidden;
         if (want === running) return;
         running = want;
@@ -361,89 +207,24 @@
         if (running) rafId = requestAnimationFrame(loop);
         else cancelAnimationFrame(rafId);
       };
-      // 开场一击：每次滚进视野都唤醒场景（官方 Runner 常驻运行的同观感）
-      const kick = () => {
-        if (reducedMotion) return;
-        const b = bodies;
-        if (b.length < 13) return;
-        Body.setVelocity(b[0], { x: 7, y: -3 });     // ① 刚性五边形荡起
-        Body.setVelocity(b[4], { x: -5, y: 2 });     // ④ 转板上的球撞向转板
-        Body.setAngularVelocity(b[3], 0.09);         //    转板获得角速度
-        Body.setVelocity(b[12], { x: 4, y: -4 });    // ⑧ 阻尼软绳七边形抛起
-      };
       new IntersectionObserver((en) => {
         inView = en[0].isIntersecting;
-        if (inView) kick();
         setRunning(true);
       }, { rootMargin: '120px' }).observe(canvas);
       document.addEventListener('visibilitychange', () => setRunning(true));
-      // 布局变化（如字体加载、内容撑开）即时重算缩放与鼠标映射
       if (window.ResizeObserver) new ResizeObserver(() => { measure(); draw(); }).observe(canvas);
 
-      /* ---------- HUD 控制 ---------- */
-      const gravityBtn = document.getElementById('playGravity');
-      if (gravityBtn) {
-        gravityBtn.addEventListener('click', () => {
-          engine.gravity.y *= -1;
-          gravityBtn.textContent = engine.gravity.y > 0 ? '重力[↓]' : '重力[↑]';
-          wakeAll();
-        });
-      }
-      const styleBtn = document.getElementById('playStyle');
-      if (styleBtn) {
-        styleBtn.addEventListener('click', () => {
-          wireframe = !wireframe;
-          styleBtn.textContent = wireframe ? '样式[彩]' : '样式[线]';
-          draw();
-        });
-      }
-      const addBtn = document.getElementById('playAdd');
-      if (addBtn) {
-        addBtn.addEventListener('click', () => {
-          for (let i = 0; i < 2; i++) {
-            const sides = 1 + Math.floor(Math.random() * 7);      // 1~7 边形（1 边形即圆球）
-            const radius = 14 + Math.random() * 44;
-            const b = Bodies.polygon(
-              40 + Math.random() * (WORLD_W - 80), -50 - Math.random() * 60, sides, radius,
-              { restitution: 0.4, friction: 0.1 }
-            );
-            Body.setAngle(b, Math.random() * Math.PI);
-            Composite.add(engine.world, b);
-            bodies.push(b);
-          }
-          draw();
-          if (reducedMotion) draw(); // 降级下无循环，仅静态刷新
-        });
-      }
-      const resetBtn = document.getElementById('playReset');
-      if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-          if (canvas.animate) {
-            canvas.animate([{ opacity: 1 }, { opacity: .25 }, { opacity: 1 }], { duration: 260, easing: 'ease-out' });
-          }
-          if (engine.gravity.y < 0) {
-            engine.gravity.y = 1;
-            gravityBtn && (gravityBtn.textContent = '重力[↓]');
-          }
-          build();
-          if (goalMode) resetGoal();
-          draw();
-        });
-      }
-      if (goalBtn) {
-        goalBtn.addEventListener('click', () => {
-          goalMode = !goalMode;
-          goalBtn.textContent = goalMode ? '目标[ON]' : '目标[OFF]';
-          if (goalMode) resetGoal();
-          draw();
-        });
-      }
-
-      /* ---------- 主题联动 / resize（等比缩放自适应） ---------- */
-      document.addEventListener('f8k-theme', () => {
-        readColors();
-        draw();
-      });
+      /* ---------- 题签 / 语言 / 主题 / resize ---------- */
+      const lang = () => (window.F8K_LANG === 'zh' ? 'zh' : 'en');
+      const nameEl = document.getElementById('playName');
+      const hintEl = document.getElementById('playHint');
+      const paintMeta = () => {
+        if (nameEl) nameEl.textContent = TXT[lang()].name;
+        if (hintEl) hintEl.textContent = TXT[lang()].hint;
+      };
+      paintMeta();
+      document.addEventListener('f8k-lang', paintMeta);
+      document.addEventListener('f8k-theme', () => { readColors(); draw(); });
       let rsz;
       window.addEventListener('resize', () => {
         clearTimeout(rsz);
@@ -451,16 +232,14 @@
       });
 
       measure();
-      build();
       draw();
       window.__f8kPlay = {
-        bodies: () => bodies.length,
-        gravity: () => engine.gravity.y,
+        scene: () => 'pendulum',
+        bodies: () => Composite.allBodies(engine.world).filter((b) => !b.isStatic).length,
         constraints: () => Composite.allConstraints(engine.world).length,
-        wireframe: () => wireframe,
-        scale: () => S,
-        goal: () => goalMode,
-        score: () => score
+        timeScale: () => timeScaleTarget,
+        gravity: () => engine.gravity.y,
+        scale: () => S
       }; // 调试验证标记
     } catch (e) {
       canvas.style.display = 'none';

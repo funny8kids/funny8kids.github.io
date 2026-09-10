@@ -3,29 +3,29 @@
     <filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
     <filter id="g2"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer></filter>
   </defs>
-  <rect width="1280" height="960" fill="#F6F4EE"/>
+  <rect width="1280" height="960" fill="#f4eedf"/>
   <!-- 轨道圈 -->
-  <g fill="none" stroke="rgba(23,21,18,.16)" stroke-width="1.5">
+  <g fill="none" stroke="rgba(36,27,47,.16)" stroke-width="1.5">
     <circle cx="640" cy="430" r="300"/>
     <circle cx="640" cy="430" r="210"/>
     <circle cx="640" cy="430" r="130"/>
   </g>
   <!-- 品牌斜线 -->
-  <line x1="440" y1="620" x2="840" y2="220" stroke="#2C43F5" stroke-width="10" stroke-linecap="round"/>
-  <circle cx="640" cy="430" r="22" fill="#2C43F5"/>
+  <line x1="440" y1="620" x2="840" y2="220" stroke="#6b56d3" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="640" cy="430" r="22" fill="#6b56d3"/>
   <!-- 轨道上的点 -->
-  <circle cx="358" cy="327" r="10" fill="#171512"/>
-  <circle cx="894" cy="589" r="14" fill="#2C43F5"/>
-  <circle cx="568" cy="233" r="8" fill="#7C8BFF"/>
+  <circle cx="358" cy="327" r="10" fill="#241b2f"/>
+  <circle cx="894" cy="589" r="14" fill="#6b56d3"/>
+  <circle cx="568" cy="233" r="8" fill="#a89aff"/>
   <!-- 折线图 -->
-  <polyline points="120,780 200,740 280,760 360,700 440,720 520,660" fill="none" stroke="#171512" stroke-width="2"/>
-  <g fill="#171512">
+  <polyline points="120,780 200,740 280,760 360,700 440,720 520,660" fill="none" stroke="#241b2f" stroke-width="2"/>
+  <g fill="#241b2f">
     <circle cx="120" cy="780" r="5"/><circle cx="200" cy="740" r="5"/><circle cx="280" cy="760" r="5"/>
     <circle cx="360" cy="700" r="5"/><circle cx="440" cy="720" r="5"/><circle cx="520" cy="660" r="5"/>
   </g>
-  <circle cx="520" cy="660" r="9" fill="none" stroke="#2C43F5" stroke-width="2"/>
+  <circle cx="520" cy="660" r="9" fill="none" stroke="#6b56d3" stroke-width="2"/>
   <!-- 角标十字 -->
-  <g stroke="rgba(23,21,18,.3)" stroke-width="1.5">
+  <g stroke="rgba(36,27,47,.3)" stroke-width="1.5">
     <path d="M72 80h16M80 72v16"/><path d="M1192 80h16M1200 72v16"/>
     <path d="M72 880h16M80 872v16"/><path d="M1192 880h16M1200 872v16"/>
   </g>
