@@ -74,6 +74,104 @@
     },
   };
 
+  /* ============ 批次B③ 真实环境音（Freesound CC0 · 懒加载 · 章节交叉淡入淡出） ============ */
+  const AMBS = {
+    wind: { url: 'assets/audio/amb-wind.mp3', vol: 0.5, loop: true },
+    rain: { url: 'assets/audio/amb-rain.mp3', vol: 0.55, loop: true },
+    bees: { url: 'assets/audio/amb-bees.mp3', vol: 0.42, loop: true },
+    glass: { url: 'assets/audio/fx-glass.mp3', vol: 0.5 },
+    thunder: { url: 'assets/audio/fx-thunder.mp3', vol: 0.85 },
+  };
+  const ambBufs = {};
+  const ambWaiters = {};
+  function ambLoad(k, cb) {
+    if (ambBufs[k]) { if (cb) cb(); return; }
+    if (ambWaiters[k]) { if (cb) ambWaiters[k].push(cb); return; }
+    ambWaiters[k] = cb ? [cb] : [];
+    fetch(AMBS[k].url).then((r) => r.arrayBuffer()).then((b) => ac().decodeAudioData(b))
+      .then((buf) => { ambBufs[k] = buf; const w = ambWaiters[k]; delete ambWaiters[k]; w.forEach((f) => f()); })
+      .catch(() => { delete ambWaiters[k]; });
+  }
+  let loopKey = null, loopWant = 'wind', loopSrc = null, loopGain = null;
+  let thunderWant = false, thunderT = 0, ambArmed = false;
+  function loopStop(fade) {
+    if (!loopSrc) return;
+    const g = loopGain, n = loopSrc;
+    loopSrc = loopGain = loopKey = null;
+    try { g.gain.cancelScheduledValues(ctx.currentTime); g.gain.setValueAtTime(g.gain.value, ctx.currentTime); g.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + fade); } catch (e) { /* noop */ }
+    setTimeout(() => { try { n.stop(); } catch (e) { /* noop */ } }, fade * 1000 + 150);
+  }
+  function loopStart(k) {
+    if (!on || !ambBufs[k] || loopKey === k) return;
+    const c = ac();
+    if (!c) return;
+    loopStop(1.1);
+    const src = c.createBufferSource();
+    src.buffer = ambBufs[k];
+    src.loop = true;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, c.currentTime);
+    g.gain.linearRampToValueAtTime(AMBS[k].vol, c.currentTime + 1.5);
+    src.connect(g);
+    g.connect(master);
+    src.start();
+    loopKey = k; loopSrc = src; loopGain = g;
+  }
+  function setLoop(k) {
+    loopWant = k;
+    if (!k) { loopStop(1.2); return; }
+    if (!on || !ambArmed) return;
+    ambLoad(k, () => loopStart(k));
+  }
+  function oneShot(k) {
+    if (!on) return;
+    ambLoad(k, () => {
+      const c = ac();
+      if (!c || !ambBufs[k]) return;
+      const src = c.createBufferSource();
+      src.buffer = ambBufs[k];
+      const g = c.createGain();
+      g.gain.value = AMBS[k].vol;
+      src.connect(g);
+      g.connect(master);
+      src.start();
+    });
+  }
+  function thunderTick() {
+    clearTimeout(thunderT);
+    if (!thunderWant) return;
+    thunderT = setTimeout(() => { if (thunderWant) { oneShot('thunder'); thunderTick(); } }, 4200 + Math.random() * 5200);
+  }
+  const AMB_SECTIONS = ['hero', 'garden', 'bloom3dSec', 'storm', 'gallery', 'notes'];
+  const AMB_BY_ID = { hero: 'wind', garden: 'wind', bloom3dSec: 'wind', storm: 'rain', gallery: 'bees', notes: 'rain' };
+  function bindAmbience() {
+    if (!('IntersectionObserver' in window)) return;
+    const vis = {};
+    let glassDone = false;
+    const io = new IntersectionObserver((ens) => {
+      ens.forEach((en) => {
+        // 高章节(如 gallery)相交比可能永远 <0.3，改用"覆盖半个视口"判可见
+        const cover = en.intersectionRect.height >= Math.min(en.boundingClientRect.height, innerHeight * 0.45);
+        vis[en.target.id] = en.isIntersecting && (en.intersectionRatio >= 0.3 || cover);
+      });
+      if (vis.storm) {
+        if (!thunderWant) { thunderWant = true; oneShot('thunder'); thunderTick(); }
+      } else if (thunderWant) { thunderWant = false; clearTimeout(thunderT); }
+      let want;
+      if (vis.storm) want = 'rain';
+      else {
+        want = null;
+        for (let i = AMB_SECTIONS.length - 1; i >= 0; i--) {
+          const id = AMB_SECTIONS[i];
+          if (id !== 'storm' && vis[id]) { want = AMB_BY_ID[id]; break; }
+        }
+      }
+      if (vis.bloom3dSec && !glassDone) { glassDone = true; oneShot('glass'); }
+      if (want !== loopWant) setLoop(want);
+    }, { threshold: Array.from({ length: 21 }, (_, i) => i / 20) });
+    AMB_SECTIONS.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+  }
+
   const hoverSel = 'nav a,.chip,.btn,.pill,.lang,.gal__cell,a.brand,[data-magnetic]';
   let lastHover = null;
   document.addEventListener('pointerover', (e) => {
@@ -82,7 +180,7 @@
     if (!el) lastHover = null;
   }, { passive: true });
 
-  document.addEventListener('pointerdown', () => { ac(); }, { passive: true });
+  document.addEventListener('pointerdown', () => { ac(); if (!ambArmed) { ambArmed = true; setLoop(loopWant); if (thunderWant) thunderTick(); } }, { passive: true });
   document.addEventListener('click', (e) => {
     const el = e.target && e.target.closest ? e.target.closest('a,button,.chip') : null;
     if (el) sfx.plink();
@@ -102,6 +200,8 @@
       on = !on;
       try { localStorage.setItem('vn-sound', on ? 'on' : 'off'); } catch (err) { /* noop */ }
       ac();
+      if (on) { ambArmed = true; setLoop(loopWant); if (thunderWant) thunderTick(); }
+      else { loopStop(0.5); clearTimeout(thunderT); }
       paintSnd();
       if (on) sfx.plink();
     });
@@ -145,7 +245,7 @@
     }).observe(num, { childList: true, characterData: true, subtree: true });
   }
 
-  window.addEventListener('vn:ready', () => { sfx.swell(); });
+  window.addEventListener('vn:ready', () => { sfx.swell(); bindAmbience(); });
 
   /* ============ light / dark theme ============ */
   const rootEl = document.documentElement;
@@ -166,5 +266,8 @@
     });
   }
 
-  window.__vnCinema = { sfx };
+  window.__vnCinema = {
+    sfx,
+    amb: () => ({ on, armed: ambArmed, want: loopWant, playing: loopKey, bufs: Object.keys(ambBufs), thunder: thunderWant }),
+  };
 })();

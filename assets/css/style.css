@@ -2,6 +2,9 @@
 @font-face{font-family:'Clash Display';src:url('../fonts/ClashDisplay-500.woff2') format('woff2');font-weight:500;font-display:swap}
 @font-face{font-family:'Clash Display';src:url('../fonts/ClashDisplay-600.woff2') format('woff2');font-weight:600;font-display:swap}
 @font-face{font-family:'Instrument Serif';src:url('../fonts/InstrumentSerif-Italic.woff2') format('woff2');font-weight:400;font-style:italic;font-display:swap}
+/* 批次B② 中文排印：霞鹜文楷(OFL)正文 + 思源宋体(OFL)标题 · 子集化 woff2 · unicode-range 仅中文字形触发按需加载 */
+@font-face{font-family:'LXGW WenKai';src:url('../fonts/lxgw-wenkai-subset.woff2') format('woff2');font-weight:400;font-display:swap;unicode-range:U+2E80-9FFF,U+F900-FAFF,U+FE30-FE4F,U+3000-303F,U+FF01-FF60}
+@font-face{font-family:'Source Han Serif SC';src:url('../fonts/source-han-serif-subset.woff2') format('woff2');font-weight:400 900;font-display:swap;unicode-range:U+2E80-9FFF,U+F900-FAFF,U+FE30-FE4F,U+3000-303F,U+FF01-FF60}
 
 :root{
   --void:#0A0814;--void-2:#120C22;
@@ -9,9 +12,9 @@
   --violet:#8B5CF6;--violet-2:#6D28D9;--orchid:#E879F9;--lilac:#C4B5FD;
   --signal:#67E8F9;
   --line:rgba(244,239,255,.10);--line2:rgba(244,239,255,.18);--glow:rgba(139,92,246,.4);
-  --display:'Clash Display','PingFang SC','Microsoft YaHei',sans-serif;
-  --serif:'Instrument Serif','Songti SC',Georgia,serif;
-  --body:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;
+  --display:'Clash Display','Source Han Serif SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --serif:'Instrument Serif','Source Han Serif SC','Songti SC',Georgia,serif;
+  --body:'LXGW WenKai',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;
   --mono:ui-monospace,'Cascadia Mono',SFMono-Regular,Consolas,monospace;
   --ease:cubic-bezier(.22,1,.36,1);--easeD:cubic-bezier(.76,0,.24,1);
   --pad:clamp(1.1rem,4vw,3.5rem);--h:72px;--scheme:dark;
@@ -86,7 +89,7 @@ ul{list-style:none}
 .chapter-rail__line{width:36px;height:1px;background:currentColor;opacity:.4}
 
 /* 01 · hero */
-.hero{position:relative;z-index:2;min-height:100vh;min-height:100dvh;display:grid;place-items:start center;padding:calc(var(--h) + 3.2rem) var(--pad) 5.5rem}
+.hero{position:relative;z-index:2;min-height:100vh;min-height:100dvh;display:grid;place-items:start center;padding:calc(var(--h) + 3.2rem) var(--pad) 5.5rem;overflow-x:clip}/* clip: 幽灵字视差 translateX 会撑宽移动端布局视框 */
 .hero__canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
 .hero__inner{max-width:1060px;width:100%;text-align:center;position:relative}
 .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.3em;text-transform:uppercase;color:var(--lilac);margin-bottom:1.4rem}
@@ -789,3 +792,55 @@ html[data-theme="light"] .lgc-box { background: #fff; }
 .dth-box { background: #0d0620; }
 [data-theme="light"] .rd-box { background: #f6f3fc; }
 .rd-box canvas, .dth-box canvas { display: block; }
+.gal__still { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* ============ A-3 · scene layers (signature effects promoted to chapter backdrops) ============ */
+:root{--ease-chapter:cubic-bezier(.215,.61,.355,1)}
+.scene-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.sec>.scene-bg,.bloom>.scene-bg{z-index:-1}
+.scene-bg .silk-box,.scene-bg .fl-box,.scene-bg .au-veil,.scene-bg .gx-sky,.scene-bg .dot-grid,.scene-bg .dth-box{height:100%;border-radius:0;margin:0}
+/* bloom 章节 240vh：星空若铺满整章，着色器每帧多算 2.4 倍屏幕外像素 → 钉在视口高度 */
+.bloom>.scene-bg{position:sticky;top:0;left:0;right:0;bottom:auto;height:100vh;height:100dvh}
+.scene-bg--hero{top:58%;bottom:0;left:0;right:0;height:auto;z-index:0}
+.scene-bg--hero .silk-box{mix-blend-mode:screen}
+.scene-bg--veil{mix-blend-mode:screen;opacity:.55}
+.scene-bg--veil .au-veil{background:transparent}
+.scene-bg--notes{mix-blend-mode:screen;opacity:.16}
+.scene-bg--visit{opacity:.7;mix-blend-mode:screen}
+html[data-theme="light"] .scene-bg{opacity:.5}
+html[data-theme="light"] .scene-bg .fl-box,
+html[data-theme="light"] .scene-bg .gx-sky,
+html[data-theme="light"] .scene-bg .au-veil,
+html[data-theme="light"] .scene-bg .silk-box{background:transparent}
+html[data-theme="light"] .scene-bg--notes{mix-blend-mode:multiply;opacity:.07}
+html[data-theme="light"] .scene-bg--visit{mix-blend-mode:normal;opacity:.28}
+.b3d__glow{position:absolute;inset:0;z-index:0;mix-blend-mode:screen;opacity:.5;pointer-events:none}
+.b3d__glow .pm-box{height:100%;border-radius:0;margin:0;background:transparent}
+.storm{position:relative;z-index:2;max-width:min(1500px,94vw);margin:7.5rem auto;min-height:78vh;display:grid;place-items:center;overflow:hidden;border-radius:30px;background:#05010a;box-shadow:0 60px 130px rgba(0,0,0,.55),0 0 0 1px var(--line)}
+.storm .lg-box{position:absolute;inset:0;width:100%;height:100%;border-radius:0}
+.storm__caption{position:relative;z-index:1;text-align:center;padding:2.2rem 1.4rem}
+.storm__t{font-family:var(--display);font-weight:700;font-size:clamp(2rem,5.4vw,4.2rem);letter-spacing:.06em;color:#f3eeff;text-shadow:0 0 46px rgba(139,92,246,.5)}
+.storm__s{margin-top:1rem;font-size:clamp(.92rem,1.5vw,1.08rem);color:#b9a8e6;letter-spacing:.04em}
+.reveal-item,.interlude__t,.interlude__sub,.storm__caption p{transition-timing-function:var(--ease-chapter)}
+.star-border .visit__mail{background:linear-gradient(100deg,#fff,var(--lilac) 40%,var(--orchid));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ===== 批次B④ 标本柜 (v114) ===== */
+.spec__stage{position:relative;height:clamp(240px,32vw,340px);margin:.6rem 0 .4rem;border-radius:14px;overflow:hidden;background:radial-gradient(120% 90% at 50% 110%,rgba(109,40,217,.18),transparent 60%)}
+[data-theme='light'] .spec__stage{background:radial-gradient(120% 90% at 50% 110%,rgba(139,92,246,.10),transparent 60%)}
+.spec__stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* ===== 批次B 页脚 CREDITS (v114) ===== */
+.credits{width:100%;margin-top:.9rem;border-top:1px solid var(--line);padding-top:.8rem;text-align:left}
+.credits summary{cursor:pointer;font-family:var(--mono);font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-dim);list-style:none}
+.credits summary::-webkit-details-marker{display:none}
+.credits summary::before{content:'▸ ';color:var(--orchid)}
+.credits[open] summary::before{content:'▾ '}
+.credits ul{margin:.7rem 0 0;padding:0;list-style:none;display:grid;gap:.42rem}
+.credits li{font-size:.68rem;line-height:1.6;color:var(--ink-dim);font-family:var(--mono)}
+.credits a{color:var(--lilac);text-decoration:none;border-bottom:1px dotted var(--line2)}
+.credits a:hover{color:var(--orchid)}
+.credits b{color:var(--ink-soft);font-weight:500}
+
+/* ===== 批次C 键盘跳转链接 (v114) ===== */
+.skip{position:fixed;top:.6rem;left:.6rem;z-index:999;padding:.55rem 1.1rem;border-radius:999px;background:var(--violet);color:#fff;font-family:var(--display);font-size:.85rem;text-decoration:none;transform:translateY(-160%);transition:transform .25s var(--ease)}
+.skip:focus{transform:none}

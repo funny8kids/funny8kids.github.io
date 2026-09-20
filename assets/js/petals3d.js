@@ -18,7 +18,9 @@
     antialias: false,
     powerPreference: 'high-performance',
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const qPR = () => Math.min(window.devicePixelRatio || 1, 2) * (window.__vnPerf ? window.__vnPerf.scale : 1);
+  if (window.__vnPerf) window.__vnPerf.subscribe(() => { renderer.setPixelRatio(qPR()); resize(); });
+  renderer.setPixelRatio(qPR());
   renderer.setClearColor(0x000000, 0);
 
   const isMobile = window.innerWidth < 720;

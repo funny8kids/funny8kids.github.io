@@ -12,6 +12,85 @@
   if (reduceMotion) root.classList.add('no-motion');
   if (gsap && ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 
+  /* Adaptive render scale for full-bleed shaders: an integrated GPU keeps the
+     composition identical but trades internal resolution for the frame budget.
+     Measured on this machine, resizing the live WebGL canvases costs 40-190 ms, so
+     the two rules here are: never change the ladder mid-scroll (it is deferred to
+     the next rest), and never resize every canvas in one frame (the subscribers are
+     drained one per frame). While the page is moving we still dip the scale — that
+     is what keeps the full-bleed shaders inside budget — and the shaders also read
+     the flag to render every other frame, which halves their fill cost. Jank is
+     judged against a fixed 40fps floor rather than the panel's own cadence, so a
+     144Hz display isn't punished for missing 3 of 4 vsyncs. */
+  const vnPerf = (function () {
+    const STEPS = [1, 0.75, 0.55];
+    const MOVE = 0.72;
+    const IDLE = 500;
+    const api = {
+      scale: STEPS[0], _i: 0, _move: 1, _subs: new Set(),
+      subscribe(fn) { this._subs.add(fn); return () => this._subs.delete(fn); }
+    };
+    let lastScroll = -1e9, pending = false, queue = [], draining = false;
+    const isIdle = () => performance.now() - lastScroll > IDLE;
+    function drain() {
+      const f = queue.shift();
+      if (!f) { draining = false; return; }
+      try { f(); } catch (e) {}
+      requestAnimationFrame(drain);
+    }
+    function apply() {
+      const next = Math.max(0.5, STEPS[api._i] * api._move);
+      if (next === api.scale) return;
+      api.scale = next;
+      queue = Array.from(api._subs);
+      if (!draining) { draining = true; requestAnimationFrame(drain); }
+    }
+    function applySoon() { if (isIdle()) { pending = false; apply(); } else pending = true; }
+    if (!reduceMotion) {
+      addEventListener('scroll', function () {
+        lastScroll = performance.now();
+        if (api._move !== MOVE) { api._move = MOVE; apply(); }
+      }, { passive: true });
+      setInterval(function () {
+        if (performance.now() - lastScroll > IDLE) {
+          if (api._move !== 1) { api._move = 1; apply(); }
+          if (pending) { pending = false; apply(); }
+        }
+      }, 150);
+
+      let frames = 0, slow = 0, t = performance.now(), calm = 0;
+      (function sample() {
+        const now = performance.now(), dt = now - t; t = now;
+        if (dt > 2 && dt < 200) { frames++; if (dt > 25) slow++; }
+        if (frames >= 60) {
+          const share = slow / frames;
+          frames = 0; slow = 0;
+          if (share > 0.35 && api._i < STEPS.length - 1) { api._i++; calm = 0; applySoon(); }
+          else if (share < 0.12 && api._i > 0 && ++calm >= 3) { calm = 0; api._i--; applySoon(); }
+        }
+        requestAnimationFrame(sample);
+      })();
+    }
+    return api;
+  })();
+  window.__vnPerf = vnPerf;
+
+  /* ANGLE defers shader compilation; querying LINK/COMPILE status forces the
+     driver to finish, which froze the scroll for ~0.5s per effect boot.
+     Status checks stay available with ?glcheck. */
+  if (!/[?]glcheck/.test(location.search)) {
+    (function () {
+      ['WebGLRenderingContext', 'WebGL2RenderingContext'].forEach(function (K) {
+        const P = window[K] && window[K].prototype;
+        if (!P || P.__vnNoSync) return;
+        P.__vnNoSync = 1;
+        const getProgramParameter = P.getProgramParameter, getShaderParameter = P.getShaderParameter;
+        P.getProgramParameter = function (p, e) { return e === this.LINK_STATUS ? true : getProgramParameter.call(this, p, e); };
+        P.getShaderParameter = function (s, e) { return e === this.COMPILE_STATUS ? true : getShaderParameter.call(this, s, e); };
+      });
+    })();
+  }
+
   /* ================= i18n ================= */
   const dict = {
     zh: {
@@ -43,12 +122,12 @@
       nav_gallery: '陈列廊',
       nav_works: '项目',
       works_title: '花园作品',
-      w1_t: 'VioletNotes · 紫罗兰笔记',
-      w1_p: '一座随身的手记温室。灵感像花瓣随手种下，回顾时按季节盛开——速记、标签、跨端同步，深色虹彩主题。',
-      w2_t: '温室物理 · Physics Playground',
-      w2_p: '把 matter-js 的约束演示种进花园：刚与软的锚、销钉与绳链，巨型标题成为坚硬的地面。拖拽即对话。',
-      w3_t: '萤火实验室 · Lumen Lab',
-      w3_p: 'WebGL 花瓣场与交互动效的试验田：光标是风，点击是冲击波，每一帧都在呼吸。所有签名动效由此诞生。',
+      w1_t: 'AI Agent 手册 · Handbook',
+      w1_p: '从原理到生产的一本花园地图册：LLM 与注意力、Agent 循环、工具协议、记忆与 RAG、规划、多智能体、评估与安全。',
+      w2_t: 'Auto DevOps · 智能运维',
+      w2_p: 'AI 驱动的智能运维管理平台：像温室的自动灌溉一样，让部署、监控与自愈在 TypeScript 管道里安静运转。',
+      w3_t: 'Mars Rover 3D · 火星车',
+      w3_p: '浏览器里的红色星球：Three.js 渲染的火星车与地表漫游，把「探索」种进这座紫色温室的另一端。',
       w_link: '了解此项目 ↗',
       interlude_t: 'Grown in the dark',
       interlude_sub: '黑暗，是这座温室最深的底色',
@@ -71,6 +150,7 @@
       visit_lead: '温室永远半掩着门。若你想聊聊设计、代码，或只是分享一句园中所见——',
       visit_top: '回到入口',
       footer_tag: '以生物荧光紫罗兰之光打造',
+      footer_credits: 'CREDITS · 外部资源与许可',
     },
     en: {
       nav_garden: 'Garden',
@@ -101,12 +181,12 @@
       nav_gallery: 'Gallery',
       nav_works: 'Works',
       works_title: 'Selected works',
-      w1_t: 'VioletNotes',
-      w1_p: 'A pocket greenhouse for notes. Ideas are planted like petals and bloom by season — quick capture, tags, cross-device sync, iridescent dark theme.',
-      w2_t: 'Physics Playground',
-      w2_p: 'matter-js constraints replanted in a garden: rigid and soft anchors, pins and chains, giant type as solid ground. Dragging is dialogue.',
-      w3_t: 'Lumen Lab',
-      w3_p: 'A testbed for WebGL petal fields and interaction motion: cursor as wind, click as shockwave. Every signature effect was born here.',
+      w1_t: 'AI Agent Handbook',
+      w1_p: 'From theory to production: LLMs & attention, agent loops, tool protocols, memory & RAG, planning, multi-agent, evaluation and safety — one garden map of it all.',
+      w2_t: 'Auto DevOps',
+      w2_p: 'An AI-driven operations platform. Like the greenhouse\'s self-watering loop: deploys, monitoring and self-healing run quietly in a TypeScript pipeline.',
+      w3_t: 'Mars Rover 3D',
+      w3_p: 'The red planet in your browser: a Three.js rover roaming rendered Martian terrain — exploration planted at the far end of this violet greenhouse.',
       w_link: 'Explore ↗',
       interlude_t: 'Grown in the dark',
       interlude_sub: 'Darkness is the deepest ground colour of this greenhouse',
@@ -129,6 +209,7 @@
       visit_lead: 'The door stays half-open. To talk design, code, or share something you noticed —',
       visit_top: 'Back to entrance',
       footer_tag: 'Crafted with bioluminescent violet light',
+      footer_credits: 'CREDITS · Sources & Licenses',
     },
   };
 
@@ -146,6 +227,7 @@
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.getAttribute('data-i18n');
       if (!pack[key]) return;
+      if (el.dataset.splitDone && el.getAttribute('aria-label') === pack[key]) return;
       if (animate && gsap && !reduceMotion) {
         gsap.to(el, {
           opacity: 0,
@@ -325,7 +407,7 @@
     const state = { p: 0 };
     gsap.to(state, {
       p: 100,
-      duration: 1.7,
+      duration: 1.15,
       ease: 'power2.inOut',
       onUpdate() { setLoader(state.p); },
       onComplete() {
@@ -337,9 +419,9 @@
             done();
           },
         });
-        tl.to('.loader__inner', { y: -36, opacity: 0, duration: 0.4, ease: 'power3.in' })
-          .to('.loader__curtain', { scaleY: 1, duration: 0.65, ease: 'power4.inOut' }, '-=0.12')
-          .to('.loader', { yPercent: -100, duration: 0.85, ease: 'power4.inOut' }, '+=0.04');
+        tl.to('.loader__inner', { y: -36, opacity: 0, duration: 0.35, ease: 'power3.in' })
+          .to('.loader__curtain', { scaleY: 1, duration: 0.55, ease: 'power4.inOut' }, '-=0.12')
+          .to('.loader', { yPercent: -100, duration: 0.75, ease: 'power4.inOut' }, '+=0.02');
       },
     });
   }
@@ -390,28 +472,46 @@
   const header = document.getElementById('header');
   const chapters = Array.from(document.querySelectorAll('[data-chapter]'));
 
-  function onScrollProgress() {
+  /* Scroll handlers run at display rate, so the geometry they need must come from
+     a cache — reading scrollHeight/offsetTop right after writing the bar width
+     forced a full style+layout pass every frame (367 ms of forced layout per boot
+     under 4x CPU throttle). The TTL keeps it honest when lazily mounted sections
+     change page height, without plumbing an invalidation event into every loader. */
+  let geoT = -1e9, geoMax = 0, geoHei = 0, geoTops = [];
+  function measureGeo() {
     const doc = document.documentElement;
-    const max = doc.scrollHeight - window.innerHeight;
-    const p = max > 0 ? window.scrollY / max : 0;
+    geoHei = window.innerHeight;
+    geoMax = Math.max(1, doc.scrollHeight - geoHei);
+    geoTops = chapters.map((sec) => sec.offsetTop);
+    geoT = performance.now();
+  }
+  let barSolid = null;
+  let curChapter = null;
+  function onScrollProgress() {
+    const now = performance.now();
+    if (now - geoT > 250) measureGeo();
+    const y = window.scrollY;
+    const p = Math.min(1, y / geoMax);
     if (progressBar) progressBar.style.width = (p * 100).toFixed(2) + '%';
     if (window.__vnPetal && typeof window.__vnPetal.setScroll === 'function') {
       window.__vnPetal.setScroll(Math.min(1, p * 2.2));
     }
-    if (header) header.classList.toggle('is-solid', window.scrollY > 40);
+    const solid = y > 40;
+    if (header && solid !== barSolid) { barSolid = solid; header.classList.toggle('is-solid', solid); }
 
     // active chapter
-    let active = chapters[0];
-    const y = window.scrollY + window.innerHeight * 0.35;
-    chapters.forEach((sec) => {
-      if (sec.offsetTop <= y) active = sec;
-    });
-    if (active && chapterN && chapterT) {
+    const line = y + geoHei * 0.35;
+    let idx = 0;
+    for (let i = 0; i < geoTops.length; i++) { if (geoTops[i] <= line) idx = i; else break; }
+    const active = chapters[idx];
+    if (active && active !== curChapter && chapterN && chapterT) {
+      curChapter = active;
       chapterN.textContent = active.getAttribute('data-chapter') || '01';
       chapterT.textContent = active.getAttribute('data-chapter-name') || '';
     }
   }
   window.addEventListener('scroll', onScrollProgress, { passive: true });
+  window.addEventListener('resize', function () { geoT = -1e9; }, { passive: true });
 
   /* ================= reveals ================= */
   function initReveals() {
@@ -419,21 +519,23 @@
       document.querySelectorAll('.reveal-item, .reveal-img').forEach((el) => el.classList.add('is-in'));
       return;
     }
+    /* One observer replaces 49 per-element ScrollTriggers. The CSS base state already
+       carries the transition (.reveal-item{opacity:0;translateY(32px)} → .is-in), so the
+       only job here is flipping the class at the right offset: start 'top 88%' == -12% bottom margin. */
+    const revealEls = document.querySelectorAll('.reveal-item, .reveal-img');
+    if ('IntersectionObserver' in window) {
+      const revIO = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          revIO.unobserve(e.target);
+          e.target.classList.add('is-in');
+        });
+      }, { rootMargin: '0px 0px -12% 0px' });
+      revealEls.forEach((el) => revIO.observe(el));
+    } else {
+      revealEls.forEach((el) => el.classList.add('is-in'));
+    }
     if (gsap && ScrollTrigger) {
-      gsap.utils.toArray('.reveal-item, .reveal-img').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { opacity: 0, y: 32 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.9,
-            ease: 'power3.out',
-            scrollTrigger: { trigger: el, start: 'top 88%' },
-            onStart() { el.classList.add('is-in'); },
-          }
-        );
-      });
       const interImg = document.querySelector('.interlude__img');
       if (interImg) {
         gsap.fromTo(interImg, { yPercent: -7 }, {
@@ -442,22 +544,35 @@
           scrollTrigger: { trigger: '.interlude', start: 'top bottom', end: 'bottom top', scrub: true },
         });
       }
-      // section titles
+      // section titles — build every tween first, then arm one observer, so the
+      // style/layout invalidation the split causes is read once, not per trigger.
+      const titleTweens = new Map();
       gsap.utils.toArray('.section__cn').forEach((el) => {
         let chars = splitElement(el);
         if (!chars.length) chars = Array.from(el.querySelectorAll('.char'));
         if (!chars.length) return;
-        gsap.from(chars, {
+        titleTweens.set(el, gsap.from(chars, {
           yPercent: 110,
           opacity: 0,
           duration: 0.7,
           ease: 'power3.out',
           stagger: 0.03,
-          scrollTrigger: { trigger: el, start: 'top 85%' },
-        });
+          paused: true,
+        }));
       });
-    } else {
-      document.querySelectorAll('.reveal-item, .reveal-img').forEach((el) => el.classList.add('is-in'));
+      if ('IntersectionObserver' in window) {
+        const ttlIO = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            ttlIO.unobserve(e.target);
+            const tw = titleTweens.get(e.target);
+            if (tw) tw.play();
+          });
+        }, { rootMargin: '0px 0px -15% 0px' });
+        titleTweens.forEach((tw, el) => ttlIO.observe(el));
+      } else {
+        titleTweens.forEach((tw) => tw.play());
+      }
     }
   }
 
@@ -469,7 +584,8 @@
     }
     const heroChars = [];
     document.querySelectorAll('.hero [data-split]').forEach((el) => {
-      const chars = charMap.get(el) || splitElement(el);
+      let chars = charMap.get(el);
+      if (!chars || !chars.length) chars = Array.from(el.querySelectorAll('.char'));
       heroChars.push(...chars);
     });
     const tl = gsap.timeline({

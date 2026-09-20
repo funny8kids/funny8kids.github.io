@@ -143,19 +143,23 @@
       }, kick: (b) => Body.setVelocity(b[1], { x: 4, y: -4 }) },
   ];
 
+  const wallColor = () => (isLight() ? '#d9d3ee' : '#14151f');
   const walls = () => [
-    Bodies.rectangle(400, 0, 800, 50, { isStatic: true, label: 'wall' }),
-    Bodies.rectangle(400, 600, 800, 50, { isStatic: true, label: 'wall' }),
-    Bodies.rectangle(800, 300, 50, 600, { isStatic: true, label: 'wall' }),
-    Bodies.rectangle(0, 300, 50, 600, { isStatic: true, label: 'wall' }),
+    Bodies.rectangle(400, 0, 800, 50, { isStatic: true, label: 'wall', render: { fillStyle: wallColor(), strokeStyle: wallColor() } }),
+    Bodies.rectangle(400, 600, 800, 50, { isStatic: true, label: 'wall', render: { fillStyle: wallColor(), strokeStyle: wallColor() } }),
+    Bodies.rectangle(800, 300, 50, 600, { isStatic: true, label: 'wall', render: { fillStyle: wallColor(), strokeStyle: wallColor() } }),
+    Bodies.rectangle(0, 300, 50, 600, { isStatic: true, label: 'wall', render: { fillStyle: wallColor(), strokeStyle: wallColor() } }),
   ];
 
   // 官方 harness 取色：每个动态刚体随机 palette 上色（fillStyle=strokeStyle）
   function colorBody(b) {
     if (b.isStatic) return;
     const c = Common.choose(paletteMode === 'official' ? PALETTE : VIOLET);
-    b.render.fillStyle = c;
-    b.render.strokeStyle = c;
+    b.__c = c;
+    const lum = (0.2126 * parseInt(c.slice(1, 3), 16) + 0.7152 * parseInt(c.slice(3, 5), 16) + 0.0722 * parseInt(c.slice(5, 7), 16)) / 255;
+    const shown = (isLight() && lum > 0.72) ? '#8b5cf6' : c;
+    b.render.fillStyle = shown;
+    b.render.strokeStyle = shown;
     b.render.lineWidth = 1;
   }
 
@@ -168,7 +172,10 @@
     Composite.clear(world, false, true);
     rigBodies = [];
     const add = (parts) => {
-      parts.forEach((p) => { if (p.mass > 0) colorBody(p); });
+      parts.forEach((p) => {
+        if (p.mass > 0) colorBody(p);
+        else if (p.render && isLight()) { if (p.__o === undefined) p.__o = p.render.strokeStyle; p.render.strokeStyle = '#7c6fa8'; }
+      });
       Composite.add(world, parts);
       return parts.filter((p) => p.mass > 0);
     };
@@ -467,9 +474,21 @@
     const b = toolsEl && toolsEl.querySelector('[data-tool="palette"]');
     if (b) b.textContent = mode === 'official' ? '配色[官方]' : '配色[紫]';
   };
+  const hexLum = (hex) => { const n = parseInt(hex.slice(1), 16); return (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
   const applyTheme = () => {
     render.options.background = isLight() ? '#f6f6f6' : '#14151f';
     render.options.wireframeBackground = isLight() ? '#eceaf4' : '#0b0812';
+    const wc = wallColor();
+    const light = isLight();
+    Composite.allBodies(world).forEach((b) => {
+      if (b.label === 'wall') { b.render.fillStyle = wc; b.render.strokeStyle = wc; }
+      else if (b.__c) { const c = light && hexLum(b.__c) > 0.72 ? '#8b5cf6' : b.__c; b.render.fillStyle = c; b.render.strokeStyle = c; }
+    });
+    Composite.allConstraints(world).forEach((c) => {
+      if (!c.render || !c.render.visible) return;
+      if (c.__o === undefined) c.__o = c.render.strokeStyle;
+      c.render.strokeStyle = light ? '#7c6fa8' : c.__o;
+    });
     if (reducedMotion) Render.world(render);
   };
 

@@ -15,7 +15,9 @@
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const renderer = new T.WebGLRenderer({ canvas: host, antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+  if (window.__vnPerf) window.__vnPerf.subscribe(() => renderer.setPixelRatio(q()));
+  const q = () => Math.min(window.devicePixelRatio || 1, 1.75) * (window.__vnPerf ? window.__vnPerf.scale : 1);
+  renderer.setPixelRatio(q());
   if ('outputColorSpace' in renderer) renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.28;
@@ -41,7 +43,7 @@
   const petalMatIn = petalMat.clone(); petalMatIn.color.set(0xd8b4fe); petalMatIn.opacity = 0.95;
   const coreMat = new T.MeshStandardMaterial({ color: 0x4c1d95, roughness: 0.4, emissive: 0xe879f9, emissiveIntensity: 0.7 });
   const stemMat = new T.MeshStandardMaterial({ color: 0x3d2a66, roughness: 0.6 });
-  const leafMat = new T.MeshStandardMaterial({ color: 0x6d28d9, roughness: 0.45, side: T.DoubleSide });
+  const leafMat = new T.MeshStandardMaterial({ color: 0x581c87, roughness: 0.52, metalness: 0.08 });
 
   /* ---------- 花瓣：单一 LatheGeometry 复用（扇形：中段最宽、尖端收拢） ---------- */
   const pts = [];
@@ -81,9 +83,9 @@
   const leafGeo = new T.SphereGeometry(0.5, 10, 8);
   leafGeo.scale(1, 0.16, 0.55);
   const leaf1 = new T.Mesh(leafGeo, leafMat);
-  leaf1.position.set(0.55, -1.5, 0.1); leaf1.rotation.z = 0.42;
+  leaf1.position.set(0.38, -1.5, 0.1); leaf1.rotation.z = 0.42;
   const leaf2 = new T.Mesh(leafGeo, leafMat);
-  leaf2.position.set(-0.6, -2.2, -0.05); leaf2.rotation.z = -0.5; leaf2.scale.setScalar(0.8);
+  leaf2.position.set(-0.42, -2.2, -0.05); leaf2.rotation.z = -0.5; leaf2.scale.setScalar(0.8);
   flower.add(leaf1, leaf2);
   flower.position.y = 1.05;
 
@@ -112,10 +114,25 @@
   const coreLight = new T.PointLight(0xc084fc, 8, 6); coreLight.position.set(0, 1.32, 0);
   scene.add(hemi, key, soft, rim, fill);
 
+  /* ---------- IBL 环境光（Polyhaven studio_small_08 · CC0 → LDR 等距柱状 → PMREM） ---------- */
+  new T.TextureLoader().load('assets/img/env/studio_small_08_512.webp', (tex) => {
+    if ('colorSpace' in tex) tex.colorSpace = T.SRGBColorSpace;
+    tex.mapping = T.EquirectangularReflectionMapping;
+    const pmrem = new T.PMREMGenerator(renderer);
+    const rt = pmrem.fromEquirectangular(tex);
+    scene.environment = rt.texture;
+    [petalMat, petalMatIn, coreMat, stemMat, leafMat].forEach((m) => { m.envMapIntensity = 0.9; m.needsUpdate = true; });
+    key.intensity = 2.4; soft.intensity = 1.2;
+    tex.dispose(); pmrem.dispose();
+    if (reduced || !running) render();
+  });
+
   function applyTheme() {
     hemi.intensity = isLight() ? 2.4 : 1.4;
     hemi.color.set(isLight() ? 0xffffff : 0xc4b5fd);
-    petalMat.opacity = isLight() ? 0.85 : 0.92;
+    petalMat.color.set(isLight() ? 0x8b5cf6 : 0xa78bfa);
+    petalMatIn.color.set(isLight() ? 0xa855f7 : 0xd8b4fe);
+    petalMat.opacity = isLight() ? 0.9 : 0.92;
   }
   applyTheme();
   new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -210,6 +227,13 @@
       scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1 },
     });
   }
+
+  /* 着色器异步预热：首帧的 link 等待会在进屏那一刻冻住主线程（ANGLE 延迟编译），
+     在装载阶段就把它推给驱动后台编译。 */
+  try {
+    const warm = renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve(renderer.compile(scene, camera));
+    if (warm && warm.catch) warm.catch(() => {});
+  } catch (e) {}
 
   if (reduced) { render(); } else { setRun(true); }
   window.__vnBloom = { renderer: () => renderer, running: () => running, scene, flower, root };
