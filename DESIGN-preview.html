@@ -22,16 +22,16 @@
         --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
         --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
         --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, monospace;
-        --body-size: 18px;
+        --body-size: 16px;
         --body-line: 24px;
-        --body-weight: 700;
-        --label-size: 14px;
+        --body-weight: 400;
+        --label-size: 12px;
         --label-line: 20px;
         --label-track: 0.04em;
-        --title-size: 32px;
+        --title-size: 28px;
         --title-line: 32px;
         --title-track: -0.03em;
-        --section-size: 32px;
+        --section-size: 24px;
         --section-line: 32px;
         --section-track: -0.02em;
         --source-size: 13px;
@@ -47,7 +47,7 @@
         --radius-micro: 6px;
         --radius-pill: 999px;
         --button-height: 40px;
-        --button-font-size: 14px;
+        --button-font-size: 12px;
         --button-weight: 500;
         --button-radius: 999px;
         --secondary-button-radius: 999px;
@@ -140,7 +140,7 @@
         top: 0;
         height: 3px;
         border-radius: 999px;
-        background: linear-gradient(90deg, #FBFAF4 0%, #0F1111 33%, #000000 67%, #0066DC 100%);
+        background: linear-gradient(90deg, #fafafa 0%, #ffffff 33%, #171717 67%, #4d4d4d 100%);
       }
 
       .eyebrow {
@@ -663,7 +663,7 @@
 
       .rendered-view h3 {
         color: var(--muted);
-        font-size: calc(32px - 4px);
+        font-size: calc(28px - 4px);
         line-height: calc(32px - 4px);
       }
 
@@ -760,10 +760,10 @@
             <div class="panel-inner">
               <div class="eyebrow">Design Preview</div>
               <h1 class="site-title">DESIGN</h1>
-              <p class="descriptor">暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐...</p>
-              <div class="chip-row"><span class="chip">暖白纸底 #FBFAF4 + 纯黑文字，近黑 #0F1111 暗...</span><span class="chip">文字优先：项目是&quot;前缀标签 + 名称 + 年份&quot;的大文字块，不是...</span><span class="chip">系统注记无处不在：时区时钟、气温、X/Y 光标坐标、[A]/[-...</span><span class="chip">几何无衬线（tiktok 字体）承担全部正文与大字，等宽字体（t...</span><span class="chip">全大写标签文化：链接 700 字重全大写，项目前缀 &quot;CODIN...</span><span class="chip">双语内容策略：英文为主、中文为辅（如&quot;阿里云盘&quot;），™ 与 ©...</span></div>
-              <p class="summary">暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐标读数，主题与声音都有方括号开关（THEME[A]、SOUND[-]），营造出&quot;系统 HUD&quot;式的冷静氛围。克制的双色主题（暖白 ↔ 近黑）配纯黑文字，唯一的彩色是外链蓝；公司名用实心方块 ■■■■■■ 打码，反而成为个性签名。整体气质：克制、精密、工程师的幽默感。</p>
-              <a class="observed-link" href="https://haoqi.design/" target="_blank" rel="noreferrer">https://haoqi.design/</a>
+              <p class="descriptor">概念:深夜玻璃温室里的生物荧光紫罗兰。站点不是&quot;介绍花园&quot;,站点就是温室——滚动是行走,光标是萤火,花瓣服从风与重力。</p>
+              <div class="chip-row"></div>
+              <p class="summary">整体氛围是 Cinematic × Editorial:超大 display 标题 + 电影静帧构图 + 细等宽 HUD 注记,运行在近乎单色的紫调上,用唯一的青色信号色打破单调。动效手感&quot;慢进慢出 + 物理惯性&quot;:签名段落用 Matter.js 真实碰撞,3D 段落用虹彩玻璃花瓣(three.js clearcoat),装饰段落用官方 Skottie 验证过的 Lottie 呼吸绽放。</p>
+              <a class="observed-link" href="http://localhost:8123" target="_blank" rel="noreferrer">http://localhost:8123</a>
             </div>
           </article>
 
@@ -772,46 +772,46 @@
               <h2 class="section-title">Palette</h2>
               <p class="section-subtitle">Roles and neutrals rendered using the extracted design system rather than a separate display theme.</p>
               <div class="palette-grid"><div class="palette-row"><div class="swatch">
-    <div class="swatch-box" style="background:#FBFAF4;"></div>
-    <div class="swatch-label">undefined</div>
+    <div class="swatch-box" style="background:#fafafa;"></div>
+    <div class="swatch-label">Background</div>
     <div class="swatch-meta">
-      <span>#FBFAF4 rgb(251,250,244)</span>
-      <span>背景 · 亮色</span>
+      <span>#fafafa</span>
+      <span>Page surface</span>
     </div>
   </div><div class="swatch">
-    <div class="swatch-box" style="background:#0F1111;"></div>
-    <div class="swatch-label">undefined</div>
+    <div class="swatch-box" style="background:#ffffff;"></div>
+    <div class="swatch-label">Surface</div>
     <div class="swatch-meta">
-      <span>#0F1111 rgb(15,17,17)</span>
-      <span>背景 · 暗色</span>
+      <span>#ffffff</span>
+      <span>Elevated surface</span>
     </div>
   </div><div class="swatch">
-    <div class="swatch-box" style="background:#000000;"></div>
-    <div class="swatch-label">undefined</div>
+    <div class="swatch-box" style="background:#171717;"></div>
+    <div class="swatch-label">Ink</div>
     <div class="swatch-meta">
-      <span>#000000</span>
-      <span>前景</span>
+      <span>#171717</span>
+      <span>Primary text</span>
     </div>
   </div></div><div class="palette-row neutral-row"><div class="swatch">
-    <div class="swatch-box" style="background:#0066DC;"></div>
-    <div class="swatch-label">undefined</div>
+    <div class="swatch-box" style="background:#4d4d4d;"></div>
+    <div class="swatch-label">Muted</div>
     <div class="swatch-meta">
-      <span>#0066DC / #007BFF / #3C93FF</span>
-      <span>外链蓝</span>
+      <span>#4d4d4d</span>
+      <span>Supporting text</span>
     </div>
   </div><div class="swatch">
-    <div class="swatch-box" style="background:#292D39;"></div>
-    <div class="swatch-label">undefined</div>
+    <div class="swatch-box" style="background:#0072f5;"></div>
+    <div class="swatch-label">Accent</div>
     <div class="swatch-meta">
-      <span>#292D39 / #181C20 / #373C4B</span>
-      <span>暗色面板</span>
+      <span>#0072f5</span>
+      <span>Interactive accent</span>
     </div>
   </div><div class="swatch">
-    <div class="swatch-box" style="background:#000;"></div>
-    <div class="swatch-label">undefined</div>
+    <div class="swatch-box" style="background:#ebebeb;"></div>
+    <div class="swatch-label">Border</div>
     <div class="swatch-meta">
-      <span>#000 实心</span>
-      <span>打码块</span>
+      <span>#ebebeb</span>
+      <span>Divider</span>
     </div>
   </div></div></div>
             </div>
@@ -833,65 +833,92 @@
         <div class="type-role">undefined</div>
         <div
           class="type-sample"
-          style="font-size:48px; line-height:67px; font-weight:700; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
         >
           The quick brown fox jumps
         </div>
-        <div class="type-metrics">85.5px（≈6.8vw） • 700 • undefined</div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
       </div><div class="type-row">
         <div class="type-role">undefined</div>
         <div
           class="type-sample"
-          style="font-size:48px; line-height:67px; font-weight:700; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
         >
           The quick brown fox jumps
         </div>
-        <div class="type-metrics">75.5px（≈6vw） • 700 • undefined</div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
       </div><div class="type-row">
         <div class="type-role">undefined</div>
         <div
           class="type-sample"
-          style="font-size:48px; line-height:67px; font-weight:400; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
         >
           The quick brown fox jumps
         </div>
-        <div class="type-metrics">52.8px（≈4.2vw） • 400 • undefined</div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
       </div><div class="type-row">
         <div class="type-role">undefined</div>
         <div
           class="type-sample"
-          style="font-size:30px; line-height:42px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
         >
           The quick brown fox jumps
         </div>
-        <div class="type-metrics">30px • 500 • undefined</div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
       </div><div class="type-row">
         <div class="type-role">undefined</div>
         <div
           class="type-sample"
-          style="font-size:16px; line-height:22px; font-weight:400; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
         >
           The quick brown fox jumps
         </div>
-        <div class="type-metrics">16px • 400 • undefined</div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
       </div><div class="type-row">
         <div class="type-role">undefined</div>
         <div
           class="type-sample"
-          style="font-size:16px; line-height:22px; font-weight:400; letter-spacing:normal; font-family:ui-monospace, &quot;SFMono-Regular&quot;, &quot;SF Mono&quot;, Menlo, monospace;"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
         >
-          const preview = true;
+          The quick brown fox jumps
         </div>
-        <div class="type-metrics">16px • 400 • undefined</div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
       </div><div class="type-row">
         <div class="type-role">undefined</div>
         <div
           class="type-sample"
-          style="font-size:16px; line-height:22px; font-weight:700; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
         >
           The quick brown fox jumps
         </div>
-        <div class="type-metrics">16px • 700 • undefined</div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
+      </div><div class="type-row">
+        <div class="type-role">undefined</div>
+        <div
+          class="type-sample"
+          style="font-size:16px; line-height:22px; font-weight:500; letter-spacing:normal; font-family:-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">undefined • undefined • undefined</div>
       </div></div>
             </div>
           </article>
@@ -982,7 +1009,19 @@
             <div class="panel-inner">
               <h2 class="section-title">Prompt Guide</h2>
               <p class="section-subtitle">Prompt snippets are shown in the same typography and spacing language as the extracted design system.</p>
-              <div class="prompt-list"><div class="prompt-card"><strong>Prompt guide</strong><p>No example prompts detected.</p></div></div>
+              <div class="prompt-list"><div class="prompt-card">
+            <strong>Hero</strong>
+            <p>&quot;居中三行 display 标题,最大词 clamp(2.9rem,12.8vw,9.5rem) 负字距 -.045em,下一词用 Instrument Serif 斜体浅紫 + 60px 紫辉光;下方 1rem 行距正文 + 两枚 999px 紫渐变胶囊按钮(投影 0 12px 32px rgba(109,40,217,.45));背景是 canvas 花瓣场。&quot;</p>
+          </div><div class="prompt-card">
+            <strong>Gallery cell</strong>
+            <p>&quot;20px 圆角透明卡,1px rgba(244,239,255,.10) 发丝边;顶部一行 mono 10.5px 信号青标签 &lt;ComponentName /&gt;,中间 250px 展品,底部 13.6px 灰紫中文一句,克制说明技术要点。&quot;</p>
+          </div><div class="prompt-card">
+            <strong>Section head</strong>
+            <p>&quot;mono 12.8px 品红序号 07 + Clash 600 72px 英文题(负字距) + 中文 kicker,左对齐,章节 padding 上下 128px。&quot;</p>
+          </div><div class="prompt-card">
+            <strong>Loader</strong>
+            <p>&quot;全屏深色,中央 Clash 600 clamp(4.2rem,15vw,7rem) 数字,白→lilac→orchid 120° 渐变 clip:text,配莫比乌斯玻璃环;完成后整体淡出停回首屏。&quot;</p>
+          </div></div>
               <div class="split-card" style="margin-top:var(--space-4);">
     <div>
       <h3 class="token-heading">Do</h3>
@@ -1020,133 +1059,190 @@
               </div>
             </div>
             <div class="source-body">
-              <pre class="source-view" id="sourceView"># haoqi.design 设计系统（DESIGN.md）
+              <pre class="source-view" id="sourceView"># LUMEN VIOLA — Design System (DESIGN.md)
 
-&gt; 来源：agent-browser 对 https://haoqi.design 的深度检查（桌面端 1258px 视口）。
-&gt; 目标：让任何 agent 不看原站也能复刻其设计语言、内容语气与交互质感。
+&gt; 由 website-to-design-md 技能生成:证据来自 agent-browser 对运行中站点(http://localhost:8123)的 DOM/computed-style/CSS 变量双主题提取,辅以仓库样式源码交叉验证。生成日期 2026-09-19(v97)。
 
-## Visual Theme &amp; Atmosphere
+## 1. Visual Theme &amp; Atmosphere
 
-暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐标读数，主题与声音都有方括号开关（`THEME[A]`、`SOUND[-]`），营造出&quot;系统 HUD&quot;式的冷静氛围。克制的双色主题（暖白 ↔ 近黑）配纯黑文字，唯一的彩色是外链蓝；公司名用实心方块 ■■■■■■ 打码，反而成为个性签名。整体气质：克制、精密、工程师的幽默感。
+**概念**:深夜玻璃温室里的生物荧光紫罗兰。站点不是&quot;介绍花园&quot;,站点**就是**温室——滚动是行走,光标是萤火,花瓣服从风与重力。
+
+整体氛围是 **Cinematic × Editorial**:超大 display 标题 + 电影静帧构图 + 细等宽 HUD 注记,运行在近乎单色的紫调上,用唯一的青色信号色打破单调。动效手感&quot;慢进慢出 + 物理惯性&quot;:签名段落用 Matter.js 真实碰撞,3D 段落用虹彩玻璃花瓣(three.js clearcoat),装饰段落用官方 Skottie 验证过的 Lottie 呼吸绽放。
+
+- 密度:低。章节 padding `clamp(4.5rem, 11vw, 8rem)`,大量留白即布景。
+- 亮度基线:dark 为默认人格(首屏即深色),light 是同一系统的白昼温室,不是简单反色。
+- 质感关键词:发丝线(1px hairline)、辉光阴影(紫色投影代替边框)、颗粒/噪点覆膜、玻璃(backdrop-blur 仅用于导航胶囊)。
+- 签名交互:全站自定义光标(内点+外环 lerp 跟随)、DotGrid 点击冲击波、物理花园拖拽/弹弓、Silk 丝绸着色器、3D 花瓣拖拽甩动惯性。
 
 ### Key Characteristics
+1. 一个品牌紫 + 一个花心品红高光 + 一个冷色信号青,三色完成全部语义。
+2. 阴影即边框:主按钮靠 `0 12px 32px rgba(109,40,217,.45)` 悬浮,卡片靠 1px `--line` 发丝线 + 极浅紫投影。
+3. 等宽字体只用于&quot;仪器读数&quot;类文本(章节号、HUD、组件标签),制造温室仪表盘感。
+4. 所有动效可降级:`prefers-reduced-motion` 全站静态化;所有 rAF 循环受 IntersectionObserver + document.hidden 门控。
 
-- 暖白纸底 `#FBFAF4` + 纯黑文字，近黑 `#0F1111` 暗色主题，切换为慢速交叉淡化（&gt;1.6s）
-- 文字优先：项目是&quot;前缀标签 + 名称 + 年份&quot;的大文字块，不是图片卡片
-- 系统注记无处不在：时区时钟、气温、X/Y 光标坐标、`[A]`/`[-]` 方括号开关状态
-- 几何无衬线（tiktok 字体）承担全部正文与大字，等宽字体（tronica-mono）只做 HUD 注记
-- 全大写标签文化：链接 700 字重全大写，项目前缀 &quot;CODING PROJECT&quot;、页脚 &quot;INNOVATE WITH PURPOSE&quot;
-- 双语内容策略：英文为主、中文为辅（如&quot;阿里云盘&quot;），™ 与 © 上标频繁出现
-- 自定义光标；交互可选音效（SOUND 开关）
-- 动效曲线保守而精确，含一条戏剧性的快起慢收曲线 `cubic-bezier(.66,0,.01,1)`
-
-## Color Palette &amp; Roles
-
-| Role | Value | Usage |
-| --- | --- | --- |
-| 背景 · 亮色 | `#FBFAF4` `rgb(251,250,244)` | 亮色主题的全局背景（暖白纸） |
-| 背景 · 暗色 | `#0F1111` `rgb(15,17,17)` | 暗色主题的全局背景 |
-| 前景 | `#000000` | 亮色主题下所有文字与图形 |
-| 外链蓝 | `#0066DC` / `#007BFF` / `#3C93FF` | 样式表中的链接色阶（推断：外链与强调） |
-| 暗色面板 | `#292D39` / `#181C20` / `#373C4B` | 样式表中的暗色表面色阶（推断：暗色主题表面） |
-| 打码块 | `#000` 实心 | 敏感信息的 ■■■■■■ 方块 |
-
-配色哲学：一个背景 + 一个前景 + 透明度阶梯。不使用品牌强调色，靠字重、字号与留白制造层级。
+## 2. Color Palette &amp; Roles
 
 ### Theme Modes
+站点支持 `html[data-theme=&quot;light|dark&quot;]` 双主题,localStorage `vn-theme` 持久化,首帧内联脚本判定(无闪烁)。token 全部随主题翻转,但**语义角色不变**。
 
-- 亮色（默认观测态）：`#FBFAF4` 底 / `#000` 字。暗色：`#0F1111` 底 / 亮字（具体前景色未采样到，推断为近白）。
-- 切换控件是文本按钮 `THEME[A]` ↔ `THEME[D]`，方括号内字母即当前状态；切换伴随 &gt;1.6s 的慢速交叉淡化。
-- 两套主题共享同一套版式与字号，只有背景/前景翻转，无第二套彩色。
+| Token | Dark | Light | 角色 |
+| --- | --- | --- | --- |
+| `--void` | `#0A0814` | `#F1ECFA` | 页面底(唯一背景色,禁止叠两层近黑/近白) |
+| `--void-2` | `#120C22` | `#E6DDF5` | 章节抬升面 |
+| `--ink` | `#F4EFFF` | `#1B1430` | 主文字 |
+| `--ink-soft` | `#C4B5E8` | `#453A66` | 次级文字 |
+| `--ink-dim` | `#7C6A9E` | `#8879AC` | 弱化文字/页脚 |
+| `--violet` | `#8B5CF6` | `#7C3AED` | 主品牌紫:按钮、链接、强调 |
+| `--orchid` | `#E879F9` | `#C026D3` | 花心高光:章节序号、渐变端点、chip 辉光 |
+| `--lilac` | `#C4B5FD` | `#5B21B6` | 浅紫:衬线斜体强调词、hover 文字 |
+| `--signal` | `#67E8F9` | `#0E7490` | **唯一冷色信号**:HUD、焦点环、光标内环、组件标签 |
+| `--line` | `rgba(244,239,255,.10)` | `rgba(27,20,48,.12)` | 发丝线 |
+| `--line2` | `rgba(244,239,255,.18)` | `rgba(27,20,48,.22)` | 强一档的发丝线 |
+| `--glow` | `rgba(139,92,246,.4)` | `rgba(124,58,237,.25)` | 辉光色 |
 
-## Typography Rules
+### Primary / Interactive / Neutral
+- Primary:`--violet`(渐变常与 `#6D28D9`、`--orchid` 组成 120° 渐变,文字渐变用 `background-clip:text`)。
+- Interactive hover/focus 一律落到 `--signal` 或 `--orchid`,不引入新色。
+- Neutral 即 ink 三档;禁止出现纯灰。
 
-| Level | Font | Size | Weight | Style | 用途 |
-| --- | --- | --- | --- | --- | --- |
-| Display | tiktok | 85.5px（≈6.8vw） | 700 | uppercase | 页脚 CTA &quot;INNOVATE…&quot; |
-| Statement | tiktok | 75.5px（≈6vw） | 700 | uppercase | 宣言行 &quot;I BRING CRAFT &amp; TASTE TO DIGITAL WORK&quot; |
-| Lead | tiktok | 52.8px（≈4.2vw） | 400 | normal | 首屏大号正文段落（标志性手法） |
-| Eyebrow | tiktok | 30px | 500 | normal | 首屏眉题 &quot;Design &amp; Engineering&quot; |
-| Base | tiktok | 16px | 400 | — | 正文，行高 24px（1.5） |
-| HUD | tronica-mono | 16px | 400 | uppercase | 开关、时钟、坐标、按钮 |
-| Link | tiktok | 16px | 700 | uppercase | 导航与页脚链接 |
+### Surface &amp; Overlay
+- 只有一个表面层级对:`--void` → `--void-2`。导航胶囊是唯一的玻璃面(半透明 + backdrop-blur)。
+- Silk 等着色器画布自带深色底 `#0B0716`,属于&quot;展品内部世界&quot;,不算页面表面。
 
-- 字体观测：`font-family: tiktok, sans-serif`（几何无衬线，疑似自托管 TikTok Sans）；`tronica-mono, monospace` 用于全部技术注记。@font-face 规则未在可读样式表中（推断：next/font 内联注入）。
-- 行高纪律：大字 1.0–1.25，正文 1.5，无 letter-spacing 调整（normal）。
-- 层级完全靠&quot;字号 × 字重 × 大写&quot;三维驱动，不靠颜色。
+### Shadows &amp; Depth
+- 主按钮:`0 12px 32px rgba(109,40,217,.45)`(dark/light 同值,即&quot;阴影即边框&quot;)。
+- 卡片(light 下):`0 20px 45px rgba(76,29,149,.07)` + 1px `--line` 边框;dark 下去掉投影只留发丝线。
+- Chip:`0 6px 18px rgba(232,121,249,.35)` 品红辉光。
+- 文字辉光:`text-shadow: 0 0 60px rgba(196,181,253,.35)`(hero 衬线强调词)。
 
-## Component Stylings
+## 3. Typography Rules
 
-### Header（系统 HUD）
+### Font Family
+| Token | 字体 | 用途 |
+| --- | --- | --- |
+| `--display` | Clash Display(自托管 woff2 500/600)+ PingFang SC/YaHei 回退 | 全部标题、按钮、ticker |
+| `--body` | 系统栈(-apple-system / PingFang SC / Segoe UI) | 正文、note |
+| `--mono` | ui-monospace / Cascadia Mono / Consolas | 章节号、HUD、`&lt;Tag /&gt;` 标签、chip |
+| `--serif` | Instrument Serif 斜体(自托管)+ Songti/Georgia 回退 | 诗意强调词(Garden、引言、bloom 章节) |
 
-左：`HAOQI.DESIGN` 文字 logo（链接回首页）。中/右：`WORK` `CONTACT` 大写按钮；`THEME[A]` `SOUND[-]` 等宽字体状态开关；`GMT+8 CN 19:18 28°C` 实时时钟与气温；`0629 X 0283 Y` 光标坐标实时读数。所有注记等宽、大写、同字号（16px），像仪表盘读数排成一行。
+### Hierarchy(observed)
+| 层级 | 规格 |
+| --- | --- |
+| Hero 主词 `.hero__word` | Clash 600, `clamp(2.9rem,12.8vw,9.5rem)`, lh .95, ls -.045em |
+| Hero 衬线词 `.hero__garden em` | Instrument Serif 斜体, `clamp(2.6rem,9vw,6.4rem)`, `--lilac` + 60px 辉光 |
+| Hero 引导行 `.hero__line` | Clash 500, `clamp(1.15rem,2.6vw,1.7rem)`, ls .06em |
+| 章节中文题 `.section__cn` | Clash 600, `clamp(2.2rem,5.8vw,4.5rem)`, ls -.03em |
+| 章节英文题 h2 | Clash 600, 72px@desktop, lh 1.15, ls -.03em |
+| 章节号 `.sec__idx` | mono 12.8px, ls .14em, `--orchid` |
+| 正文 lead | 0.98–1.1rem, lh 1.95, `--ink-soft` |
+| 组件标签 `.gal__tag` | mono 10.56px, ls .16em, `--signal` |
+| 注释 `.gal__note` | body 13.6px, `--ink-dim` |
+| Ticker | Clash, `clamp(.9rem,1.7vw,1.2rem)`, ls .12em, uppercase |
 
-### 项目行（Project Rows）
+### Principles
+- 大标题永远负字距(-.03em ~ -.05em),小标签永远正字距(≥.12em)——&quot;挤压即身份&quot;。
+- 中英混排:英文 display 定调,中文在同 token 下用 PingFang 回退,不单独造中文标题字体。
+- 渐变文字只用于数字/单词级(gal__count、loader 数字),整句永不渐变。
 
-`&lt;a&gt;` 块级元素（观测约 764×469px，padding 8px），文案格式：`[类型前缀] [名称™] [年份区间]`，如 `CODING PROJECT REUNIMOS™ 2024-2026`、`ADRIVE 阿里云盘 2020-2022`、`FOF: SEE HEAR TOUCH 2022 EVENT ↗`。外链项尾部带 `↗`。无图片、无边框分隔，靠间距与换行分组。悬停态采样无颜色/内边距变化（推断：动效由 JS 驱动或作用于子元素）。
+## 4. Component Stylings
 
-### 页脚 CTA
+### Navigation
+React Bits 药丸风格:浮动胶囊、圆角 999px、半透明底 + backdrop-blur、active 项高亮药丸;章节滚动联动。
 
-`INNOVATE WITH PURPOSE`（85px 大写）+ `LET&#39;S CREATE SOMETHING EXTRAORDINARY` + 超大 `CURIOSITY.WEN@GMAIL.COM` 邮箱链接 + `TWITTER/X` `FIGMA` `GITHUB` 大写等宽/粗体链接列。
+### Buttons / CTA
+- 主按钮:999px 胶囊、padding `0 24px`(高约 48px)、Clash 15.2px、紫渐变底 + 45% 透明紫色大投影;hover 提升辉光。
+- Hero 双 CTA:&quot;走进温室 / 触碰风场&quot;——动词开头、四字中文、无感叹号。
+- 邮箱胶囊(StarBorder):流光描边动画只在 hover/visit 时运行。
 
-### 链接与按钮
+### Cards &amp; Containers
+- Gallery 单元 `.gal__cell`:20px 圆角、1px `--line`、padding 24px、透明底;wide 变体跨 2 列。结构固定为 `&lt;标签 mono&gt; + &lt;展品&gt; + &lt;一句中文 note&gt;`。
+- Works 卡:电影 WebP 图 + 线稿发光叠层 + 颗粒 + 揭幕动画;图不裸放,一律过&quot;电影级处理&quot;。
+- 展品容器统一 250px 高、14px 圆角、overflow hidden。
 
-全部 `text-transform: uppercase`；导航链接 700 字重；按钮用等宽字体 400 字重大写。无圆角、无阴影、无填充底色的文本控件风格。
+### Chips / Badges
+物理工具条 chip:mono 10.88px、ls .087em、999px、padding 约 7px 12.8px、品红辉光投影。
 
-## Layout Principles
+### Distinctive Components
+- **DotGrid** `[data-dotgrid]`:canvas 点阵,近距 rgb 混色、快速划过推动(power2.out)+ elastic.out 回弹、点击冲击波。
+- **Silk** `[data-silk]`:官方 GLSL 逐行原样,three.js 正交平面全屏 quad,`uTime += 0.1*dt`。
+- **Lottie Violet Bloom** `[data-lottie]`:90 帧无缝呼吸绽放(5 花瓣 st 相位错位 + trim 环),SVG renderer,离屏暂停,reduced 停在中帧。
+- **matter.js 物理花园**:官方 Render/Runner/lookAt 管线真复刻 + 站点层(花瓣精灵、重力切换、弹弓计分)。
+- **bloom3d.js**:LatheGeometry 玻璃紫罗兰 ×8、clearcoat、萤火 Points、拖拽惯性。
+- TextAnimations 系列:data-decrypt / blur / shiny / rotate / glitch / gradient / typewriter / circular,全部 IO 门控。
 
-- 全幅布局：主容器 padding 0、max-width none，内容直接贴合视口（观测 mainPad 0px / mainMaxW none）。
-- 项目块两列排布（推断：764px 宽块在 1258px 视口下约为两列网格）。
-- 留白替代分隔线：段落与项目组之间用大间距分组，未观测到装饰性边框。
-- HUD 信息行横贯页头，仪表读数与导航混排一行。
+## 5. Layout Principles
 
-## Depth &amp; Elevation
+### Spacing System
+- 基准单位 rem,节奏 `--pad: clamp(1.1rem,4vw,3.5rem)`(左右),章节纵向 `clamp(4.5rem,11vw,8rem)`(实测 128px@1440)。
+- 组件内:标签→展品 .3rem 上距,展品→note .8rem 下距。
 
-- 零阴影、零圆角卡片、零渐变。层级只存在于排版维度。
-- 主题切换的交叉淡化是唯一的&quot;深度&quot;表达；其余全部平面。
-- 透明度阶梯（rgba(var(--label)) 类 token）用于次级信息，而非灰色块。
+### Grid &amp; Container
+- 无最大宽度容器,全出血 + padding clamp;gallery 为 auto-fit 网格,`--wide` 跨 2 列,`--tall` 纵跨。
+- 章节头部三段式:`序号(mono) + 英文题 + 中文 kicker`,左对齐,序号与题基线对齐。
 
-## Do&#39;s and Don&#39;ts
+### Whitespace Philosophy
+留白承担叙事:章节间的大空场是&quot;温室走廊&quot;,滚动进入下一展区。分隔优先用负空间与对齐,其次一根发丝线,最后才允许卡片面。
 
-**Do**
+### Border Radius Scale
+`2px(HUD 角标) → 14px(展品) → 20px(卡) → 24/28/30px(大面板) → 999px/50%(胶囊与圆)`。没有 8px/12px 中间档——要么很大要么没有。
 
-- 用等宽字体的&quot;仪表读数&quot;制造系统感：时钟、坐标、方括号状态开关
-- 让正文段落成为首屏主角（52.8px 的 Lead 段落）
-- 项目列表用&quot;前缀 + 名称 + 年份&quot;的文案结构，外链加 ↗
-- 双语混排（英文骨架 + 中文点睛），™/© 上标做细节装饰
-- 主题切换做慢速交叉淡化（&gt;1.6s）
+## 6. Depth &amp; Elevation
 
-**Don&#39;t**
+层级从后到前:three.js 画布/背景场 → `--void` 底 → `--void-2` 章节面 → 内容/展品 → 导航胶囊(glass) → 光标环/十字线 → loader(莫比乌斯玻璃)。深度感主要靠 **辉光与雾化**(drop-shadow/text-shadow/紫色投影),不靠灰阶叠层。
 
-- 不要加品牌强调色、渐变、阴影、圆角卡片——它的美来自克制
-- 不要用图片轰炸；文字与排版就是画面
-- 不要给大字加 letter-spacing；层级靠字号与字重
-- 不要把 HUD 注记做成装饰性图形——它们必须输出真实数据（真实时间、真实坐标）
+## 7. Do&#39;s and Don&#39;ts
 
-## Responsive Behavior
+- ✅ 新颜色先问&quot;能不能用现有 token&quot;;全站冷色信号只留 `--signal` 一个。
+- ✅ 新动画必须:IO + document.hidden 门控、reduced-motion 降级、transform/opacity 优先(gsap-performance 规则)。
+- ✅ 图片一律电影级处理(调色、颗粒、发光线稿、水印检查),掉价时修图不删图。
+- ✅ 文案:中文四字动宾短语 CTA;技术注解用 mono + 一句克制说明。
+- ❌ 不加第二块玻璃面、不叠两层近黑。
+- ❌ 不用 width/height/top/left 做位移动画。
+- ❌ 不给整句文字上渐变、不用彩色 emoji 装饰。
+- ❌ 不为&quot;高级感&quot;堆卡片边框/分割线;chrome 预算默认为 0。
 
-- 观测仅覆盖桌面端 1258×566 视口（证据缺口）。
-- 推断（未验证）：HUD 行在小屏折叠或隐藏坐标读数；项目块两列降为单列；大字按 vw 缩放（85px ≈ 6.8vw、75px ≈ 6vw 均为流式）。
+## 8. Responsive Behavior
 
-## Agent Prompt Guide
+- 标题全部 `clamp()` 流式,无跳档;hero 主词 12.8vw 直落 2.9rem。
+- 章节 padding、grid 列数随宽度收放;wide 卡在窄屏退为单列。
+- 触屏:自定义光标 `(hover:hover) and (pointer:fine)` 才启用;物理/3D 交互绑定 pointer 事件,触摸可玩。
+- 触控目标:chip/按钮实际高 ≥28px,胶囊按钮 ≥44px。
+- Breakpoints(observed 类名切换点):约 1024 / 768 / 560px。
 
-- 复刻首屏：&quot;暖白纸底 #FBFAF4，纯黑几何无衬线。首屏眉题 30px &#39;Design &amp; Engineering Thinking in systems.&#39;，下方 52.8px/400 的两行大号正文段落占满视口，页头一行等宽大写 HUD：logo、WORK、CONTACT、THEME[A]、SOUND[-]、GMT+8 时钟与气温、X/Y 光标坐标。&quot;
-- 复刻项目列表：&quot;无图片项目块，文案格式 &#39;CODING PROJECT 名称™ 年份&#39;，大写前缀标签 + 名称 + 年份，外链尾部 ↗，两列网格，间距分组不用边框。&quot;
-- 复刻页脚：&quot;85px/700 大写 CTA &#39;INNOVATE WITH PURPOSE&#39;，下方超大邮箱链接与 TWITTER/X、FIGMA、GITHUB 大写链接列。&quot;
-- 迭代规则：先调字号与字重，再动间距；禁止引入新颜色。
+## 9. Agent Prompt Guide
 
-## Observed Pages
+### Quick Color Reference
+底 `#0A0814` / 抬升 `#120C22` / 主文字 `#F4EFFF` / 品牌紫 `#8B5CF6` / 花心 `#E879F9` / 浅紫 `#C4B5FD` / 信号青 `#67E8F9` / 发丝线 `rgba(244,239,255,.10)`。
 
-- https://haoqi.design/ （首页，Next.js App Router + Vercel 部署，观测时标题 HAOQI©2026）
+### Example Component Prompts
+- **Hero**:&quot;居中三行 display 标题,最大词 clamp(2.9rem,12.8vw,9.5rem) 负字距 -.045em,下一词用 Instrument Serif 斜体浅紫 + 60px 紫辉光;下方 1rem 行距正文 + 两枚 999px 紫渐变胶囊按钮(投影 0 12px 32px rgba(109,40,217,.45));背景是 canvas 花瓣场。&quot;
+- **Gallery cell**:&quot;20px 圆角透明卡,1px rgba(244,239,255,.10) 发丝边;顶部一行 mono 10.5px 信号青标签 `&lt;ComponentName /&gt;`,中间 250px 展品,底部 13.6px 灰紫中文一句,克制说明技术要点。&quot;
+- **Section head**:&quot;mono 12.8px 品红序号 07 + Clash 600 72px 英文题(负字距) + 中文 kicker,左对齐,章节 padding 上下 128px。&quot;
+- **Loader**:&quot;全屏深色,中央 Clash 600 clamp(4.2rem,15vw,7rem) 数字,白→lilac→orchid 120° 渐变 clip:text,配莫比乌斯玻璃环;完成后整体淡出停回首屏。&quot;
 
-## Evidence Notes
+### Iteration Guide
+1. 改动前先跑无头验证(playwright-core + 本机 chromium,强制 `vn-theme=dark`),零 console error 是底线。
+2. 每批新特效进 gallery 前:下载官方源码 → 逐行移植 → 门控 → cache-bust(`?v=NN` 同步递增 css/main/reactbits)。
+3. 评估图像资产:先查水印与构图;掉价 = 修处理,不删图。
+4. 性能基线:空闲 rAF ≤ 一个合成器循环;长任务只允许出现在 preloader 期间。
 
-- 直接观测：body 计算样式、代表性元素字号/字重/大写、主题切换前后背景色、项目块几何、页头与页脚文案、样式表色值与贝塞尔曲线、自定义光标存在性。
-- 推断（已标注）：暗色主题前景色、项目两列网格、字体注入方式（next/font）、悬停动效实现方式。
-- 缺口：移动端断点行为、暗色主题完整 token、音效行为未实际听到、单项目详情页未访问。
-- 工具：agent-browser 0.27.0（DOM 与计算样式为主证据，未使用截图）。
+## Appendix A · Interaction Patterns
+- 光标:内点即时、外环 lerp .16,静止归位自停。
+- 滚动:Lenis 平滑 + ScrollTrigger 章节联动 + 导航药丸同步。
+- Hover:DotGrid 推动、CircularText 加速 ×4、GlitchText 悬停才播放。
+- 点击:DotGrid 冲击波、物理拖拽/弹弓、3D 花瓣甩动惯性。
+- 主题:切换即时翻转全部 token,图片/着色器同步换光感(Silk uLightMode)。
+
+## Appendix B · Content &amp; Messaging Patterns
+- 语气:诗意、安静、第一人称复数(&quot;走进温室&quot;)。中文短语优先四字,英文全大写做装饰。
+- 信任信号:直接展示技术出处(React Bits、matter-js 官方复刻、Skottie 验证)。
+- 命名:章节 = 园艺词汇(Garden/Physics/Works/Bloom/Gallery/Notes/Visit)。
+
+## Appendix C · Evidence Notes
+- 观测手段:agent-browser eval(结构/双主题 tokens/computed styles/radius 与 shadow 集合)+ 运行中截图验证。
+- 标注推断:works 卡细节、breakpoints 数值来自样式源码交叉(`assets/css/style.css`),非纯 DOM 观测。
 </pre>
-              <article class="rendered-view" id="previewView" hidden><section><h2>Visual Theme &amp; Atmosphere</h2><p>暖白纸底上的&quot;工程系统&quot;美学：整个站点像一台被精心校准的仪器，而非一本画册。它几乎不用图片，全部信息由文字、等宽注记和精确的对位承载；页头常驻 GMT+8 时钟、气温、光标 X/Y 坐标读数，主题与声音都有方括号开关（<code>THEME[A]</code>、<code>SOUND[-]</code>），营造出&quot;系统 HUD&quot;式的冷静氛围。克制的双色主题（暖白 ↔ 近黑）配纯黑文字，唯一的彩色是外链蓝；公司名用实心方块 ■■■■■■ 打码，反而成为个性签名。整体气质：克制、精密、工程师的幽默感。</p><h3>Key Characteristics</h3><ul><li>暖白纸底 <code>#FBFAF4</code> + 纯黑文字，近黑 <code>#0F1111</code> 暗色主题，切换为慢速交叉淡化（&gt;1.6s）</li><li>文字优先：项目是&quot;前缀标签 + 名称 + 年份&quot;的大文字块，不是图片卡片</li><li>系统注记无处不在：时区时钟、气温、X/Y 光标坐标、<code>[A]</code>/<code>[-]</code> 方括号开关状态</li><li>几何无衬线（tiktok 字体）承担全部正文与大字，等宽字体（tronica-mono）只做 HUD 注记</li><li>全大写标签文化：链接 700 字重全大写，项目前缀 &quot;CODING PROJECT&quot;、页脚 &quot;INNOVATE WITH PURPOSE&quot;</li><li>双语内容策略：英文为主、中文为辅（如&quot;阿里云盘&quot;），™ 与 © 上标频繁出现</li><li>自定义光标；交互可选音效（SOUND 开关）</li><li>动效曲线保守而精确，含一条戏剧性的快起慢收曲线 <code>cubic-bezier(.66,0,.01,1)</code></li></ul></section><section><h2>Color Palette &amp; Roles</h2><table><thead><tr><th>Role</th><th>Value</th><th>Usage</th></tr></thead><tbody><tr><td>背景 · 亮色</td><td><code>#FBFAF4</code> <code>rgb(251,250,244)</code></td><td>亮色主题的全局背景（暖白纸）</td></tr><tr><td>背景 · 暗色</td><td><code>#0F1111</code> <code>rgb(15,17,17)</code></td><td>暗色主题的全局背景</td></tr><tr><td>前景</td><td><code>#000000</code></td><td>亮色主题下所有文字与图形</td></tr><tr><td>外链蓝</td><td><code>#0066DC</code> / <code>#007BFF</code> / <code>#3C93FF</code></td><td>样式表中的链接色阶（推断：外链与强调）</td></tr><tr><td>暗色面板</td><td><code>#292D39</code> / <code>#181C20</code> / <code>#373C4B</code></td><td>样式表中的暗色表面色阶（推断：暗色主题表面）</td></tr><tr><td>打码块</td><td><code>#000</code> 实心</td><td>敏感信息的 ■■■■■■ 方块</td></tr></tbody></table><p>配色哲学：一个背景 + 一个前景 + 透明度阶梯。不使用品牌强调色，靠字重、字号与留白制造层级。</p><h3>Theme Modes</h3><ul><li>亮色（默认观测态）：<code>#FBFAF4</code> 底 / <code>#000</code> 字。暗色：<code>#0F1111</code> 底 / 亮字（具体前景色未采样到，推断为近白）。</li><li>切换控件是文本按钮 <code>THEME[A]</code> ↔ <code>THEME[D]</code>，方括号内字母即当前状态；切换伴随 &gt;1.6s 的慢速交叉淡化。</li><li>两套主题共享同一套版式与字号，只有背景/前景翻转，无第二套彩色。</li></ul></section><section><h2>Typography Rules</h2><table><thead><tr><th>Level</th><th>Font</th><th>Size</th><th>Weight</th><th>Style</th><th>用途</th></tr></thead><tbody><tr><td>Display</td><td>tiktok</td><td>85.5px（≈6.8vw）</td><td>700</td><td>uppercase</td><td>页脚 CTA &quot;INNOVATE…&quot;</td></tr><tr><td>Statement</td><td>tiktok</td><td>75.5px（≈6vw）</td><td>700</td><td>uppercase</td><td>宣言行 &quot;I BRING CRAFT &amp; TASTE TO DIGITAL WORK&quot;</td></tr><tr><td>Lead</td><td>tiktok</td><td>52.8px（≈4.2vw）</td><td>400</td><td>normal</td><td>首屏大号正文段落（标志性手法）</td></tr><tr><td>Eyebrow</td><td>tiktok</td><td>30px</td><td>500</td><td>normal</td><td>首屏眉题 &quot;Design &amp; Engineering&quot;</td></tr><tr><td>Base</td><td>tiktok</td><td>16px</td><td>400</td><td>—</td><td>正文，行高 24px（1.5）</td></tr><tr><td>HUD</td><td>tronica-mono</td><td>16px</td><td>400</td><td>uppercase</td><td>开关、时钟、坐标、按钮</td></tr><tr><td>Link</td><td>tiktok</td><td>16px</td><td>700</td><td>uppercase</td><td>导航与页脚链接</td></tr></tbody></table><ul><li>字体观测：<code>font-family: tiktok, sans-serif</code>（几何无衬线，疑似自托管 TikTok Sans）；<code>tronica-mono, monospace</code> 用于全部技术注记。@font-face 规则未在可读样式表中（推断：next/font 内联注入）。</li><li>行高纪律：大字 1.0–1.25，正文 1.5，无 letter-spacing 调整（normal）。</li><li>层级完全靠&quot;字号 × 字重 × 大写&quot;三维驱动，不靠颜色。</li></ul></section><section><h2>Component Stylings</h2><h3>Header（系统 HUD）</h3><p>左：<code>HAOQI.DESIGN</code> 文字 logo（链接回首页）。中/右：<code>WORK</code> <code>CONTACT</code> 大写按钮；<code>THEME[A]</code> <code>SOUND[-]</code> 等宽字体状态开关；<code>GMT+8 CN 19:18 28°C</code> 实时时钟与气温；<code>0629 X 0283 Y</code> 光标坐标实时读数。所有注记等宽、大写、同字号（16px），像仪表盘读数排成一行。</p><h3>项目行（Project Rows）</h3><p><code>&lt;a&gt;</code> 块级元素（观测约 764×469px，padding 8px），文案格式：<code>[类型前缀] [名称™] [年份区间]</code>，如 <code>CODING PROJECT REUNIMOS™ 2024-2026</code>、<code>ADRIVE 阿里云盘 2020-2022</code>、<code>FOF: SEE HEAR TOUCH 2022 EVENT ↗</code>。外链项尾部带 <code>↗</code>。无图片、无边框分隔，靠间距与换行分组。悬停态采样无颜色/内边距变化（推断：动效由 JS 驱动或作用于子元素）。</p><h3>页脚 CTA</h3><p><code>INNOVATE WITH PURPOSE</code>（85px 大写）+ <code>LET&#39;S CREATE SOMETHING EXTRAORDINARY</code> + 超大 <code>CURIOSITY.WEN@GMAIL.COM</code> 邮箱链接 + <code>TWITTER/X</code> <code>FIGMA</code> <code>GITHUB</code> 大写等宽/粗体链接列。</p><h3>链接与按钮</h3><p>全部 <code>text-transform: uppercase</code>；导航链接 700 字重；按钮用等宽字体 400 字重大写。无圆角、无阴影、无填充底色的文本控件风格。</p></section><section><h2>Layout Principles</h2><ul><li>全幅布局：主容器 padding 0、max-width none，内容直接贴合视口（观测 mainPad 0px / mainMaxW none）。</li><li>项目块两列排布（推断：764px 宽块在 1258px 视口下约为两列网格）。</li><li>留白替代分隔线：段落与项目组之间用大间距分组，未观测到装饰性边框。</li><li>HUD 信息行横贯页头，仪表读数与导航混排一行。</li></ul></section><section><h2>Depth &amp; Elevation</h2><ul><li>零阴影、零圆角卡片、零渐变。层级只存在于排版维度。</li><li>主题切换的交叉淡化是唯一的&quot;深度&quot;表达；其余全部平面。</li><li>透明度阶梯（rgba(var(--label)) 类 token）用于次级信息，而非灰色块。</li></ul></section><section><h2>Do&#39;s and Don&#39;ts</h2><p><strong>Do</strong></p><ul><li>用等宽字体的&quot;仪表读数&quot;制造系统感：时钟、坐标、方括号状态开关</li><li>让正文段落成为首屏主角（52.8px 的 Lead 段落）</li><li>项目列表用&quot;前缀 + 名称 + 年份&quot;的文案结构，外链加 ↗</li><li>双语混排（英文骨架 + 中文点睛），™/© 上标做细节装饰</li><li>主题切换做慢速交叉淡化（&gt;1.6s）</li></ul><p><strong>Don&#39;t</strong></p><ul><li>不要加品牌强调色、渐变、阴影、圆角卡片——它的美来自克制</li><li>不要用图片轰炸；文字与排版就是画面</li><li>不要给大字加 letter-spacing；层级靠字号与字重</li><li>不要把 HUD 注记做成装饰性图形——它们必须输出真实数据（真实时间、真实坐标）</li></ul></section><section><h2>Responsive Behavior</h2><ul><li>观测仅覆盖桌面端 1258×566 视口（证据缺口）。</li><li>推断（未验证）：HUD 行在小屏折叠或隐藏坐标读数；项目块两列降为单列；大字按 vw 缩放（85px ≈ 6.8vw、75px ≈ 6vw 均为流式）。</li></ul></section><section><h2>Agent Prompt Guide</h2><ul><li>复刻首屏：&quot;暖白纸底 #FBFAF4，纯黑几何无衬线。首屏眉题 30px &#39;Design &amp; Engineering Thinking in systems.&#39;，下方 52.8px/400 的两行大号正文段落占满视口，页头一行等宽大写 HUD：logo、WORK、CONTACT、THEME[A]、SOUND[-]、GMT+8 时钟与气温、X/Y 光标坐标。&quot;</li><li>复刻项目列表：&quot;无图片项目块，文案格式 &#39;CODING PROJECT 名称™ 年份&#39;，大写前缀标签 + 名称 + 年份，外链尾部 ↗，两列网格，间距分组不用边框。&quot;</li><li>复刻页脚：&quot;85px/700 大写 CTA &#39;INNOVATE WITH PURPOSE&#39;，下方超大邮箱链接与 TWITTER/X、FIGMA、GITHUB 大写链接列。&quot;</li><li>迭代规则：先调字号与字重，再动间距；禁止引入新颜色。</li></ul></section><section><h2>Observed Pages</h2><ul><li>https://haoqi.design/ （首页，Next.js App Router + Vercel 部署，观测时标题 HAOQI©2026）</li></ul></section><section><h2>Evidence Notes</h2><ul><li>直接观测：body 计算样式、代表性元素字号/字重/大写、主题切换前后背景色、项目块几何、页头与页脚文案、样式表色值与贝塞尔曲线、自定义光标存在性。</li><li>推断（已标注）：暗色主题前景色、项目两列网格、字体注入方式（next/font）、悬停动效实现方式。</li><li>缺口：移动端断点行为、暗色主题完整 token、音效行为未实际听到、单项目详情页未访问。</li><li>工具：agent-browser 0.27.0（DOM 与计算样式为主证据，未使用截图）。</li></ul></section></article>
+              <article class="rendered-view" id="previewView" hidden><section><h2>1. Visual Theme &amp; Atmosphere</h2><p><strong>概念</strong>:深夜玻璃温室里的生物荧光紫罗兰。站点不是&quot;介绍花园&quot;,站点<strong>就是</strong>温室——滚动是行走,光标是萤火,花瓣服从风与重力。</p><p>整体氛围是 <strong>Cinematic × Editorial</strong>:超大 display 标题 + 电影静帧构图 + 细等宽 HUD 注记,运行在近乎单色的紫调上,用唯一的青色信号色打破单调。动效手感&quot;慢进慢出 + 物理惯性&quot;:签名段落用 Matter.js 真实碰撞,3D 段落用虹彩玻璃花瓣(three.js clearcoat),装饰段落用官方 Skottie 验证过的 Lottie 呼吸绽放。</p><ul><li>密度:低。章节 padding <code>clamp(4.5rem, 11vw, 8rem)</code>,大量留白即布景。</li><li>亮度基线:dark 为默认人格(首屏即深色),light 是同一系统的白昼温室,不是简单反色。</li><li>质感关键词:发丝线(1px hairline)、辉光阴影(紫色投影代替边框)、颗粒/噪点覆膜、玻璃(backdrop-blur 仅用于导航胶囊)。</li><li>签名交互:全站自定义光标(内点+外环 lerp 跟随)、DotGrid 点击冲击波、物理花园拖拽/弹弓、Silk 丝绸着色器、3D 花瓣拖拽甩动惯性。</li></ul><h3>Key Characteristics</h3><ol><li>一个品牌紫 + 一个花心品红高光 + 一个冷色信号青,三色完成全部语义。</li><li>阴影即边框:主按钮靠 <code>0 12px 32px rgba(109,40,217,.45)</code> 悬浮,卡片靠 1px <code>--line</code> 发丝线 + 极浅紫投影。</li><li>等宽字体只用于&quot;仪器读数&quot;类文本(章节号、HUD、组件标签),制造温室仪表盘感。</li><li>所有动效可降级:<code>prefers-reduced-motion</code> 全站静态化;所有 rAF 循环受 IntersectionObserver + document.hidden 门控。</li></ol></section><section><h2>2. Color Palette &amp; Roles</h2><h3>Theme Modes</h3><p>站点支持 <code>html[data-theme=&quot;light|dark&quot;]</code> 双主题,localStorage <code>vn-theme</code> 持久化,首帧内联脚本判定(无闪烁)。token 全部随主题翻转,但<strong>语义角色不变</strong>。</p><table><thead><tr><th>Token</th><th>Dark</th><th>Light</th><th>角色</th></tr></thead><tbody><tr><td><code>--void</code></td><td><code>#0A0814</code></td><td><code>#F1ECFA</code></td><td>页面底(唯一背景色,禁止叠两层近黑/近白)</td></tr><tr><td><code>--void-2</code></td><td><code>#120C22</code></td><td><code>#E6DDF5</code></td><td>章节抬升面</td></tr><tr><td><code>--ink</code></td><td><code>#F4EFFF</code></td><td><code>#1B1430</code></td><td>主文字</td></tr><tr><td><code>--ink-soft</code></td><td><code>#C4B5E8</code></td><td><code>#453A66</code></td><td>次级文字</td></tr><tr><td><code>--ink-dim</code></td><td><code>#7C6A9E</code></td><td><code>#8879AC</code></td><td>弱化文字/页脚</td></tr><tr><td><code>--violet</code></td><td><code>#8B5CF6</code></td><td><code>#7C3AED</code></td><td>主品牌紫:按钮、链接、强调</td></tr><tr><td><code>--orchid</code></td><td><code>#E879F9</code></td><td><code>#C026D3</code></td><td>花心高光:章节序号、渐变端点、chip 辉光</td></tr><tr><td><code>--lilac</code></td><td><code>#C4B5FD</code></td><td><code>#5B21B6</code></td><td>浅紫:衬线斜体强调词、hover 文字</td></tr><tr><td><code>--signal</code></td><td><code>#67E8F9</code></td><td><code>#0E7490</code></td><td><strong>唯一冷色信号</strong>:HUD、焦点环、光标内环、组件标签</td></tr><tr><td><code>--line</code></td><td><code>rgba(244,239,255,.10)</code></td><td><code>rgba(27,20,48,.12)</code></td><td>发丝线</td></tr><tr><td><code>--line2</code></td><td><code>rgba(244,239,255,.18)</code></td><td><code>rgba(27,20,48,.22)</code></td><td>强一档的发丝线</td></tr><tr><td><code>--glow</code></td><td><code>rgba(139,92,246,.4)</code></td><td><code>rgba(124,58,237,.25)</code></td><td>辉光色</td></tr></tbody></table><h3>Primary / Interactive / Neutral</h3><ul><li>Primary:<code>--violet</code>(渐变常与 <code>#6D28D9</code>、<code>--orchid</code> 组成 120° 渐变,文字渐变用 <code>background-clip:text</code>)。</li><li>Interactive hover/focus 一律落到 <code>--signal</code> 或 <code>--orchid</code>,不引入新色。</li><li>Neutral 即 ink 三档;禁止出现纯灰。</li></ul><h3>Surface &amp; Overlay</h3><ul><li>只有一个表面层级对:<code>--void</code> → <code>--void-2</code>。导航胶囊是唯一的玻璃面(半透明 + backdrop-blur)。</li><li>Silk 等着色器画布自带深色底 <code>#0B0716</code>,属于&quot;展品内部世界&quot;,不算页面表面。</li></ul><h3>Shadows &amp; Depth</h3><ul><li>主按钮:<code>0 12px 32px rgba(109,40,217,.45)</code>(dark/light 同值,即&quot;阴影即边框&quot;)。</li><li>卡片(light 下):<code>0 20px 45px rgba(76,29,149,.07)</code> + 1px <code>--line</code> 边框;dark 下去掉投影只留发丝线。</li><li>Chip:<code>0 6px 18px rgba(232,121,249,.35)</code> 品红辉光。</li><li>文字辉光:<code>text-shadow: 0 0 60px rgba(196,181,253,.35)</code>(hero 衬线强调词)。</li></ul></section><section><h2>3. Typography Rules</h2><h3>Font Family</h3><table><thead><tr><th>Token</th><th>字体</th><th>用途</th></tr></thead><tbody><tr><td><code>--display</code></td><td>Clash Display(自托管 woff2 500/600)+ PingFang SC/YaHei 回退</td><td>全部标题、按钮、ticker</td></tr><tr><td><code>--body</code></td><td>系统栈(-apple-system / PingFang SC / Segoe UI)</td><td>正文、note</td></tr><tr><td><code>--mono</code></td><td>ui-monospace / Cascadia Mono / Consolas</td><td>章节号、HUD、<code>&lt;Tag /&gt;</code> 标签、chip</td></tr><tr><td><code>--serif</code></td><td>Instrument Serif 斜体(自托管)+ Songti/Georgia 回退</td><td>诗意强调词(Garden、引言、bloom 章节)</td></tr></tbody></table><h3>Hierarchy(observed)</h3><table><thead><tr><th>层级</th><th>规格</th></tr></thead><tbody><tr><td>Hero 主词 <code>.hero__word</code></td><td>Clash 600, <code>clamp(2.9rem,12.8vw,9.5rem)</code>, lh .95, ls -.045em</td></tr><tr><td>Hero 衬线词 <code>.hero__garden em</code></td><td>Instrument Serif 斜体, <code>clamp(2.6rem,9vw,6.4rem)</code>, <code>--lilac</code> + 60px 辉光</td></tr><tr><td>Hero 引导行 <code>.hero__line</code></td><td>Clash 500, <code>clamp(1.15rem,2.6vw,1.7rem)</code>, ls .06em</td></tr><tr><td>章节中文题 <code>.section__cn</code></td><td>Clash 600, <code>clamp(2.2rem,5.8vw,4.5rem)</code>, ls -.03em</td></tr><tr><td>章节英文题 h2</td><td>Clash 600, 72px@desktop, lh 1.15, ls -.03em</td></tr><tr><td>章节号 <code>.sec__idx</code></td><td>mono 12.8px, ls .14em, <code>--orchid</code></td></tr><tr><td>正文 lead</td><td>0.98–1.1rem, lh 1.95, <code>--ink-soft</code></td></tr><tr><td>组件标签 <code>.gal__tag</code></td><td>mono 10.56px, ls .16em, <code>--signal</code></td></tr><tr><td>注释 <code>.gal__note</code></td><td>body 13.6px, <code>--ink-dim</code></td></tr><tr><td>Ticker</td><td>Clash, <code>clamp(.9rem,1.7vw,1.2rem)</code>, ls .12em, uppercase</td></tr></tbody></table><h3>Principles</h3><ul><li>大标题永远负字距(-.03em ~ -.05em),小标签永远正字距(≥.12em)——&quot;挤压即身份&quot;。</li><li>中英混排:英文 display 定调,中文在同 token 下用 PingFang 回退,不单独造中文标题字体。</li><li>渐变文字只用于数字/单词级(gal__count、loader 数字),整句永不渐变。</li></ul></section><section><h2>4. Component Stylings</h2><h3>Navigation</h3><p>React Bits 药丸风格:浮动胶囊、圆角 999px、半透明底 + backdrop-blur、active 项高亮药丸;章节滚动联动。</p><h3>Buttons / CTA</h3><ul><li>主按钮:999px 胶囊、padding <code>0 24px</code>(高约 48px)、Clash 15.2px、紫渐变底 + 45% 透明紫色大投影;hover 提升辉光。</li><li>Hero 双 CTA:&quot;走进温室 / 触碰风场&quot;——动词开头、四字中文、无感叹号。</li><li>邮箱胶囊(StarBorder):流光描边动画只在 hover/visit 时运行。</li></ul><h3>Cards &amp; Containers</h3><ul><li>Gallery 单元 <code>.gal__cell</code>:20px 圆角、1px <code>--line</code>、padding 24px、透明底;wide 变体跨 2 列。结构固定为 <code>&lt;标签 mono&gt; + &lt;展品&gt; + &lt;一句中文 note&gt;</code>。</li><li>Works 卡:电影 WebP 图 + 线稿发光叠层 + 颗粒 + 揭幕动画;图不裸放,一律过&quot;电影级处理&quot;。</li><li>展品容器统一 250px 高、14px 圆角、overflow hidden。</li></ul><h3>Chips / Badges</h3><p>物理工具条 chip:mono 10.88px、ls .087em、999px、padding 约 7px 12.8px、品红辉光投影。</p><h3>Distinctive Components</h3><ul><li><strong>DotGrid</strong> <code>[data-dotgrid]</code>:canvas 点阵,近距 rgb 混色、快速划过推动(power2.out)+ elastic.out 回弹、点击冲击波。</li><li><strong>Silk</strong> <code>[data-silk]</code>:官方 GLSL 逐行原样,three.js 正交平面全屏 quad,<code>uTime += 0.1*dt</code>。</li><li><strong>Lottie Violet Bloom</strong> <code>[data-lottie]</code>:90 帧无缝呼吸绽放(5 花瓣 st 相位错位 + trim 环),SVG renderer,离屏暂停,reduced 停在中帧。</li><li><strong>matter.js 物理花园</strong>:官方 Render/Runner/lookAt 管线真复刻 + 站点层(花瓣精灵、重力切换、弹弓计分)。</li><li><strong>bloom3d.js</strong>:LatheGeometry 玻璃紫罗兰 ×8、clearcoat、萤火 Points、拖拽惯性。</li><li>TextAnimations 系列:data-decrypt / blur / shiny / rotate / glitch / gradient / typewriter / circular,全部 IO 门控。</li></ul></section><section><h2>5. Layout Principles</h2><h3>Spacing System</h3><ul><li>基准单位 rem,节奏 <code>--pad: clamp(1.1rem,4vw,3.5rem)</code>(左右),章节纵向 <code>clamp(4.5rem,11vw,8rem)</code>(实测 128px@1440)。</li><li>组件内:标签→展品 .3rem 上距,展品→note .8rem 下距。</li></ul><h3>Grid &amp; Container</h3><ul><li>无最大宽度容器,全出血 + padding clamp;gallery 为 auto-fit 网格,<code>--wide</code> 跨 2 列,<code>--tall</code> 纵跨。</li><li>章节头部三段式:<code>序号(mono) + 英文题 + 中文 kicker</code>,左对齐,序号与题基线对齐。</li></ul><h3>Whitespace Philosophy</h3><p>留白承担叙事:章节间的大空场是&quot;温室走廊&quot;,滚动进入下一展区。分隔优先用负空间与对齐,其次一根发丝线,最后才允许卡片面。</p><h3>Border Radius Scale</h3><p><code>2px(HUD 角标) → 14px(展品) → 20px(卡) → 24/28/30px(大面板) → 999px/50%(胶囊与圆)</code>。没有 8px/12px 中间档——要么很大要么没有。</p></section><section><h2>6. Depth &amp; Elevation</h2><p>层级从后到前:three.js 画布/背景场 → <code>--void</code> 底 → <code>--void-2</code> 章节面 → 内容/展品 → 导航胶囊(glass) → 光标环/十字线 → loader(莫比乌斯玻璃)。深度感主要靠 <strong>辉光与雾化</strong>(drop-shadow/text-shadow/紫色投影),不靠灰阶叠层。</p></section><section><h2>7. Do&#39;s and Don&#39;ts</h2><ul><li>✅ 新颜色先问&quot;能不能用现有 token&quot;;全站冷色信号只留 <code>--signal</code> 一个。</li><li>✅ 新动画必须:IO + document.hidden 门控、reduced-motion 降级、transform/opacity 优先(gsap-performance 规则)。</li><li>✅ 图片一律电影级处理(调色、颗粒、发光线稿、水印检查),掉价时修图不删图。</li><li>✅ 文案:中文四字动宾短语 CTA;技术注解用 mono + 一句克制说明。</li><li>❌ 不加第二块玻璃面、不叠两层近黑。</li><li>❌ 不用 width/height/top/left 做位移动画。</li><li>❌ 不给整句文字上渐变、不用彩色 emoji 装饰。</li><li>❌ 不为&quot;高级感&quot;堆卡片边框/分割线;chrome 预算默认为 0。</li></ul></section><section><h2>8. Responsive Behavior</h2><ul><li>标题全部 <code>clamp()</code> 流式,无跳档;hero 主词 12.8vw 直落 2.9rem。</li><li>章节 padding、grid 列数随宽度收放;wide 卡在窄屏退为单列。</li><li>触屏:自定义光标 <code>(hover:hover) and (pointer:fine)</code> 才启用;物理/3D 交互绑定 pointer 事件,触摸可玩。</li><li>触控目标:chip/按钮实际高 ≥28px,胶囊按钮 ≥44px。</li><li>Breakpoints(observed 类名切换点):约 1024 / 768 / 560px。</li></ul></section><section><h2>9. Agent Prompt Guide</h2><h3>Quick Color Reference</h3><p>底 <code>#0A0814</code> / 抬升 <code>#120C22</code> / 主文字 <code>#F4EFFF</code> / 品牌紫 <code>#8B5CF6</code> / 花心 <code>#E879F9</code> / 浅紫 <code>#C4B5FD</code> / 信号青 <code>#67E8F9</code> / 发丝线 <code>rgba(244,239,255,.10)</code>。</p><h3>Example Component Prompts</h3><ul><li><strong>Hero</strong>:&quot;居中三行 display 标题,最大词 clamp(2.9rem,12.8vw,9.5rem) 负字距 -.045em,下一词用 Instrument Serif 斜体浅紫 + 60px 紫辉光;下方 1rem 行距正文 + 两枚 999px 紫渐变胶囊按钮(投影 0 12px 32px rgba(109,40,217,.45));背景是 canvas 花瓣场。&quot;</li><li><strong>Gallery cell</strong>:&quot;20px 圆角透明卡,1px rgba(244,239,255,.10) 发丝边;顶部一行 mono 10.5px 信号青标签 <code>&lt;ComponentName /&gt;</code>,中间 250px 展品,底部 13.6px 灰紫中文一句,克制说明技术要点。&quot;</li><li><strong>Section head</strong>:&quot;mono 12.8px 品红序号 07 + Clash 600 72px 英文题(负字距) + 中文 kicker,左对齐,章节 padding 上下 128px。&quot;</li><li><strong>Loader</strong>:&quot;全屏深色,中央 Clash 600 clamp(4.2rem,15vw,7rem) 数字,白→lilac→orchid 120° 渐变 clip:text,配莫比乌斯玻璃环;完成后整体淡出停回首屏。&quot;</li></ul><h3>Iteration Guide</h3><ol><li>改动前先跑无头验证(playwright-core + 本机 chromium,强制 <code>vn-theme=dark</code>),零 console error 是底线。</li><li>每批新特效进 gallery 前:下载官方源码 → 逐行移植 → 门控 → cache-bust(<code>?v=NN</code> 同步递增 css/main/reactbits)。</li><li>评估图像资产:先查水印与构图;掉价 = 修处理,不删图。</li><li>性能基线:空闲 rAF ≤ 一个合成器循环;长任务只允许出现在 preloader 期间。</li></ol></section><section><h2>Appendix A · Interaction Patterns</h2><ul><li>光标:内点即时、外环 lerp .16,静止归位自停。</li><li>滚动:Lenis 平滑 + ScrollTrigger 章节联动 + 导航药丸同步。</li><li>Hover:DotGrid 推动、CircularText 加速 ×4、GlitchText 悬停才播放。</li><li>点击:DotGrid 冲击波、物理拖拽/弹弓、3D 花瓣甩动惯性。</li><li>主题:切换即时翻转全部 token,图片/着色器同步换光感(Silk uLightMode)。</li></ul></section><section><h2>Appendix B · Content &amp; Messaging Patterns</h2><ul><li>语气:诗意、安静、第一人称复数(&quot;走进温室&quot;)。中文短语优先四字,英文全大写做装饰。</li><li>信任信号:直接展示技术出处(React Bits、matter-js 官方复刻、Skottie 验证)。</li><li>命名:章节 = 园艺词汇(Garden/Physics/Works/Bloom/Gallery/Notes/Visit)。</li></ul></section><section><h2>Appendix C · Evidence Notes</h2><ul><li>观测手段:agent-browser eval(结构/双主题 tokens/computed styles/radius 与 shadow 集合)+ 运行中截图验证。</li><li>标注推断:works 卡细节、breakpoints 数值来自样式源码交叉(<code>assets/css/style.css</code>),非纯 DOM 观测。</li></ul></section></article>
             </div>
           </article>
         </section>
