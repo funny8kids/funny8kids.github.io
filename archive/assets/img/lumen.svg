@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 960" width="1280" height="960">
+  <defs>
+    <radialGradient id="sph" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#6E85FF"/>
+      <stop offset="55%" stop-color="#2C43F5"/>
+      <stop offset="100%" stop-color="#1B2CB8"/>
+    </radialGradient>
+    <filter id="g2"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer></filter>
+  </defs>
+  <rect width="1280" height="960" fill="#F6F4EE"/>
+  <!-- 玻璃球 -->
+  <circle cx="640" cy="420" r="280" fill="url(#sph)"/>
+  <ellipse cx="540" cy="320" rx="90" ry="60" fill="#F6F4EE" opacity=".35" transform="rotate(-25 540 320)"/>
+  <!-- 轨道环 -->
+  <ellipse cx="640" cy="430" rx="400" ry="120" fill="none" stroke="rgba(44,67,245,.35)" stroke-width="1.5" transform="rotate(-8 640 430)"/>
+  <!-- 阴影 -->
+  <ellipse cx="640" cy="790" rx="300" ry="34" fill="rgba(23,21,18,.14)"/>
+  <!-- 伴生点 -->
+  <circle cx="1010" cy="300" r="18" fill="#2C43F5"/>
+  <circle cx="300" cy="620" r="10" fill="#171512"/>
+  <!-- 对角细线 -->
+  <line x1="160" y1="840" x2="1120" y2="120" stroke="rgba(23,21,18,.12)" stroke-width="1.5"/>
+  <rect width="1280" height="960" filter="url(#g2)"/>
+</svg>

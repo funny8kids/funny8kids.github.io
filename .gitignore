@@ -2,3 +2,25 @@
 .playwright-mcp/
 .zcode/
 .worktrees/
+
+# Art-panel working notes: they name the source franchise by title, and a static host would publish them
+# (there is no .nojekyll, so a committed .md is rendered into a fetchable HTML page). Evidence stays
+# in the local chain, never in the shipped tree.
+AWWWARDS-PANEL-*.md
+
+# Same rule for the rest of the local judgement chain and the instruments that produce it: the scorecard,
+# submission draft, gate screenshots and scratch output all name the homage and carry unreleased frames.
+AWWWARDS-SCORECARD.md
+AWWWARDS-SUBMISSION.md
+AWWWARDS-EVIDENCE-*.md
+/shots/
+/vibe_images/
+/.playwright-cli/
+/.workbuddy/
+*.log
+
+# Blender and Python backups of the modelling pipeline: authoring state, not shipped bytes.
+__pycache__/
+*.pyc
+*.blend1
+*.blend.bak-*

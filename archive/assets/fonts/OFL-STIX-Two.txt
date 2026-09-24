@@ -1,0 +1,10 @@
+STIX Two fonts
+==============
+
+The STIX Two fonts (STIXTwoMath.woff2, STIXTwoText-Italic.woff2,
+STIXTwoText-Greek-Italic.woff2) are licensed under the SIL Open Font
+License, Version 1.1 (https://openfontlicense.org).
+
+Copyright (c) 2001-2024, The STIX Project (https://www.stixfonts.org/).
+
+A copy of the OFL 1.1 license text: https://openfontlicense.org/
