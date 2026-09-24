@@ -1,927 +1,256 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="is-loading">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LUMEN VIOLA — VioletNotes 夜间温室</title>
-  <meta name="description" content="An immersive bioluminescent greenhouse of light, particles, physics and notes.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://funny8kids.github.io/">
-  <meta property="og:title" content="LUMEN VIOLA — VioletNotes 夜间温室">
-  <meta property="og:description" content="一座会呼吸的生物荧光温室：光、粒子、物理与手记。">
-  <meta property="og:image" content="https://funny8kids.github.io/assets/img/og-cover.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="preload" href="assets/fonts/ClashDisplay-600.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/ClashDisplay-500.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/InstrumentSerif-Italic.woff2" as="font" type="font/woff2" crossorigin>
-  <style>@font-face { font-family: "Clash Display"; src: url("assets/fonts/ClashDisplay-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }@font-face { font-family: "Clash Display"; src: url("assets/fonts/ClashDisplay-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }@font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }@font-face { font-family: "LXGW WenKai"; src: url("assets/fonts/lxgw-wenkai-subset.woff2") format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+2E80-9FFF, U+F900-FAFF, U+FE30-FE4F, U+3000-303F, U+FF01-FF60; }@font-face { font-family: "Source Han Serif SC"; src: url("assets/fonts/source-han-serif-subset.woff2") format("woff2"); font-weight: 400 900; font-display: swap; unicode-range: U+2E80-9FFF, U+F900-FAFF, U+FE30-FE4F, U+3000-303F, U+FF01-FF60; }:root { --void: #0A0814; --void-2: #120C22; --ink: #F4EFFF; --ink-soft: #C4B5E8; --ink-dim: #7C6A9E; --violet: #8B5CF6; --violet-2: #6D28D9; --orchid: #E879F9; --lilac: #C4B5FD; --signal: #67E8F9; --line: rgba(244,239,255,.1); --line2: rgba(244,239,255,.18); --glow: rgba(139,92,246,.4); --display: "Clash Display","Source Han Serif SC","PingFang SC","Microsoft YaHei",sans-serif; --serif: "Instrument Serif","Source Han Serif SC","Songti SC",Georgia,serif; --body: "LXGW WenKai",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif; --mono: ui-monospace,"Cascadia Mono",SFMono-Regular,Consolas,monospace; --ease: cubic-bezier(.22,1,.36,1); --easeD: cubic-bezier(.76,0,.24,1); --pad: clamp(1.1rem,4vw,3.5rem); --h: 72px; --scheme: dark; }*, ::before, ::after { box-sizing: border-box; margin: 0px; padding: 0px; }html { scroll-behavior: auto; color-scheme: var(--scheme); }html.lenis, html.lenis body { height: auto; }html.is-loading { overflow: hidden; }body { min-height: 100vh; background: var(--void); color: var(--ink); font-family: var(--body); line-height: 1.7; overflow-x: hidden; -webkit-font-smoothing: antialiased; cursor: none; }@media (hover: none), (pointer: coarse){body, button { cursor: auto; }.cursor { display: none !important; }}img, canvas { display: block; max-width: 100%; }a { color: inherit; text-decoration: none; }button { font: inherit; color: inherit; background: none; border: 0px; cursor: none; }ul { list-style: none; }.grain { pointer-events: none; position: fixed; inset: 0px; z-index: 80; opacity: 0.05; mix-blend-mode: soft-light; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }.orbs { position: fixed; inset: 0px; z-index: 0; pointer-events: none; overflow: hidden; }.orb { position: absolute; border-radius: 50%; filter: blur(60px); animation: 16s ease-in-out 0s infinite alternate none running orbdrift; }@keyframes orbdrift { 
-  100% { transform: translate(6vw, -8vh) scale(1.25); }
-}.loader { position: fixed; inset: 0px; z-index: 400; background: var(--void); display: grid; place-items: center; overflow: hidden; }.loader__curtain { position: absolute; inset: 0px; z-index: 1; background: linear-gradient(180deg,var(--violet-2),var(--void)); transform: scaleY(0); transform-origin: center bottom; }.loader__inner { position: relative; z-index: 2; width: min(420px, 80vw); text-align: center; }.loader__brand { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--display); font-weight: 600; letter-spacing: 0.06em; margin-bottom: 1.6rem; font-size: 1rem; color: var(--ink-soft); }.loader__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 30% 30%,#fff,var(--orchid)); box-shadow: 0 0 16px var(--glow); animation: 1.2s ease-in-out 0s infinite normal none running lp; }@keyframes lp { 
-  50% { transform: scale(1.3); opacity: 0.7; }
-}.loader__num { font-family: var(--display); font-weight: 600; font-size: clamp(4.2rem, 15vw, 7rem); line-height: 0.95; letter-spacing: -0.05em; background-image:linear-gradient(120deg,#fff,var(--lilac),var(--orchid));-webkit-background-clip:text;background-clip:text; color: transparent; margin-bottom: 1.1rem; }.loader__track { height: 1px; background: var(--line); overflow: hidden; margin-bottom: 0.9rem; }.loader__track i { display: block; height: 100%; width: 0px; background: linear-gradient(90deg,var(--violet),var(--orchid),var(--signal)); }.loader__cap { font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-dim); }.cursor { pointer-events: none; position: fixed; inset: 0px; z-index: 300; }.cursor__dot, .cursor__ring { position: absolute; top: 0px; left: 0px; border-radius: 50%; will-change: transform; }.cursor__dot { width: 6px; height: 6px; margin: -3px 0px 0px -3px; background: var(--signal); box-shadow: 0 0 14px var(--signal); }.cursor__ring { width: 36px; height: 36px; margin: -18px 0px 0px -18px; border: 1px solid rgba(196, 181, 253, 0.5); display: grid; place-items: center; transition: width .35s var(--ease),height .35s var(--ease),margin .35s var(--ease),background .3s,border-color .3s; }.cursor__label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--signal); opacity: 0; transition: opacity 0.2s; }.cursor.is-hover .cursor__ring { width: 74px; height: 74px; margin: -37px 0px 0px -37px; background: rgba(139, 92, 246, 0.16); backdrop-filter: blur(6px); border-color: rgba(232, 121, 249, 0.6); }.cursor.is-hover .cursor__label { opacity: 1; }.cursor.is-down .cursor__ring { width: 26px; height: 26px; margin: -13px 0px 0px -13px; }.header { position: fixed; top: 0px; left: 0px; right: 0px; z-index: 100; height: var(--h); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--pad); border-bottom: 1px solid transparent; transition: background 0.4s, border-color 0.4s; }.header.is-solid { background: rgba(5, 4, 10, 0.72); backdrop-filter: blur(16px) saturate(140%); border-bottom-color: var(--line); }.brand { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--display); font-weight: 600; letter-spacing: 0.02em; }.brand__orb { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 30% 30%,#fff,var(--orchid)); box-shadow: 0 0 14px var(--glow); }.nav { display: flex; gap: clamp(0.9rem, 2.2vw, 1.8rem); }.nav a { position: relative; font-size: 0.88rem; color: var(--ink-soft); padding: 0.2rem 0px; transition: color 0.3s; }.nav a::after { content: ""; position: absolute; left: 0px; bottom: 0px; width: 100%; height: 1px; background: linear-gradient(90deg,var(--violet),var(--orchid)); transform: scaleX(0); transform-origin: right center; transition: transform .4s var(--ease); }.nav a:hover { color: var(--ink); }.nav a:hover::after { transform: scaleX(1); transform-origin: left center; }.header__right { display: flex; align-items: center; gap: 0.7rem; }.lang { display: inline-flex; align-items: center; gap: 0.28rem; padding: 0.38rem 0.7rem; border-radius: 999px; border: 1px solid var(--line2); font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--ink-soft); transition: border-color 0.3s, background 0.3s; }.lang span { opacity: 0.35; }.lang span.is-on { opacity: 1; color: var(--signal); }.lang em { opacity: 0.35; font-style: normal; }.pill { display: inline-flex; align-items: center; min-height: 38px; padding: 0px 1.05rem; border-radius: 999px; background: linear-gradient(120deg,var(--violet-2),var(--violet),#a855f7); font-family: var(--display); font-size: 0.86rem; box-shadow: rgba(109, 40, 217, 0.4) 0px 8px 22px; transition: transform .35s var(--ease),box-shadow .35s; }.progress { position: fixed; top: 0px; left: 0px; right: 0px; height: 2px; z-index: 120; }.progress i { display: block; height: 100%; width: 0px; background: linear-gradient(90deg,var(--violet),var(--orchid),var(--signal)); box-shadow: 0 0 12px var(--glow); }.chapter-rail { position: fixed; left: calc(var(--pad) - .4rem); bottom: 1.4rem; z-index: 90; display: flex; align-items: center; gap: 0.65rem; font-family: var(--mono); letter-spacing: 0.14em; mix-blend-mode: difference; pointer-events: none; }.chapter-rail span:first-child { color: var(--orchid); font-size: 0.8rem; }.chapter-rail span:last-child { font-size: 0.68rem; opacity: 0.85; }.chapter-rail__line { width: 36px; height: 1px; background: currentcolor; opacity: 0.4; }.hero { position: relative; z-index: 2; min-height: 100dvh; display: grid; place-items: start center; padding: calc(var(--h) + 3.2rem) var(--pad) 5.5rem; overflow-x: clip; }.hero__canvas { position: absolute; inset: 0px; width: 100%; height: 100%; z-index: -1; }.hero__inner { max-width: 1060px; width: 100%; text-align: center; position: relative; }.eyebrow { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--lilac); margin-bottom: 1.4rem; }.hero__title { display: flex; flex-direction: column; align-items: center; gap: 0.05em; margin-bottom: 1.5rem; }.hero__line { font-family: var(--display); font-weight: 500; font-size: clamp(1.15rem, 2.6vw, 1.7rem); color: var(--ink-soft); letter-spacing: 0.06em; }.hero__word { font-family: var(--display); font-weight: 600; font-size: clamp(2.9rem, 12.8vw, 9.5rem); line-height: 0.95; letter-spacing: -0.045em; }.hero__word .char { background-image:linear-gradient(115deg,#fff 5%,var(--lilac) 35%,var(--orchid) 65%,#f0abfc 100%);-webkit-background-clip:text;background-clip:text; color: transparent; }.hero__garden em { display: inline-block; font-family: var(--serif); font-style: italic; font-size: clamp(2.6rem, 9vw, 6.4rem); color: var(--lilac); text-shadow: rgba(196, 181, 253, 0.35) 0px 0px 60px; }.hero__lead { max-width: 34em; margin: 0px auto 2rem; color: var(--ink-soft); font-size: clamp(0.98rem, 1.3vw, 1.1rem); line-height: 1.95; }.hero__actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.85rem; margin-bottom: 1.6rem; }.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0px 1.5rem; border-radius: 999px; font-family: var(--display); font-size: 0.95rem; transition: transform .4s var(--ease),box-shadow .4s,background .3s,border-color .3s; }.btn--solid { color: rgb(255, 255, 255); background: linear-gradient(120deg,var(--violet-2),var(--violet),#a855f7); box-shadow: rgba(109, 40, 217, 0.45) 0px 12px 32px; }.btn--solid:hover { transform: translateY(-3px); box-shadow: rgba(168, 85, 247, 0.55) 0px 18px 40px; }.btn--ghost { border: 1px solid var(--line2); background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(8px); }.btn--ghost:hover { border-color: rgba(103, 232, 249, 0.5); background: rgba(139, 92, 246, 0.12); transform: translateY(-3px); }.hero__meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 1.6rem; margin-bottom: 2.6rem; }.hud { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em; color: var(--signal); opacity: 0.85; }.hero__scroll { position: absolute; bottom: 1.5rem; left: 50%; transform: translate(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.6rem; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-dim); }.hero__scroll i { width: 1px; height: 42px; background: linear-gradient(180deg,var(--orchid),transparent); animation: 1.8s ease-in-out 0s infinite normal none running sd; transform-origin: center top; }@keyframes sd { 
-  0%, 100% { transform: scaleY(0.35); opacity: 0.4; }
-  50% { transform: scaleY(1); opacity: 1; }
-}.ticker { position: relative; z-index: 2; overflow: hidden; border-block: 1px solid var(--line); background: rgba(11, 7, 22, 0.6); padding: 0.95rem 0px; }.ticker__track { display: flex; align-items: center; gap: 1.6rem; width: max-content; animation: 30s linear 0s infinite normal none running mq; font-family: var(--display); font-size: clamp(0.9rem, 1.7vw, 1.2rem); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); white-space: nowrap; }.ticker__track b { color: var(--orchid); font-weight: 400; font-size: 0.72em; }@keyframes mq { 
-  100% { transform: translate(-50%); }
-}.logoloop { position: relative; z-index: 2; overflow: hidden; padding: 1.6rem 0px; border-bottom: 1px solid var(--line); }.logoloop__list { display: flex; align-items: center; gap: 3rem; width: max-content; }.logoloop__list li { display: flex; align-items: center; }.logo-chip { font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.08em; color: var(--ink-dim); border: 1px solid var(--line); border-radius: 999px; padding: 0.4rem 1rem; transition: color .3s,border-color .3s,transform .35s var(--ease); white-space: nowrap; }.sec { position: relative; z-index: 2; padding: clamp(4.5rem,11vw,8rem) var(--pad); }.sec--bleed { max-width: 1360px; margin: 0px auto; }.sec__head { max-width: 1100px; margin: 0px auto 2.6rem; display: flex; gap: 1rem; align-items: flex-start; }.sec__idx { font-family: var(--mono); font-size: 0.8rem; color: var(--orchid); letter-spacing: 0.14em; padding-top: 0.5rem; }.sec__en { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.4rem; }.section__cn { font-family: var(--display); font-weight: 600; font-size: clamp(2.2rem, 5.8vw, 4.5rem); letter-spacing: -0.03em; line-height: 1.15; }.reveal-item, .reveal-img { opacity: 0; transform: translateY(32px); transition: opacity .8s var(--ease),transform .8s var(--ease); }.reveal-item.is-in, .reveal-img.is-in { opacity: 1; transform: none; }.law__grid { max-width: 1100px; margin: 0px auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }.law__card { position: relative; padding: 1.8rem 1.5rem; border-radius: 20px; border: 1px solid var(--line); background: linear-gradient(160deg, rgba(17, 10, 34, 0.92), rgba(8, 5, 16, 0.96)); overflow: hidden; transition: border-color 0.35s, box-shadow 0.45s; }.law__n { font-family: var(--serif); font-size: 2.4rem; line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(196, 181, 253, 0.5); display: block; margin-bottom: 0.8rem; }.law__card h3 { font-family: var(--display); font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; }.law__card p { color: var(--ink-soft); font-size: 0.92rem; line-height: 1.8; }.phys__lead { max-width: 38em; margin: 0px auto 1.6rem; color: var(--ink-soft); text-align: center; }.phys__stage { position: relative; max-width: 1100px; margin: 0px auto; height: min(64vh, 560px); border-radius: 24px; overflow: hidden; border: 1px solid var(--line2); background: radial-gradient(90% 60% at 50% -5%, rgba(139, 92, 246, 0.22), transparent 60%), linear-gradient(rgb(10, 6, 22), rgb(7, 4, 15)); box-shadow: rgba(0, 0, 0, 0.55) 0px 40px 90px, rgba(109, 40, 217, 0.12) 0px 0px 90px inset; }.phys__hud, .phys__label { z-index: 3; }.phys__src { max-width: 1100px; margin: 1.2rem auto 0px; border: 1px solid var(--line2); border-radius: 14px; background: rgba(10, 6, 20, 0.55); overflow: hidden; }.phys__src summary { cursor: pointer; padding: 0.8rem 1.1rem; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--lilac); list-style: none; }.phys__src pre { margin: 0px; padding: 1rem 1.2rem; overflow: auto; max-height: 340px; font-family: var(--mono); font-size: 0.66rem; line-height: 1.75; color: var(--ink-soft); border-top: 1px solid var(--line2); }html[data-theme="light"] .phys__src { background: rgba(255, 255, 255, 0.6); }.phys__hud { position: absolute; top: 0.9rem; right: 1.1rem; display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.16em; color: var(--signal); opacity: 0.9; pointer-events: none; }.phys__label { position: absolute; top: 0.9rem; left: 1.1rem; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.2em; color: var(--lilac); pointer-events: none; }.phys__bar { max-width: 1100px; margin: 1rem auto 0px; display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: space-between; align-items: center; }.phys__scenes, .phys__tools { display: flex; flex-wrap: wrap; gap: 0.45rem; }.chip { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; color: var(--ink-dim); border: 1px solid var(--line); border-radius: 999px; padding: 0.42rem 0.8rem; background: rgba(255, 255, 255, 0.02); transition: color 0.25s, border-color 0.25s, background 0.25s; }.chip.is-on { color: var(--void); background: linear-gradient(120deg,var(--lilac),var(--orchid)); border-color: transparent; box-shadow: rgba(232, 121, 249, 0.35) 0px 6px 18px; }.chip--tool { color: var(--ink-soft); }.phys__hint { margin-top: 1rem; text-align: center; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-dim); }.gal__grid { max-width: 1100px; margin: 0px auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; grid-auto-flow: dense; }.gal__cell { position: relative; padding: 1.5rem 1.4rem; border-radius: 20px; border: 1px solid var(--line); background: linear-gradient(165deg, rgba(17, 10, 34, 0.94), rgba(8, 5, 16, 0.97)); overflow: hidden; min-height: 190px; transition: border-color 0.35s, box-shadow 0.45s; transform-style: preserve-3d; }.gal__cell--wide { grid-column: span 2; }.gal__cell--tall { grid-row: span 2; }.gal__tag { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.16em; color: var(--signal); margin-bottom: 0.9rem; }.gal__t { font-family: var(--display); font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }.gal__note { color: var(--ink-dim); font-size: 0.85rem; line-height: 1.75; }.gal__pixel { width: 100%; height: min(340px, 42vw); object-fit: cover; border-radius: 14px; border: 1px solid var(--line); margin: 0.4rem 0px 0.9rem; }.gal__count { font-family: var(--display); font-weight: 600; font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.03em; background-image:linear-gradient(120deg,#fff,var(--orchid));-webkit-background-clip:text;background-clip:text; color: transparent; margin-bottom: 0.4rem; }.gal__magnet { display: inline-flex; min-height: 44px; padding: 0px 1.25rem; border-radius: 999px; border: 1px solid var(--line2); background: rgba(139, 92, 246, 0.1); font-family: var(--display); font-size: 0.9rem; margin-bottom: 0.8rem; transition: border-color 0.3s; }.rb-glare.is-glare-in::after { opacity: 1; }.rb-glare.is-glare-in::before { opacity: 1; animation: glare-sweep 1.1s var(--ease) forwards; }@keyframes glare-sweep { 
-  100% { transform: translate(120%); }
-}.rb-spot.is-spot::before { opacity: 1; }.tf-word { display: inline-block; will-change: filter, transform, opacity; }[data-truefocus] { font-family: var(--serif); font-style: italic; font-size: clamp(1.3rem, 2.7vw, 2.1rem); line-height: 1.5; margin: 0.4rem 0px 1rem; color: var(--ink); }.stagger li.is-st-in { opacity: 1; transform: none; filter: none; }.bloom { position: relative; z-index: 2; height: 240vh; }.bloom__pin { position: sticky; top: 0px; height: 100vh; display: grid; place-items: center; background: radial-gradient(70% 50%, rgba(109, 40, 217, 0.2), transparent 70%); }.bloom__inner { max-width: 880px; padding: 0 var(--pad); text-align: center; }.bloom__line { font-family: var(--display); font-weight: 600; font-size: clamp(1.7rem, 4.6vw, 3.1rem); letter-spacing: -0.02em; line-height: 1.35; opacity: 0; transform: translateY(44px); filter: blur(10px); transition: opacity 1s var(--ease),transform 1s var(--ease),filter 1s var(--ease); }.bloom__line--serif { font-family: var(--serif); font-style: italic; font-weight: 400; background-image:linear-gradient(120deg,var(--lilac),var(--orchid),#f0abfc);-webkit-background-clip:text;background-clip:text; color: transparent; }.bloom__p { color: var(--ink-soft); max-width: 32em; margin: 1.4rem auto 0px; font-size: clamp(0.95rem, 1.3vw, 1.08rem); line-height: 1.95; opacity: 0; transform: translateY(30px); filter: blur(8px); transition: opacity 1s var(--ease) .1s,transform 1s var(--ease) .1s,filter 1s var(--ease) .1s; }.bloom__line.is-on, .bloom__p.is-on { opacity: 1; transform: none; filter: none; }.notes__grid { max-width: 1100px; margin: 0px auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }.notes__quote { grid-column: 1 / -1; padding: 1.8rem 0px 1.8rem 1.5rem; border-left: 2px solid var(--violet); margin-bottom: 0.6rem; }.notes__quote p { font-family: var(--serif); font-size: clamp(1.25rem, 2.8vw, 1.8rem); line-height: 1.7; }.notes__quote cite { display: block; margin-top: 0.9rem; color: var(--ink-dim); font-style: normal; font-size: 0.86rem; }.note { position: relative; padding: 1.5rem 1.4rem; border-radius: 20px; border: 1px solid var(--line); background: linear-gradient(160deg, rgba(17, 10, 34, 0.92), rgba(8, 5, 16, 0.96)); overflow: hidden; transition: border-color 0.35s, box-shadow 0.45s; }.note header { display: flex; justify-content: space-between; margin-bottom: 0.9rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; }.note header span { color: var(--orchid); }.note header time { color: var(--ink-dim); }.note h3 { font-family: var(--display); font-size: 1.12rem; font-weight: 600; margin-bottom: 0.45rem; }.note p { color: var(--ink-soft); font-size: 0.92rem; line-height: 1.8; }.sec--visit { padding-bottom: clamp(3rem, 8vw, 6rem); }.visit__box { position: relative; max-width: 860px; margin: 0px auto; text-align: center; padding: clamp(2.6rem, 6vw, 4.2rem) clamp(1.4rem, 4vw, 2.6rem); border-radius: 28px; border: 1px solid var(--line); background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.2), transparent 55%), linear-gradient(160deg, rgba(22, 13, 42, 0.9), rgba(8, 5, 16, 0.96)); box-shadow: rgba(0, 0, 0, 0.5) 0px 40px 80px; overflow: hidden; }.visit__title { margin: 0.6rem 0px 1rem; }.visit__lead { color: var(--ink-soft); max-width: 30em; margin: 0px auto 1.6rem; line-height: 1.9; }.visit__mail { display: inline-block; font-family: var(--display); font-weight: 600; font-size: clamp(1.1rem, 3vw, 1.9rem); letter-spacing: -0.03em; background-image:linear-gradient(100deg,#fff,var(--lilac) 40%,var(--orchid));-webkit-background-clip:text;background-clip:text; color: transparent; margin-bottom: 1.5rem; transition: opacity 0.3s; }.visit__links { display: flex; justify-content: center; flex-wrap: wrap; gap: 1.4rem; color: var(--ink-soft); font-size: 0.95rem; }.footer { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding: 1.4rem var(--pad) 3.8rem; border-top: 1px solid var(--line); color: var(--ink-dim); font-size: 0.85rem; }.footer em { font-family: var(--serif); color: var(--orchid); }.char, .word { display: inline-block; will-change: transform, opacity; }@media (max-width: 1000px){.law__grid { grid-template-columns: 1fr; }.gal__grid { grid-template-columns: repeat(2, 1fr); }.gal__cell--tall { grid-row: span 1; }.notes__grid { grid-template-columns: 1fr; }}@media (max-width: 720px){.nav, .pill { display: none; }.gal__grid { grid-template-columns: 1fr; }.gal__cell--wide { grid-column: span 1; }.hero__meta { gap: 0.9rem; }.phys__bar { flex-direction: column; align-items: stretch; }.phys__scenes, .phys__tools { justify-content: center; }}@media (prefers-reduced-motion: reduce){.ticker__track, .loader__dot, .hero__scroll i, .orb { animation: auto ease 0s 1 normal none running none !important; }.cursor { display: none !important; }body { cursor: auto; }.reveal-item, .reveal-img, .bloom__line, .bloom__p, .stagger li { opacity: 1; transform: none; filter: none; }}.hero__ghost { position: absolute; left: 0px; right: 0px; top: 21%; text-align: center; z-index: -1; font-family: var(--display); font-weight: 600; font-size: clamp(6.5rem, 25vw, 20rem); line-height: 1; letter-spacing: 0.01em; white-space: nowrap; color: transparent; -webkit-text-stroke: 2px rgba(196, 181, 253, 0.3); pointer-events: none; user-select: none; opacity: 0; }.veil { position: fixed; inset: 0px; z-index: 96; pointer-events: none; opacity: 0; background: linear-gradient(100deg, rgba(139, 92, 246, 0.14), rgba(5, 4, 10, 0.93) 32%, rgba(5, 4, 10, 0.95) 68%, rgba(232, 121, 249, 0.12)); }.lang--snd { display: inline-flex; align-items: center; justify-content: center; }.lang--snd .snd-ico { font-size: 0.95rem; line-height: 1; }.lang--snd.is-off .snd-ico { opacity: 0.38; transform: scaleX(-1); }@media (max-width: 720px){.hero__ghost { top: 78%; -webkit-text-stroke: 1.5px rgba(196, 181, 253, 0.22); }}@media (prefers-reduced-motion: reduce){.veil { display: none; }.hero__ghost { opacity: 0.35; }}.works { max-width: 1100px; margin: 0px auto; display: flex; flex-direction: column; gap: clamp(3.2rem, 8vw, 6.5rem); }.work { display: grid; grid-template-columns: 1.12fr 0.88fr; gap: clamp(1.4rem, 3.5vw, 3.2rem); align-items: center; }.work--flip .work__media { order: 2; }.work__media { position: relative; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); display: grid; place-items: center; box-shadow: rgba(0, 0, 0, 0.45) 0px 34px 70px; }.work__idx { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em; color: var(--orchid); }.work__t { font-family: var(--display); font-weight: 600; font-size: clamp(1.45rem, 3vw, 2.35rem); letter-spacing: -0.02em; line-height: 1.2; margin: 0.55rem 0px 0.85rem; }.work__p { color: var(--ink-soft); line-height: 1.95; margin-bottom: 1.1rem; }.work__tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.4rem; }.work__tags li { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.12em; color: var(--ink-dim); border: 1px solid var(--line); border-radius: 999px; padding: 0.34rem 0.8rem; }.work__link { display: inline-flex; align-items: center; min-height: 44px; padding: 0px 1.25rem; border-radius: 999px; border: 1px solid var(--line2); font-family: var(--display); font-size: 0.9rem; transition: border-color .3s,background .3s,transform .35s var(--ease); }@media (max-width: 1000px){.work { grid-template-columns: 1fr; gap: 1.2rem; }.work--flip .work__media { order: 0; }}.veil { background: linear-gradient(100deg, rgba(139, 92, 246, 0.14), rgba(10, 8, 20, 0.93) 32%, rgba(10, 8, 20, 0.95) 68%, rgba(232, 121, 249, 0.12)); }html[data-theme] body { transition: background-color .55s var(--ease),color .55s var(--ease); }html[data-theme="light"] { --void: #F1ECFA; --void-2: #E6DDF5; --ink: #1B1430; --ink-soft: #453A66; --ink-dim: #8879AC; --violet: #7C3AED; --violet-2: #6D28D9; --orchid: #C026D3; --lilac: #5B21B6; --signal: #0E7490; --line: rgba(27,20,48,.12); --line2: rgba(27,20,48,.22); --glow: rgba(124,58,237,.25); --scheme: light; }html[data-theme="light"] body { background: radial-gradient(1200px 700px at 82% -12%,#E9DDFB,transparent 60%),radial-gradient(900px 600px at -10% 30%,#EAF3FA,transparent 55%),var(--void); }html[data-theme="light"] .loader { background: var(--void); }html[data-theme="light"] .loader__num { background: linear-gradient(120deg, rgb(109, 40, 217), rgb(162, 28, 175), rgb(124, 58, 237)) text; color: transparent; }html[data-theme="light"] .hero__word .char { background: linear-gradient(115deg, rgb(46, 16, 101) 5%, rgb(109, 40, 217), rgb(162, 28, 175) 75%, rgb(219, 39, 119)) text; color: transparent; }html[data-theme="light"] .hero__garden em { color: rgb(109, 40, 217); text-shadow: rgba(124, 58, 237, 0.22) 0px 0px 60px; }html[data-theme="light"] .header.is-solid { background: rgba(241, 236, 250, 0.8); }html[data-theme="light"] .ticker { background: rgba(255, 255, 255, 0.55); }html[data-theme="light"] .law__card, html[data-theme="light"] .gal__cell, html[data-theme="light"] .note { background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(246, 242, 253, 0.96)); box-shadow: rgba(76, 29, 149, 0.07) 0px 20px 45px; }html[data-theme="light"] .phys__stage { background: radial-gradient(90% 60% at 50% -5%, rgba(139, 92, 246, 0.14), transparent 60%), linear-gradient(rgb(251, 249, 255), rgb(239, 232, 250)); box-shadow: rgba(76, 29, 149, 0.12) 0px 40px 80px, rgba(109, 40, 217, 0.05) 0px 0px 90px inset; }html[data-theme="light"] .chip { background: rgba(255, 255, 255, 0.65); }html[data-theme="light"] .btn--ghost { background: rgba(255, 255, 255, 0.55); }html[data-theme="light"] .visit__box { background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.14), transparent 55%), linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(246, 242, 253, 0.97)); box-shadow: rgba(76, 29, 149, 0.12) 0px 40px 80px; }html[data-theme="light"] .bloom__line--serif { background: linear-gradient(120deg, rgb(109, 40, 217), rgb(192, 38, 211), rgb(219, 39, 119)) text; color: transparent; }html[data-theme="light"] .hero__ghost { -webkit-text-stroke: 2px rgba(109, 40, 217, 0.26); }html[data-theme="light"] .veil { background: linear-gradient(100deg, rgba(124, 58, 237, 0.1), rgba(241, 236, 250, 0.96) 32%, rgba(241, 236, 250, 0.97) 68%, rgba(192, 38, 211, 0.1)); }html[data-theme="light"] .chapter-rail { mix-blend-mode: normal; color: var(--ink-soft); }html[data-theme="light"] .grain { opacity: 0.028; }html[data-theme="light"] .cursor__ring { border-color: rgba(109, 40, 217, 0.45); }html[data-theme="light"] .work__media { box-shadow: rgba(76, 29, 149, 0.14) 0px 30px 60px; }html[data-theme="light"] .loader__curtain { background: linear-gradient(180deg,var(--violet),var(--void)); }.hero__glass { position: absolute; left: 0px; right: 0px; bottom: 0px; width: 100%; height: clamp(90px, 16vh, 170px); color: var(--lilac); opacity: 0; pointer-events: none; z-index: 1; animation: 9s ease-in-out 2.2s infinite normal none running glassBreath; }@keyframes glassBreath { 
-  0%, 100% { opacity: 0.14; transform: translateY(0px); }
-  50% { opacity: 0.22; transform: translateY(-6px); }
-}.work__media { background: radial-gradient(120% 90% at 18% 12%, rgba(139, 92, 246, 0.22), transparent 60%), radial-gradient(100% 80% at 85% 90%, rgba(232, 121, 249, 0.14), transparent 55%), linear-gradient(160deg, rgba(17, 10, 34, 0.94), rgba(8, 5, 16, 0.97)); }.work__art { width: 100%; aspect-ratio: 16 / 10; color: var(--lilac); padding: clamp(1rem, 4%, 2rem); position: relative; z-index: 1; }.art-line { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.6s var(--ease); }.work.is-in .art-line { stroke-dashoffset: 0; }.art-line:nth-of-type(2) { transition-delay: 0.14s; }.art-line:nth-of-type(3) { transition-delay: 0.28s; }.art-line:nth-of-type(4) { transition-delay: 0.42s; }.art-line:nth-of-type(5) { transition-delay: 0.56s; }.art-dot { opacity: 0; transition: opacity 0.8s 1s; }.work.is-in .art-dot { opacity: 1; }html[data-theme="light"] .work__media { background: radial-gradient(120% 90% at 18% 12%, rgba(139, 92, 246, 0.14), transparent 60%), radial-gradient(100% 80% at 85% 90%, rgba(232, 121, 249, 0.1), transparent 55%), linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(241, 236, 250, 0.96)); box-shadow: rgba(91, 33, 182, 0.12) 0px 24px 50px; }html[data-theme="light"] .work__art { color: var(--violet-2); }html[data-theme="light"] .hero__glass { color: var(--violet-2); animation-name: glassBreathL; }@keyframes glassBreathL { 
-  0%, 100% { opacity: 0.1; transform: translateY(0px); }
-  50% { opacity: 0.17; transform: translateY(-6px); }
-}@media (prefers-reduced-motion: reduce){.hero__glass { opacity: 0.15; animation: auto ease 0s 1 normal none running none; }.art-line { stroke-dashoffset: 0; transition: none; }.art-dot { opacity: 1; transition: none; }}.work__media { display: block; position: relative; aspect-ratio: 16 / 10; background: rgb(8, 5, 16); }.work__img { position: absolute; inset: 0px; width: 100%; height: 100%; object-fit: cover; z-index: 0; clip-path: inset(0px 0px 100%); transition: clip-path 1.15s var(--ease) .1s; }.work.is-in .work__img { clip-path: inset(0px); }.work.is-in .work__img { animation: 18s ease-in-out 1.2s infinite alternate none running workKen; }@keyframes workKen { 
-  0% { transform: scale(1.001) translate(0px); }
-  100% { transform: scale(1.07) translate(-1.2%, -1%); }
-}.work__art { position: absolute; inset: 0px; width: 100%; height: 100%; padding: 0px; z-index: 2; opacity: 0.55; mix-blend-mode: screen; color: var(--lilac); }html[data-theme="light"] .work__art { mix-blend-mode: normal; opacity: 0.22; color: var(--violet-2); }.interlude { position: relative; max-width: min(1500px, 94vw); margin: 7.5rem auto; height: clamp(430px, 76vh, 740px); border-radius: 30px; overflow: hidden; box-shadow: 0 60px 130px #0000008c,0 0 0 1px var(--line); }.interlude__frame { position: absolute; inset: 0px; }.interlude__img { position: absolute; left: 0px; top: -14%; width: 100%; height: 128%; object-fit: cover; will-change: transform; }.interlude__grade { position: absolute; inset: 0px; background: linear-gradient(rgba(8, 5, 16, 0.1) 30%, rgba(8, 5, 16, 0.82) 84%), radial-gradient(90% 80% at 50% 30%, transparent 40%, rgba(8, 5, 16, 0.5) 100%); }.interlude__caption { position: absolute; left: clamp(1.4rem, 4.5vw, 4rem); bottom: clamp(1.8rem, 5vh, 3.6rem); right: clamp(1.4rem, 4.5vw, 4rem); z-index: 2; }.interlude__t { font-family: var(--display); font-weight: 600; font-size: clamp(2.5rem, 6.8vw, 6rem); line-height: 1; letter-spacing: -0.02em; color: rgb(244, 239, 255); text-shadow: rgba(0, 0, 0, 0.6) 0px 12px 60px; clip-path: inset(0px 0px 110%); transition: clip-path 1.3s var(--ease) .25s; }.interlude.is-in .interlude__t { clip-path: inset(0px 0px -12%); }.interlude__sub { margin-top: 1rem; font-family: var(--mono); font-size: clamp(0.72rem, 1.4vw, 0.9rem); letter-spacing: 0.22em; color: var(--lilac); opacity: 0; transform: translateY(14px); transition: opacity .9s .9s,transform .9s .9s var(--ease); }.interlude.is-in .interlude__sub { opacity: 0.95; transform: none; }@media (prefers-reduced-motion: reduce){.work__img { clip-path: inset(0px); transition: none; animation: auto ease 0s 1 normal none running none; }.interlude__t { clip-path: none; transition: none; }.interlude__sub { opacity: 1; transform: none; transition: none; }}.interlude__sub { color: rgb(196, 181, 253); }.star-border { display: inline-block; position: relative; border-radius: 999px; overflow: hidden; padding: 1px 0px; margin-bottom: 1.5rem; text-decoration: none; }.star-border__b, .star-border__t { position: absolute; width: 300%; height: 50%; opacity: 0.7; border-radius: 50%; z-index: 0; }.star-border__b { bottom: -12px; right: -250%; background: radial-gradient(circle,var(--lilac),transparent 10%); animation: 6s linear 0s infinite alternate none running vn-star-bottom; }.star-border__t { top: -12px; left: -250%; background: radial-gradient(circle,var(--orchid),transparent 10%); animation: 6s linear 0s infinite alternate none running vn-star-top; }.star-border__in { position: relative; z-index: 1; display: block; border: 1px solid var(--line2); background: var(--void-2); text-align: center; padding: 0.8rem 1.8rem; border-radius: 999px; }html[data-theme="light"] .star-border__in { background: rgb(255, 255, 255); }@keyframes vn-star-bottom { 
-  0% { transform: translate(0px); opacity: 1; }
-  100% { transform: translate(-100%); opacity: 0; }
-}@keyframes vn-star-top { 
-  0% { transform: translate(0px); opacity: 1; }
-  100% { transform: translate(100%); opacity: 0; }
-}.crosshair { position: fixed; inset: 0px; z-index: 5; pointer-events: none; }.crosshair i { position: absolute; opacity: 0; transition: opacity 0.5s; }.crosshair__h { left: 0px; right: 0px; top: 0px; height: 1px; background: linear-gradient(90deg, transparent, rgba(196, 181, 253, 0.3), transparent); }.crosshair__v { top: 0px; bottom: 0px; left: 0px; width: 1px; background: linear-gradient(transparent, rgba(196, 181, 253, 0.3), transparent); }@media (prefers-reduced-motion: reduce){.star-border__b, .star-border__t { animation: auto ease 0s 1 normal none running none; }}.star-border__in.visit__mail { margin-bottom: 0px; display: block; }html[data-theme="light"] .star-border .visit__mail { background-image:linear-gradient(100deg,var(--violet-2),var(--orchid) 70%,var(--violet));-webkit-background-clip:text;background-clip:text; }.sec--bloom3d { position: relative; }.b3d__stage { position: relative; height: min(82vh, 780px); margin-top: 1.2rem; border: 1px solid var(--line); border-radius: 24px; overflow: hidden; background: radial-gradient(120% 90% at 50% 18%,rgba(139,92,246,.16),transparent 60%),var(--void-2); }html[data-theme="light"] .b3d__stage { background: radial-gradient(120% 90% at 50% 18%, rgba(196, 181, 253, 0.35), transparent 62%), rgb(255, 255, 255); }.b3d__stage canvas { position: absolute; inset: 0px; width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }.b3d__hint { position: absolute; left: 50%; bottom: 18px; transform: translate(-50%); z-index: 2; margin: 0px; padding: 0.5rem 1.1rem; border: 1px solid var(--line2); border-radius: 999px; background: rgba(10, 8, 20, 0.55); backdrop-filter: blur(8px); font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em; color: var(--lilac); pointer-events: none; }html[data-theme="light"] .b3d__hint { background: rgba(255, 255, 255, 0.6); color: var(--violet-2); }@media (prefers-reduced-motion: reduce){.b3d__stage { height: min(64vh, 560px); }}.bt-line { display: flex; flex-wrap: wrap; font-size: clamp(1rem, 2vw, 1.3rem); line-height: 1.5; margin: 0.6rem 0px; }.shiny-text { display: inline-block; background-size: 200%; background-image:linear-gradient(120deg,var(--lilac) 0%,var(--lilac) 35%,#fff 50%,var(--lilac) 65%,var(--lilac) 100%);-webkit-background-clip:text;background-clip:text; -webkit-text-fill-color: transparent; color: transparent; animation: 2s linear 0s infinite normal none running vn-shine; }html[data-theme="light"] .shiny-text { background-image: linear-gradient(120deg,var(--violet-2) 0%,var(--violet-2) 35%,#fff 50%,var(--violet-2) 65%,var(--violet-2) 100%); }@keyframes vn-shine { 
-  0% { background-position: 150% center; }
-  100% { background-position: -50% center; }
-}.gal__decrypt { font-family: var(--mono); letter-spacing: 0.08em; color: var(--orchid); }.gal__shiny { font-family: var(--mono); font-size: 0.95rem; letter-spacing: 0.14em; }@media (prefers-reduced-motion: reduce){.shiny-text { animation: auto ease 0s 1 normal none running none; }}@keyframes vn-glitch { 
-  0% { clip-path: inset(20% 0px 50%); }
-  5% { clip-path: inset(10% 0px 60%); }
-  10% { clip-path: inset(15% 0px 55%); }
-  15% { clip-path: inset(25% 0px 35%); }
-  20% { clip-path: inset(30% 0px 40%); }
-  25% { clip-path: inset(40% 0px 20%); }
-  30% { clip-path: inset(10% 0px 60%); }
-  35% { clip-path: inset(15% 0px 55%); }
-  40% { clip-path: inset(25% 0px 35%); }
-  45% { clip-path: inset(30% 0px 40%); }
-  50% { clip-path: inset(20% 0px 50%); }
-  55% { clip-path: inset(10% 0px 60%); }
-  60% { clip-path: inset(15% 0px 55%); }
-  65% { clip-path: inset(25% 0px 35%); }
-  70% { clip-path: inset(30% 0px 40%); }
-  75% { clip-path: inset(40% 0px 20%); }
-  80% { clip-path: inset(20% 0px 50%); }
-  85% { clip-path: inset(10% 0px 60%); }
-  90% { clip-path: inset(15% 0px 55%); }
-  95% { clip-path: inset(25% 0px 35%); }
-  100% { clip-path: inset(30% 0px 40%); }
-}@keyframes vn-gt { 
-  0% { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
-}.tt-demo { min-height: 2.4rem; font-family: var(--display); font-weight: 600; font-size: clamp(1.1rem, 2.6vw, 1.45rem); color: var(--ink); }.tt-cursor { display: inline-block; margin-left: 2px; color: var(--signal); animation: 1s steps(1) 0s infinite normal none running vn-blink; }@keyframes vn-blink { 
-  50% { opacity: 0; }
-}.ct-demo { border-radius: 50%; width: 170px; height: 170px; position: relative; font-weight: 900; font-size: 15px; color: var(--ink); text-align: center; cursor: pointer; transform-origin: 50% 50%; will-change: transform; margin: 0.2rem auto 0.4rem; }.dot-grid { position: relative; height: 250px; border-radius: 14px; overflow: hidden; margin: 0.3rem 0px 0.8rem; }.dot-grid canvas { display: block; width: 100%; height: 100%; }.silk-box { position: relative; height: 250px; border-radius: 14px; overflow: hidden; margin: 0.3rem 0px 0.8rem; background: rgb(11, 7, 22); }.silk-box canvas { display: block; width: 100%; height: 100%; }.gal__lottie { height: 250px; margin: 0.3rem 0px 0.8rem; display: grid; place-items: center; }.scram-block .char { will-change: transform; }.split-flap-text { display: inline-flex; align-items: center; gap: var(--split-flap-gap,6px); color: var(--split-flap-text-color,#f8fafc); font-family: SFMono-Regular, "Roboto Mono", "Cascadia Code", "Liberation Mono", Menlo, monospace; font-size: var(--split-flap-font-size,52px); font-weight: 760; line-height: 1; letter-spacing: 0.035em; white-space: pre; user-select: none; font-variant-numeric: tabular-nums; }.split-flap-text__tile { position: relative; width: 0.78em; height: 1.08em; overflow: hidden; border-radius: var(--split-flap-radius,8px); background: radial-gradient(circle at 50% 0%,rgba(255,255,255,.16),transparent 44%),linear-gradient(180deg,color-mix(in srgb,var(--split-flap-tile-color,#111827) 82%,white),var(--split-flap-tile-color,#111827)); box-shadow: rgba(255, 255, 255, 0.08) 0px 0.035em 0.08em inset, rgba(0, 0, 0, 0.38) 0px -0.05em 0.1em inset, rgba(0, 0, 0, 0.28) 0px 0.16em 0.38em; perspective: 520px; transform-style: preserve-3d; isolation: isolate; }.split-flap-text__tile::before { content: ""; position: absolute; z-index: 8; top: calc(50% - 0.5px); left: 0px; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18) 18%, rgba(0, 0, 0, 0.64) 50%, rgba(255, 255, 255, 0.14) 82%, transparent); box-shadow: rgba(255, 255, 255, 0.08) 0px -1px, rgba(0, 0, 0, 0.5) 0px 1px; pointer-events: none; }.split-flap-text__tile::after { content: ""; position: absolute; inset: 0px; z-index: 9; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: inherit; box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px inset; pointer-events: none; }.split-flap-text__half, .split-flap-text__flap { position: absolute; left: 0px; width: 100%; height: 50%; overflow: hidden; background: linear-gradient(180deg,rgba(255,255,255,.07),transparent 34%),var(--split-flap-tile-color,#111827); backface-visibility: hidden; }.split-flap-text__half--top, .split-flap-text__flap--front { top: 0px; }.split-flap-text__half--bottom, .split-flap-text__flap--back { bottom: 0px; }.split-flap-text__half--bottom, .split-flap-text__flap--back { background: linear-gradient(0deg,rgba(255,255,255,.06),transparent 38%),color-mix(in srgb,var(--split-flap-tile-color,#111827) 92%,black); }.split-flap-text__char { position: absolute; left: 0px; width: 100%; height: 200%; display: flex; align-items: center; justify-content: center; color: var(--split-flap-text-color,#f8fafc); text-shadow: rgba(255, 255, 255, 0.16) 0px 0.025em 0px, rgba(0, 0, 0, 0.42) 0px 0.09em 0.16em; }.split-flap-text__half--top .split-flap-text__char, .split-flap-text__flap--front .split-flap-text__char { top: 0px; }.split-flap-text__half--bottom .split-flap-text__char, .split-flap-text__flap--back .split-flap-text__char { bottom: 0px; }.split-flap-text__flap { z-index: 6; will-change: transform, filter; transform-style: preserve-3d; }.split-flap-text__flap--front { transform-origin: center bottom; animation: split-flap-front var(--split-flap-flip-duration,.12s) cubic-bezier(.23,1,.32,1) both; }.split-flap-text__flap--back { transform-origin: center top; transform: rotateX(90deg); animation: split-flap-back var(--split-flap-flip-duration,.12s) cubic-bezier(.23,1,.32,1) both; }@keyframes split-flap-front { 
-  0% { transform: rotateX(0deg); filter: brightness(1.08); }
-  100% { transform: rotateX(-90deg); filter: brightness(0.52); }
-}@keyframes split-flap-back { 
-  0%, 45% { transform: rotateX(90deg); filter: brightness(0.58); }
-  100% { transform: rotateX(0deg); filter: brightness(1); }
-}.fl-box { position: relative; height: 250px; border-radius: 14px; overflow: hidden; margin: 0.3rem 0px 0.8rem; background: rgb(5, 4, 10); }.fl-box canvas { display: block; width: 100%; height: 100%; mix-blend-mode: screen; }html[data-theme="light"] .fl-box { background: rgb(255, 255, 255); }html[data-theme="light"] .fl-box canvas { mix-blend-mode: normal; }@media (prefers-reduced-motion: reduce){.split-flap-text__flap { animation: auto ease 0s 1 normal none running none !important; }}@media (prefers-reduced-motion: reduce){.animated-gradient-text .text-content, .tt-cursor { animation: auto ease 0s 1 normal none running none; }}@font-face { font-family: "Roboto Flex"; src: url("assets/vendor/fonts/roboto-flex-var.woff2") format("woff2"); font-weight: 100 1000; font-stretch: 25% 151%; font-display: swap; }.sh-fl.is-ready { visibility: visible; }.shuffle-char { line-height: 1; display: inline-block; text-align: center; }.beams-box { position: relative; height: 250px; border-radius: 14px; overflow: hidden; margin: 0.3rem 0px 0.8rem; }.au-veil { position: relative; height: 260px; border-radius: 14px; overflow: hidden; margin: 0.3rem 0px 0.8rem; background: linear-gradient(rgba(139, 92, 246, 0.08), transparent 70%); }html[data-theme="light"] .au-veil { background: rgb(255, 255, 255); }.au-veil canvas { display: block; width: 100%; height: 100%; }.pm-box { position: relative; height: 250px; border-radius: 14px; overflow: hidden; margin: 0.3rem 0px 0.8rem; background: var(--void-2); }html[data-theme="light"] .pm-box { background: rgb(246, 243, 252); }.pm-box canvas { display: block; width: 100%; height: 100%; }.vp-word { display: inline-block; white-space: nowrap; }.ft-word { display: inline-block; margin: 0px 2px; user-select: none; will-change: transform; }.sf-char { display: inline-block; }.gx-sky { position: relative; height: 300px; border-radius: 14px; overflow: hidden; background: var(--void-2); }html[data-theme="light"] .gx-sky { background: rgb(246, 243, 252); }.gx-sky canvas { display: block; width: 100%; height: 100%; }.mh-cell { display: block; }.mh-word { display: inline-block; white-space: pre; }.mh-word:not(:last-child)::after { content: " "; }.mh-reveal { position: absolute; inset: 0px; display: block; pointer-events: none; }.pt-cell { position: relative; display: block; width: 100%; height: 240px; overflow: hidden; touch-action: none; isolation: isolate; background: var(--void-2); border: 1px solid var(--hair); }[data-theme="light"] .pt-cell { background: rgb(246, 243, 252); }.srev-word { display: inline-block; }.st-cell { width: 100%; display: block; cursor: pointer; }.gr-box, .ic-box, .lc-box, .pa-box { position: relative; height: 300px; overflow: hidden; border-radius: 14px; background: var(--void-2); }[data-theme="light"] .gr-box, [data-theme="light"] .ic-box, [data-theme="light"] .lc-box, [data-theme="light"] .pa-box { background: rgb(246, 243, 252); }.lg-box { display: block; width: 100%; height: 300px; border-radius: 14px; background: radial-gradient(120% 100% at 50% 0%, rgb(20, 10, 36), rgb(5, 1, 10) 70%); }.wv-box { position: relative; height: 340px; overflow: hidden; border-radius: 14px; background: var(--void-2); }[data-theme="light"] .wv-box { background: rgb(246, 243, 252); }.ob-box, .lp-box, .ba-box, .gf-box, .df-box { position: relative; height: 300px; border-radius: 18px; overflow: hidden; background: var(--void-2); box-shadow: rgba(199, 85, 247, 0.14) 0px 0px 0px 1px inset; }html[data-theme="light"] .ob-box, html[data-theme="light"] .df-box { background: rgb(246, 243, 252); box-shadow: rgba(91, 63, 214, 0.16) 0px 0px 0px 1px inset; }.ob-box { background: rgb(5, 1, 10); }.gf-box { background: rgb(18, 15, 23); }.sc-box, .tp-box { position: relative; height: 340px; border-radius: 18px; overflow: hidden; background: var(--void-2); box-shadow: rgba(199, 85, 247, 0.18) 0px 0px 0px 1px inset; }html[data-theme="light"] .sc-box, html[data-theme="light"] .tp-box { background: rgb(246, 243, 252); box-shadow: rgba(91, 63, 214, 0.16) 0px 0px 0px 1px inset; }.le-box, .mm-box, .prb-box, .lt-box, .ff-box, .cb-box, .th-box, .gd-box { position: relative; height: 300px; border-radius: 18px; overflow: hidden; background: var(--void-2); box-shadow: rgba(199, 85, 247, 0.14) 0px 0px 0px 1px inset; }html[data-theme="light"] .le-box, html[data-theme="light"] .mm-box, html[data-theme="light"] .prb-box, html[data-theme="light"] .lt-box, html[data-theme="light"] .ff-box, html[data-theme="light"] .cb-box, html[data-theme="light"] .th-box, html[data-theme="light"] .gd-box { background: rgb(246, 243, 252); box-shadow: rgba(91, 63, 214, 0.16) 0px 0px 0px 1px inset; }.sw-box, .gw-box, .lf-box, .wt-box, .ft-box, .lgc-box, .sg-box, .bp-box { position: relative; height: 300px; border-radius: 18px; overflow: hidden; background: var(--void-2); box-shadow: rgba(199, 85, 247, 0.14) 0px 0px 0px 1px inset; }html[data-theme="light"] .sw-box, html[data-theme="light"] .gw-box, html[data-theme="light"] .lf-box, html[data-theme="light"] .wt-box, html[data-theme="light"] .ft-box, html[data-theme="light"] .sg-box, html[data-theme="light"] .bp-box { background: rgb(246, 243, 252); box-shadow: rgba(126, 34, 206, 0.16) 0px 0px 0px 1px inset; }.rd-box, .dth-box { position: relative; height: 300px; border-radius: 18px; overflow: hidden; background: var(--void-2); box-shadow: rgba(199, 85, 247, 0.14) 0px 0px 0px 1px inset; }.dth-box { background: rgb(13, 6, 32); }.rd-box canvas, .dth-box canvas { display: block; }.gal__still { display: block; width: 100%; height: 100%; object-fit: cover; }:root { --ease-chapter: cubic-bezier(.215,.61,.355,1); }.scene-bg { position: absolute; inset: 0px; overflow: hidden; pointer-events: none; z-index: -1; }.sec > .scene-bg, .bloom > .scene-bg { z-index: -1; }.scene-bg .silk-box, .scene-bg .fl-box, .scene-bg .au-veil, .scene-bg .gx-sky, .scene-bg .dot-grid, .scene-bg .dth-box { height: 100%; border-radius: 0px; margin: 0px; }.scene-bg--hero { inset: 58% 0px 0px; height: auto; z-index: 0; }.scene-bg--hero .silk-box { mix-blend-mode: screen; }.scene-bg--veil { mix-blend-mode: screen; opacity: 0.55; }.scene-bg--veil .au-veil { background: transparent; }.scene-bg--notes { mix-blend-mode: screen; opacity: 0.16; }.scene-bg--visit { opacity: 0.7; mix-blend-mode: screen; }html[data-theme="light"] .scene-bg { opacity: 0.5; }html[data-theme="light"] .scene-bg .fl-box, html[data-theme="light"] .scene-bg .gx-sky, html[data-theme="light"] .scene-bg .au-veil, html[data-theme="light"] .scene-bg .silk-box { background: transparent; }html[data-theme="light"] .scene-bg--notes { mix-blend-mode: multiply; opacity: 0.07; }html[data-theme="light"] .scene-bg--visit { mix-blend-mode: normal; opacity: 0.28; }.b3d__glow { position: absolute; inset: 0px; z-index: 0; mix-blend-mode: screen; opacity: 0.5; pointer-events: none; }.b3d__glow .pm-box { height: 100%; border-radius: 0px; margin: 0px; background: transparent; }.storm { position: relative; z-index: 2; max-width: min(1500px, 94vw); margin: 7.5rem auto; min-height: 78vh; display: grid; place-items: center; overflow: hidden; border-radius: 30px; background: rgb(5, 1, 10); box-shadow: 0 60px 130px #0000008c,0 0 0 1px var(--line); }.storm .lg-box { position: absolute; inset: 0px; width: 100%; height: 100%; border-radius: 0px; }.storm__caption { position: relative; z-index: 1; text-align: center; padding: 2.2rem 1.4rem; }.storm__t { font-family: var(--display); font-weight: 700; font-size: clamp(2rem, 5.4vw, 4.2rem); letter-spacing: 0.06em; color: rgb(243, 238, 255); text-shadow: rgba(139, 92, 246, 0.5) 0px 0px 46px; }.storm__s { margin-top: 1rem; font-size: clamp(0.92rem, 1.5vw, 1.08rem); color: rgb(185, 168, 230); letter-spacing: 0.04em; }.reveal-item, .interlude__t, .interlude__sub, .storm__caption p { transition-timing-function: var(--ease-chapter); }.star-border .visit__mail { background-image:linear-gradient(100deg,#fff,var(--lilac) 40%,var(--orchid));-webkit-background-clip:text;background-clip:text; color: transparent; }.spec__stage { position: relative; height: clamp(240px, 32vw, 340px); margin: 0.6rem 0px 0.4rem; border-radius: 14px; overflow: hidden; background: radial-gradient(120% 90% at 50% 110%, rgba(109, 40, 217, 0.18), transparent 60%); }[data-theme="light"] .spec__stage { background: radial-gradient(120% 90% at 50% 110%, rgba(139, 92, 246, 0.1), transparent 60%); }.spec__stage canvas { position: absolute; inset: 0px; width: 100%; height: 100%; display: block; }.credits { width: 100%; margin-top: 0.9rem; border-top: 1px solid var(--line); padding-top: 0.8rem; text-align: left; }.credits summary { cursor: pointer; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-dim); list-style: none; }.credits ul { margin: 0.7rem 0px 0px; padding: 0px; list-style: none; display: grid; gap: 0.42rem; }.credits li { font-size: 0.68rem; line-height: 1.6; color: var(--ink-dim); font-family: var(--mono); }.credits a { color: var(--lilac); text-decoration: none; border-bottom: 1px dotted var(--line2); }.credits b { color: var(--ink-soft); font-weight: 500; }.skip { position: fixed; top: 0.6rem; left: 0.6rem; z-index: 999; padding: 0.55rem 1.1rem; border-radius: 999px; background: var(--violet); color: rgb(255, 255, 255); font-family: var(--display); font-size: 0.85rem; text-decoration: none; transform: translateY(-160%); transition: transform .25s var(--ease); }.skip:focus { transform: none; }</style>
-  <link rel="preload" as="style" href="assets/css/style.rest.css?v=115" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="assets/css/style.rest.css?v=115"></noscript>
-  <script>(function(){try{var t=localStorage.getItem('vn-theme');if(!t)t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-  <style>/* v119 polish: 二次独立预审修复 — 胶囊底被 clip:text 裁穿 + 浅色花/刚体对比 */
-.star-border .star-border__in{background:linear-gradient(100deg,#fff,var(--lilac) 40%,var(--orchid)) padding-box text,var(--void-2) padding-box border-box;-webkit-background-clip:text,border-box}
-html[data-theme="light"] .star-border .star-border__in{background:linear-gradient(100deg,var(--violet-2),var(--orchid) 70%,var(--violet)) padding-box text,#fff padding-box border-box;-webkit-background-clip:text,border-box}
-.hero__meta .hud{color:var(--lilac)}
-html[data-theme="light"] .hero__meta .hud{color:var(--violet)}
-.storm__caption{background:radial-gradient(62% 92% at 50% 50%,rgba(5,1,10,.62),transparent 72%)}
-.hero__lead{text-shadow:0 2px 20px rgba(5,4,10,.82)}
-html[data-theme="light"] .hero__lead{text-shadow:0 1px 16px rgba(241,236,250,.95)}
-.visit__lead{text-wrap:balance;max-width:32em}
-.notes__quote cite{color:var(--ink-soft)}
-html[data-theme="light"] .work__tags li{color:var(--ink-soft);border-color:var(--line2)}
-.interlude__sub{text-shadow:0 1px 12px rgba(0,0,0,.85)}
-/* v122 polish: 三次独立预审修复 — 浅色激活胶囊/花房提示丸/署名链接 + 移动端章节角标遮挡 */
-html[data-theme="light"] .chip.is-on{color:#fff;background:linear-gradient(120deg,#7c3aed,#c026d3);border-color:transparent;box-shadow:0 6px 18px rgba(124,58,237,.28)}
-html[data-theme="light"] .b3d__hint{background:rgba(255,255,255,.8);color:#5b21b6;border-color:rgba(91,33,182,.35)}
-html[data-theme="light"] .credits a{color:#6d28d9}
-@media(max-width:720px){.chapter-rail{display:none}}
-/* v123 perf: 滚动卡顿归因 — bloom 章节 240vh，星空画布原样铺满导致着色器每帧多算 2.4 倍屏幕外像素 */
-.bloom>.scene-bg{position:sticky;top:0;left:0;right:0;bottom:auto;height:100vh;height:100dvh}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Violet Garden — Every memory blooms</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="description" content="A living letter that grows a garden. Ink is the garden: a cursor of fountain pen, letters that root, memories that bloom.">
+<style>
+  :root{
+    --deep:#2B2140; --violet:#8C78B8; --ivory:#F2EBDD; --gold:#D7B97A; --sky:#7E8FA8; --green:#536654;
+    /* gilt and mist are the same gold and the same blue, lifted to the ink level at which 9-11px letterspaced
+       caps clear 7:1 over the garden's darkest ground: hierarchy by size and spacing, not by invisibility */
+    --gilt:#E3C88E; --mist:#A9BAD4;
+    /* The field label is the smallest text on the site that a visitor has to read in order to use the
+       form, and it sits on a translucent card: at --mist its worst pixels measured 6.39:1 against the
+       garden shining through the panel (AAA asks 7:1 under 18.66px). Lifted within the same blue
+       family rather than given its own shade, so the card stays one surface — and it still sits below
+       --ivory body text, so the hierarchy is carried by value as it was. */
+    --mist-hi:#C6D2E6;
+    --pad:clamp(1.4rem,5vw,4.5rem);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:#141021;overscroll-behavior-y:none}
+  body{min-height:100%;background:transparent;overflow-x:hidden;font-family:'Cormorant Garamond',Georgia,serif;color:var(--ivory)}
+  /* Lenis keeps its own class on <html>; native scroll stays the source of truth. */
+  html.lenis{height:auto}
+  .no-scroll{overflow:hidden}
+  #scene{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #ink{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;mix-blend-mode:multiply}
+  #glow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;mix-blend-mode:screen}
+  .ui{position:fixed;z-index:3;pointer-events:none}
+  .title{top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;opacity:0}
+  .title h1{font-size:clamp(2.4rem,8vw,6rem);font-weight:400;letter-spacing:.14em;text-shadow:0 2px 40px rgba(0,0,0,.5)}
+  .title p{margin-top:.6rem;font-style:italic;letter-spacing:.3em;font-size:clamp(.8rem,2.4vw,1.15rem);color:var(--gilt);
+           text-shadow:0 1px 12px rgba(0,0,0,.78)}
+  /* The signpost at the gate has to be readable, and it stands at the one place on the door where the
+     meadow comes closest. It gets the same treatment as a chapter card — its own shade, fading out
+     before it reaches anything — and full ink, because a two-thirds decorative fade is what made an
+     eleven-pixel letterspaced instruction measure 2.9:1 against its own ground.
+     The shade has to out-reach the words: a farthest-side ellipse touches zero at the box edge, so the
+     first and last letters of a padded line stood in an unshaded garden and the frame read 4.2:1 at
+     either end. Wider padding plus a longer-held stop puts ground under every glyph, not under the
+     middle of the sentence only. */
+  .hint{bottom:6%;left:50%;transform:translateX(-50%);font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;opacity:0;color:var(--mist);
+        padding:.75em 3.4em;text-shadow:0 1px 12px rgba(0,0,0,.78);
+        background:radial-gradient(farthest-side ellipse at 50% 50%,rgba(17,13,29,.9) 0%,rgba(17,13,29,.8) 44%,rgba(17,13,29,.44) 76%,rgba(17,13,29,0) 100%)}
+  .mark{top:24px;left:26px;font-size:.72rem;letter-spacing:.4em;text-transform:uppercase;opacity:.72}
+  .sound{top:22px;right:26px;pointer-events:auto;cursor:pointer;font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;border:1px solid rgba(242,235,221,.38);padding:.5em .9em;border-radius:999px;opacity:.85;background:rgba(20,16,33,.3);backdrop-filter:blur(6px)}
+  .open{bottom:12%;left:50%;transform:translateX(-50%);pointer-events:auto;cursor:pointer;font-family:inherit;font-size:.82rem;letter-spacing:.34em;text-transform:uppercase;color:var(--ivory);border:1px solid rgba(215,185,122,.5);padding:.85em 1.8em;border-radius:999px;opacity:0;background:rgba(43,33,64,.35);backdrop-filter:blur(8px);transition:background .4s,border-color .4s}
+  .open:hover{background:rgba(215,185,122,.16);border-color:var(--gold)}
+  #fallback{position:fixed;inset:0;display:none;place-items:center;text-align:center;padding:2rem;background:#141021;z-index:9}
+  .sr{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .archive{top:52px;left:26px;pointer-events:auto;font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:var(--ivory);opacity:.78;text-decoration:none;border-bottom:1px solid transparent}
+  .archive:hover{opacity:.9;border-color:var(--gold)}
+  #open:focus-visible,#sound:focus-visible,.archive:focus-visible,.rail a:focus-visible,.chap a:focus-visible,.chap button:focus-visible,.chap input:focus-visible{outline:2px solid var(--gold);outline-offset:4px;opacity:1}
+  @media (pointer:fine){ body.pen,body.pen #scene{cursor:none} body.pen.pen-down,body.pen.pen-down #scene{cursor:default} body.pen #sound,body.pen .open,body.pen .archive,body.pen .rail a,body.pen .chap a,body.pen .chap button,body.pen .chap input{cursor:pointer} body.pen .chap input{cursor:text} }
+
+  /* ---------- chapters: fixed panels over a fixed garden ---------- */
+  /* The scroll runway is the only thing with height. Panels never enter flow, so a
+     portrait phone can never overflow sideways off a wide 3D word. */
+  /* Seven stops, one screen each. The JS re-derives this from WAY.length as a guard, but it
+     must not be the thing that sets it: changing document height after boot silently
+     rescales every scroll fraction taken before the change, which is how chapter_test
+     ended up at u=0.5 while asking for 4/6. */
+  #runway{height:700svh;pointer-events:none}
+  .chap{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0;visibility:hidden;
+        display:grid;align-content:center;padding:0 var(--pad)}
+  .chap.right{justify-items:end;text-align:right}
+  .chap.left{justify-items:start;text-align:left}
+  /* The scrim has to end where the box ends. A radial gradient sized as a percentage of the box
+     measures its radius against the whole width, so `115% 110%` puts the transparent stop outside the
+     element and the browser clips the fade mid-alpha — a hard rectangle around every chapter card.
+     `farthest-side` makes 100% the box edge on both axes, which is the only sizing that can reach
+     zero there. The garden is busy; the writing is not, and the falloff is what keeps them apart. */
+  /* Chapter III is the manifesto, so it keeps the deeper scrim — but it cannot keep the centred wide
+     card. At 48rem its type column spanned x300..980 and stood directly on the keeper's corner: the
+     lamp rose behind its own headline and the bench and pots sat under its own notes. The chapter
+     lost its subject to its own words. It now sits right, so the corner can stand in the open half,
+     and the notes stay left-aligned because three paragraphs justified to the right are a ragged wall. */
+  .chap.keep{text-align:left}
+  .chap.keep .card{max-width:40rem;
+        background:radial-gradient(farthest-side ellipse at 50% 50%,rgba(17,13,29,.88) 0%,rgba(17,13,29,.72) 36%,rgba(17,13,29,.46) 62%,rgba(17,13,29,.18) 83%,rgba(17,13,29,0) 100%)}
+  .card{max-width:34rem;padding:clamp(1.1rem,3vw,2.6rem) clamp(1.7rem,4.6vw,3.9rem);
+        background:radial-gradient(farthest-side ellipse at 50% 50%,rgba(17,13,29,.84) 0%,rgba(17,13,29,.64) 38%,rgba(17,13,29,.36) 64%,rgba(17,13,29,.13) 84%,rgba(17,13,29,0) 100%)}
+  .kicker{font-size:.62rem;letter-spacing:.42em;text-transform:uppercase;color:var(--gilt)}
+  .chap h2{font-weight:400;font-size:clamp(1.9rem,4.6vw,3.4rem);letter-spacing:.05em;margin:.5rem 0 .1rem;line-height:1.06;text-shadow:0 2px 30px rgba(0,0,0,.55)}
+  /* The bed number is a plant label, so it is built like one: a slate with a hairline edge, sitting on
+     the bed. It is the one line of type a chapter card carries that names a place rather than a
+     thought, and the frame measured it standing over a gladiolus spike — 10px letterspaced caps on a
+     lit stem are unreadable whatever the ink is lifted to. A garden solves that with a label, not by
+     shading the flower, so the plate takes the ground out from under the letters and the meadow stays
+     as bright as it was planted. */
+  .idx{display:inline-block;font-size:.62rem;letter-spacing:.42em;text-transform:uppercase;color:var(--mist);
+       border:1px solid rgba(140,120,184,.36);border-radius:.18rem;padding:.36em .72em;
+       background:rgba(17,13,29,.66);backdrop-filter:blur(3px)}
+  .chap p{font-size:clamp(1rem,1.5vw,1.18rem);line-height:1.62;margin-top:.9rem;color:rgba(242,235,221,.84);text-shadow:0 1px 18px rgba(0,0,0,.6)}
+  .tags{list-style:none;display:flex;gap:.5rem;margin-top:1.1rem;flex-wrap:wrap}
+  .chap.right .tags{justify-content:flex-end}
+  .tags li{font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;border:1px solid rgba(140,120,184,.42);border-radius:999px;padding:.42em .85em;color:rgba(242,235,221,.88)}
+  .link{display:inline-block;margin-top:1.35rem;pointer-events:auto;font-family:inherit;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ivory);text-decoration:none;background:none;border:0;border-bottom:1px solid rgba(215,185,122,.55);padding-bottom:.3em;transition:color .35s,border-color .35s,background .35s}
+  /* The whisper line is always the lowest thing inside a card, and a farthest-side scrim is already at
+     zero by the box edge — so the last line stood in the open garden while the paragraph above it stood
+     in shade. The frame proved it: the tip's ground measured ten times the body's and read 3.8:1. It
+     follows the gate's own rule for instructions (see .hint): the words carry their own shade, and the
+     shade out-reaches the words. The garden keeps every lumen it was planted with. */
+  .chap p.tip{margin-top:.9rem;font-size:.62rem;line-height:1.5;letter-spacing:.3em;text-transform:uppercase;
+       display:inline-block;color:var(--mist);opacity:1;padding:.6em 2.1em;
+       text-shadow:0 1px 12px rgba(0,0,0,.78);
+       background:radial-gradient(farthest-side ellipse at 50% 50%,rgba(17,13,29,.9) 0%,rgba(17,13,29,.8) 44%,rgba(17,13,29,.44) 76%,rgba(17,13,29,0) 100%)}
+  /* A shade with padding is a thing with size: the keeper's read-out is empty until a visitor plants a
+     memory, and an empty inline-block still paints its own plate. */
+  .chap p.tip:empty{padding:0;background:none;text-shadow:none}
+  .link:hover{color:var(--gold);border-color:var(--gold)}
+  .link.solid{border:1px solid rgba(215,185,122,.5);border-radius:999px;padding:.8em 1.6em;background:rgba(43,33,64,.42);backdrop-filter:blur(8px)}
+  .link.solid:hover{background:rgba(215,185,122,.14)}
+  .notes{list-style:none;display:grid;gap:clamp(1rem,3vw,2rem);max-width:44rem;margin-top:1.6rem;justify-items:start;text-align:left}
+  .notes li{border-left:1px solid rgba(140,120,184,.45);padding-left:1.1rem}
+  .notes h3{font-weight:400;font-size:1.16rem;letter-spacing:.05em}
+  .notes span{display:block;font-size:.96rem;line-height:1.55;margin-top:.3rem;color:rgba(242,235,221,.86)}
+  .form{display:grid;gap:.75rem;justify-items:start;margin-top:1.4rem;width:min(30rem,86vw)}
+  .form label{font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--mist-hi)}
+  .form input{pointer-events:auto;width:100%;font-family:inherit;font-size:1.05rem;color:var(--ivory);background:rgba(20,16,33,.42);border:1px solid rgba(140,120,184,.4);border-radius:.2rem;padding:.62em .8em;backdrop-filter:blur(6px)}
+  .form input::placeholder{color:rgba(242,235,221,.62);font-style:italic}
+  .form .row{display:grid;gap:.35rem;width:100%}
+  .sent{margin-top:1rem;font-style:italic;color:var(--gilt);opacity:0}
+
+  /* chapter rail: where you are in the garden */
+  .rail{position:fixed;right:clamp(.9rem,2.2vw,1.6rem);top:50%;transform:translateY(-50%);z-index:5;
+        display:grid;gap:.9rem;justify-items:end;pointer-events:none;opacity:0}
+  .rail a{pointer-events:auto;display:grid;grid-template-columns:auto auto;align-items:center;gap:.6rem;
+          font-size:.56rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(242,235,221,.86);text-decoration:none}
+  .rail i{width:1.05rem;height:1px;background:currentColor;display:block;transition:width .4s,background .4s}
+  /* The rail's label is the smallest writing on the site — nine pixels of letterspaced caps — and it
+     only exists under the pointer, which is the one moment it is read. It also stands flush against
+     the right edge of the frame, where the meadow is closest: the frame measured its worst pixels at
+     6.97:1 over a lit bed. It takes the same rule as every other transient line here: the words carry
+     their own shade, and the shade out-reaches the words. The rail is end-aligned, so the plate grows
+     inward and nothing moves sideways. */
+  .rail span{opacity:0;transition:opacity .35s;padding:.6em 1.1em;border-radius:.2rem;
+             text-shadow:0 1px 12px rgba(0,0,0,.78);
+             background:radial-gradient(farthest-side ellipse at 50% 50%,rgba(17,13,29,.92) 0%,rgba(17,13,29,.82) 44%,rgba(17,13,29,.46) 76%,rgba(17,13,29,0) 100%)}
+  /* the label appears on approach only: a permanent one would collide with a right-aligned card */
+  .rail a:hover span,.rail a:focus span{opacity:1}
+  .rail a[aria-current="true"]{color:var(--gilt)}
+  .rail a[aria-current="true"] i{width:2rem}
+
+  /* reduced motion: the garden stops moving, the writing does not */
+  @media (prefers-reduced-motion: reduce){ .chap{transition:none} }
+  noscript .chap{opacity:1;visibility:visible;position:static;padding:3rem var(--pad)}
 </style>
 </head>
 <body>
-  <a class="skip" href="#hero">跳到内容 Skip to content</a>
-  <!-- 00 · Loader -->
-  <div class="loader" id="loader" aria-hidden="true">
-    <div class="loader__curtain"></div>
-    <div class="loader__inner">
-      <p class="loader__brand"><span class="loader__dot"></span>LUMEN VIOLA</p>
-      <div class="loader__num" id="loaderNum">00</div>
-      <div class="loader__track"><i id="loaderBar"></i></div>
-      <p class="loader__cap" data-i18n="hero_eyebrow">一座会呼吸的生物荧光温室</p>
-    </div>
-  </div>
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <canvas id="ink" aria-hidden="true"></canvas>
+  <canvas id="glow" aria-hidden="true"></canvas>
+  <div class="ui mark">Violet&nbsp;Garden</div>
+  <a class="ui archive" href="archive/index.html">The&nbsp;Archive</a>
+  <div class="ui sound" id="sound" role="button" tabindex="0" aria-pressed="false">Sound · off</div>
+  <div class="ui title" id="title"><h1>Violet Garden</h1><p>Every memory blooms.</p></div>
+  <div class="ui hint" id="hint">move — your ink becomes flowers</div>
+  <button class="ui open" id="open">Open a letter</button>
+  <div class="sr" id="live" aria-live="polite"></div>
+  <p class="sr">An interactive garden: opening a letter grows a flower that stays for your next visit. Prefer plain text? The written portfolio is in the Archive.</p>
+  <div id="fallback"><div>This garden needs WebGL.<br>The written portfolio remains at <a style="color:#D7B97A" href="archive/index.html">the Archive →</a></div></div>
 
-  <!-- cursor -->
-  <div class="cursor" id="cursor" aria-hidden="true">
-    <div class="cursor__dot"></div>
-    <div class="cursor__ring"><span class="cursor__label"></span></div>
-  </div>
+  <nav class="rail" id="rail" aria-label="Chapters of the garden">
+    <a href="#top" data-chap="0"><span>The door</span><i></i></a>
+    <a href="#bed-handbook" data-chap="1"><span>Handbook</span><i></i></a>
+    <a href="#bed-devops" data-chap="2"><span>Auto DevOps</span><i></i></a>
+    <a href="#bed-rover" data-chap="3"><span>Mars Rover</span><i></i></a>
+    <a href="#ch-keeper" data-chap="4"><span>Keeper's notes</span><i></i></a>
+    <a href="#ch-letter" data-chap="5"><span>Leave a letter</span><i></i></a>
+  </nav>
 
-  <div class="orbs" id="orbs" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
-
-  <div class="veil" id="veil" aria-hidden="true"></div>
-
-  <header class="header" id="header">
-    <a class="brand" href="#top" data-magnetic data-cursor="enter">
-      <span class="brand__orb"></span><span>LUMEN&nbsp;VIOLA</span>
-    </a>
-    <nav class="nav" aria-label="Primary">
-      <a href="#garden" data-i18n="nav_garden" data-cursor="03">花园</a>
-      <a href="#physics" data-i18n="nav_physics" data-cursor="04">物理园</a>
-      <a href="#works" data-i18n="nav_works" data-cursor="05">项目</a>
-      <a href="#gallery" data-i18n="nav_gallery" data-cursor="06">陈列廊</a>
-      <a href="#bloom" data-i18n="nav_bloom" data-cursor="07">盛开</a>
-      <a href="#notes" data-i18n="nav_notes" data-cursor="08">手记</a>
-      <a href="#visit" data-i18n="nav_visit" data-cursor="09">来访</a>
-    </nav>
-    <div class="header__right">
-      <button class="lang" id="themeToggle" type="button" data-magnetic aria-label="Theme">☀</button>
-      <button class="lang lang--snd" id="soundToggle" type="button" data-magnetic aria-label="Sound" aria-pressed="true"><span class="snd-ico">♪</span></button>
-      <button class="lang" id="langToggle" type="button" data-magnetic aria-label="Language">
-        <span data-lang-label="zh" class="is-on">中</span><em>/</em><span data-lang-label="en">EN</span>
-      </button>
-      <a href="#garden" class="pill" data-magnetic data-cursor="go" data-i18n="nav_cta">进入</a>
-    </div>
-  </header>
-
-  <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
-  <aside class="chapter-rail" aria-hidden="true">
-    <span id="chapterN">01</span><span class="chapter-rail__line"></span><span id="chapterT">HERO</span>
-  </aside>
-
-  <main id="top">
-    <!-- 01 · Hero -->
-    <section class="hero" id="hero" data-chapter="01" data-chapter-name="HERO">
-      <canvas id="petalWebGL" class="hero__canvas" aria-hidden="true"></canvas>
-      <div class="scene-bg scene-bg--hero" aria-hidden="true"><div class="silk-box" data-silk data-color="#A78BFA" data-speed="5" data-noise="1.5">
-            <canvas></canvas>
-          </div></div>
-      <div class="hero__inner">
-        <span class="hero__ghost" aria-hidden="true">VIOLA</span>
-        <p class="hero__eyebrow eyebrow" data-split data-i18n="hero_eyebrow" data-split-done="1" aria-label="一座会呼吸的生物荧光温室"><span class="word" aria-hidden="true"><span class="char">一</span><span class="char">座</span><span class="char">会</span><span class="char">呼</span><span class="char">吸</span><span class="char">的</span><span class="char">生</span><span class="char">物</span><span class="char">荧</span><span class="char">光</span><span class="char">温</span><span class="char">室</span></span></p>
-        <h1 class="hero__title">
-          <span class="hero__line" data-split data-i18n="hero_welcome" data-split-done="1" aria-label="Enter the"><span class="word" aria-hidden="true"><span class="char">E</span><span class="char">n</span><span class="char">t</span><span class="char">e</span><span class="char">r</span></span> <span class="word" aria-hidden="true"><span class="char">t</span><span class="char">h</span><span class="char">e</span></span></span>
-          <span class="hero__word" data-split data-split-done="1" aria-label="VioletNotes"><span class="word" aria-hidden="true"><span class="char">V</span><span class="char">i</span><span class="char">o</span><span class="char">l</span><span class="char">e</span><span class="char">t</span><span class="char">N</span><span class="char">o</span><span class="char">t</span><span class="char">e</span><span class="char">s</span></span></span>
-          <span class="hero__garden"><em data-split data-split-done="1" aria-label="Garden"><span class="word" aria-hidden="true"><span class="char">G</span><span class="char">a</span><span class="char">r</span><span class="char">d</span><span class="char">e</span><span class="char">n</span></span></em></span>
-        </h1>
-        <p class="hero__lead" data-i18n="hero_lead">深夜玻璃温室。滚动是行走，光标是萤火，花瓣服从风与重力。<br>这里没有按钮堆砌——只有会呼吸的光。</p>
-        <div class="hero__actions">
-          <a class="btn btn--solid" href="#physics" data-magnetic data-cursor="04"><span data-i18n="hero_cta1">走进温室</span></a>
-          <a class="btn btn--ghost" href="#gallery" data-magnetic data-cursor="05"><span data-i18n="hero_cta2">触碰风场</span></a>
-        </div>
-        <div class="hero__meta">
-          <span class="hud">THREE × MATTER × GSAP</span>
-        </div>
+  <!-- Chapters are fixed panels; this runway is the only scrollable height. -->
+  <div id="runway" aria-hidden="true"></div>
+  <main id="chapters">
+    <section class="chap right" id="bed-handbook" aria-labelledby="bed-handbook-t">
+      <div class="card">
+        <div class="kicker">Chapter II · The beds</div>
+        <span class="idx">Bed 01 / 03</span>
+        <h2 id="bed-handbook-t">The Agent Handbook</h2>
+        <p>A field guide grown from first principles to production: attention, agent loops, tool protocols, memory and retrieval, planning, many agents at once, evaluation, and the fences of safety.</p>
+        <ul class="tags"><li>LLM</li><li>Agents</li><li>Docs</li></ul>
+        <a class="link" href="https://github.com/funny8kids/ai-agent-handbook" target="_blank" rel="noopener">Read this bed ↗</a>
+        <p class="tip">or touch the flowers to open its letter</p>
       </div>
-      <div class="hero__scroll" aria-hidden="true"><span data-i18n="hero_scroll">Scroll to walk through</span><i></i></div>
-      <svg class="hero__glass" viewBox="0 0 1440 220" preserveAspectRatio="none" aria-hidden="true">
-        <g fill="none" stroke="currentColor" stroke-width="1">
-          <path d="M0 220 L180 84 L360 220 M360 220 L540 64 L720 220 M720 220 L900 84 L1080 220 M1080 220 L1260 64 L1440 220"/>
-          <path opacity=".55" d="M0 219 H1440"/>
-          <path opacity=".3" d="M90 152 V220 M270 152 V220 M450 142 V220 M630 142 V220 M810 152 V220 M990 152 V220 M1170 142 V220 M1350 142 V220"/>
-        </g>
-      </svg>
     </section>
-
-    <!-- 02 · Marquee -->
-    <div class="ticker" aria-hidden="true">
-      <div class="ticker__track">
-        <span data-i18n="mq_night">夜间温室</span><b>✦</b><span>IRIDESCENCE</span><b>✦</b>
-        <span data-i18n="mq_touch">风 · 花 · 物理</span><b>✦</b><span>MATTER.JS CONSTRAINTS</span><b>✦</b>
-        <span data-i18n="mq_night">夜间温室</span><b>✦</b><span>WEBGL SHADERS</span><b>✦</b>
-        <span data-i18n="mq_touch">风 · 花 · 物理</span><b>✦</b><span>REACT BITS, PORTED</span><b>✦</b>
+    <section class="chap left" id="bed-devops" aria-labelledby="bed-devops-t">
+      <div class="card">
+        <div class="kicker">Chapter II · The beds</div>
+        <span class="idx">Bed 02 / 03</span>
+        <h2 id="bed-devops-t">Auto DevOps</h2>
+        <p>Deploys, watches, and heals itself the way a greenhouse irrigates: quietly, on a schedule, in TypeScript. The gardener sleeps; the pipes do not.</p>
+        <ul class="tags"><li>TypeScript</li><li>Pipelines</li><li>Self-healing</li></ul>
+        <a class="link" href="https://github.com/funny8kids/Auto-DevOps" target="_blank" rel="noopener">Read this bed ↗</a>
+        <p class="tip">or touch the flowers to open its letter</p>
       </div>
-    </div>
-
-    <!-- 02.5 · LogoLoop band (React Bits <LogoLoop /> port) -->
-    <div class="logoloop" data-logoloop direction="left" speed="90" fade="true" fade-color="#0A0814" gap="48" logo-height="26" scale-hover="true" aria-hidden="true">
-      <div class="logoloop__track">
-        <ul class="logoloop__list">
-          <li><span class="logo-chip">three.js</span></li>
-          <li><span class="logo-chip">matter.js</span></li>
-          <li><span class="logo-chip">gsap + ScrollTrigger</span></li>
-          <li><span class="logo-chip">lenis</span></li>
-          <li><span class="logo-chip">glsl shaders</span></li>
-          <li><span class="logo-chip">react bits</span></li>
-          <li><span class="logo-chip">zero dependencies</span></li>
+    </section>
+    <section class="chap right" id="bed-rover" aria-labelledby="bed-rover-t">
+      <div class="card">
+        <div class="kicker">Chapter II · The beds</div>
+        <span class="idx">Bed 03 / 03</span>
+        <h2 id="bed-rover-t">Mars Rover 3D</h2>
+        <p>A red planet inside a browser window — terrain, a rover, and the patience to render both at sixty frames. Exploration, planted at the far end of a violet greenhouse.</p>
+        <ul class="tags"><li>Three.js</li><li>WebGL</li><li>3D</li></ul>
+        <a class="link" href="https://github.com/funny8kids/mars-rover-3d" target="_blank" rel="noopener">Read this bed ↗</a>
+        <p class="tip">or touch the flowers to open its letter</p>
+      </div>
+    </section>
+    <section class="chap right keep" id="ch-keeper" aria-labelledby="ch-keeper-t">
+      <div class="card">
+        <div class="kicker">Chapter III · Keeper's notes</div>
+        <h2 id="ch-keeper-t">How this garden is tended</h2>
+        <p>The Garden Keeper stands at the end of the runway, beside the desk your letters are folded on. She is drawn by the same ink as this sentence — the nib writes her from nothing, feet first — and the lamp beside her is this corner's only key light.</p>
+        <ul class="notes">
+          <li><h3>One law, not fifty effects</h3><span>Ink is the garden. The cursor is a pen, the type is extruded onto stems, the letter folds into a flower, and a memory you leave here is still growing when you come back.</span></li>
+          <li><h3>Modelled, not downloaded</h3><span>Every violet, every stalk and every letterform is generated in Blender and compressed for the wire. No store-bought asset touches this soil.</span></li>
+          <li><h3>Fast on a small phone</h3><span>Instanced, lazy-loaded, and measured: the frame budget is a design constraint, not an afterthought.</span></li>
         </ul>
-      </div>
-    </div>
-
-    <!-- 03 · Garden / manifesto -->
-    <section class="sec" id="garden" data-chapter="03" data-chapter-name="GARDEN">
-      <div class="scene-bg" aria-hidden="true"><div class="fl-box" data-floatinglines data-gradient="#8B5CF6,#E879F9,#C4B5FD">
-            <canvas></canvas>
-          </div></div>
-      <header class="sec__head">
-        <span class="sec__idx">03</span>
-        <div>
-          <p class="sec__en" data-i18n="garden_kicker">光线的三条法则</p>
-          <h2 class="section__cn" data-split data-i18n="garden_title">温室初见</h2>
-        </div>
-      </header>
-      <div class="law__grid">
-        <article class="law__card reveal-item" data-glare>
-          <span class="law__n">I</span>
-          <h3 data-i18n="g1_t">柔光</h3>
-          <p data-i18n="g1_p">晨雾与暮色之间的那一抹紫。光线不刺眼，却足以照亮每一页笔记。</p>
-        </article>
-        <article class="law__card reveal-item" data-glare>
-          <span class="law__n">II</span>
-          <h3 data-i18n="g2_t">风场</h3>
-          <p data-i18n="g2_p">光标不是装饰，是风。靠近时花瓣退让，静止时它们回到呼吸的轨道。</p>
-        </article>
-        <article class="law__card reveal-item" data-glare>
-          <span class="law__n">III</span>
-          <h3 data-i18n="g3_t">手记</h3>
-          <p data-i18n="g3_p">灵感不必宏大。一句观察、一次调试、一场雨后的散步，都可以成为笔记。</p>
-        </article>
+        <a class="link" href="archive/index.html">The written portfolio — The Archive ↗</a>
       </div>
     </section>
-
-    <!-- 04 · Physics garden — faithful matter-js #constraints replica -->
-    <section class="sec sec--bleed" id="physics" data-chapter="04" data-chapter-name="PHYSICS">
-      <header class="sec__head">
-        <span class="sec__idx">04</span>
-        <div>
-          <p class="sec__en">Matter.js · Constraints</p>
-          <h2 class="section__cn" data-split data-i18n="physics_title">物理花园</h2>
-        </div>
-      </header>
-      <p class="phys__lead reveal-item" data-i18n="physics_lead">巨型标题是坚硬的地面。花瓣服从重力——拖拽、抛掷、滚动施力。这是温室里唯一允许失控的地方。</p>
-      <div class="phys__stage" id="physicsStage" data-cursor="drag">
-        <div class="phys__hud" aria-hidden="true">
-          <span id="physBodies">BODIES 00</span>
-          <span id="physCons">LINKS 00</span>
-          <span id="physFps">-- FPS</span>
-          <span id="physGame" hidden>SCORE 0</span>
-        </div>
-        <div class="phys__label" id="physLabel" aria-hidden="true">ALL SCENES</div>
-      </div>
-      <div class="phys__bar" role="group" aria-label="constraint scenes">
-        <div class="phys__scenes" id="physScenes">
-          <button class="chip is-on" data-scene="0" type="button">全部</button>
-          <button class="chip" data-scene="1" type="button">刚·全局锚</button>
-          <button class="chip" data-scene="2" type="button">软·全局锚</button>
-          <button class="chip" data-scene="3" type="button">阻尼软绳</button>
-          <button class="chip" data-scene="4" type="button">转动销钉</button>
-          <button class="chip" data-scene="5" type="button">转动多体</button>
-          <button class="chip" data-scene="6" type="button">刚·多体杆</button>
-          <button class="chip" data-scene="7" type="button">软·多体绳</button>
-          <button class="chip" data-scene="8" type="button">阻尼·多体</button>
-        </div>
-        <div class="phys__tools" id="physTools">
-          <button class="chip chip--tool" data-tool="play" type="button">暂停[‖]</button>
-          <button class="chip chip--tool" data-tool="restart" type="button">重启</button>
-          <button class="chip chip--tool" data-tool="wire" type="button">样式[彩]</button>
-          <button class="chip chip--tool" data-tool="sleeping" type="button">睡眠[ON]</button>
-          <button class="chip chip--tool" data-tool="collisions" type="button">碰撞[OFF]</button>
-          <button class="chip chip--tool" data-tool="angle" type="button">角度[ON]</button>
-          <button class="chip chip--tool" data-tool="wheel" type="button">缩放[OFF]</button>
-          <button class="chip chip--tool" data-tool="palette" type="button">配色[官方]</button>
-          <button class="chip chip--tool" data-tool="gravity" type="button">重力[↓]</button>
-          <button class="chip chip--tool" data-tool="petals" type="button">花瓣[ON]</button>
-          <button class="chip chip--tool" data-tool="game" type="button">游戏[OFF]</button>
-          <button class="chip chip--tool" data-tool="kick" type="button">扰动</button>
-          <button class="chip chip--tool" data-tool="reset" type="button">重置</button>
-        </div>
-      </div>
-      <details class="phys__src">
-        <summary>官方源码 · matter-js demo / example.constraints.js</summary>
-<pre>// https://brm.io/matter-js/demo/#constraints — 本页即按此逐参数运行
-var Engine = Matter.Engine,
-    Render = Matter.Render,
-    Runner = Matter.Runner,
-    Composite = Matter.Composite,
-    Constraint = Matter.Constraint,
-    MouseConstraint = Matter.MouseConstraint,
-    Mouse = Matter.Mouse,
-    Bodies = Matter.Bodies;
-
-var engine = Engine.create(),
-    world = engine.world;
-
-var render = Render.create({
-    element: document.body,
-    engine: engine,
-    options: { width: 800, height: 600, showAngleIndicator: true }
-});
-Render.run(render);
-var runner = Runner.create();
-Runner.run(runner, engine);
-
-// —— ① stiff global anchor
-var body = Bodies.polygon(150, 200, 5, 30),
-    constraint = Constraint.create({ pointA: { x: 150, y: 100 }, bodyB: body, pointB: { x: -10, y: -10 } });
-Composite.add(world, [body, constraint]);
-// —— ② soft global anchor
-body = Bodies.polygon(280, 100, 3, 30);
-constraint = Constraint.create({ pointA: { x: 280, y: 120 }, bodyB: body, pointB: { x: -10, y: -7 }, stiffness: 0.001 });
-Composite.add(world, [body, constraint]);
-// —— ③ damped soft global anchor
-body = Bodies.polygon(400, 100, 4, 30);
-constraint = Constraint.create({ pointA: { x: 400, y: 120 }, bodyB: body, pointB: { x: -10, y: -10 }, stiffness: 0.001, damping: 0.05 });
-Composite.add(world, [body, constraint]);
-// —— ④ revolute single
-body = Bodies.rectangle(600, 200, 200, 20);
-var ball = Bodies.circle(550, 150, 20);
-constraint = Constraint.create({ pointA: { x: 600, y: 200 }, bodyB: body, length: 0 });
-Composite.add(world, [body, ball, constraint]);
-// —— ⑤ revolute multi
-body = Bodies.rectangle(500, 400, 100, 20, { collisionFilter: { group: -1 } });
-ball = Bodies.circle(600, 400, 20, { collisionFilter: { group: -1 } });
-constraint = Constraint.create({ bodyA: body, bodyB: ball });
-Composite.add(world, [body, ball, constraint]);
-// —— ⑥ stiff multi
-var a = Bodies.polygon(100, 400, 6, 20),
-    b = Bodies.polygon(200, 400, 1, 50);
-constraint = Constraint.create({ bodyA: a, pointA: { x: -10, y: -10 }, bodyB: b, pointB: { x: -10, y: -10 } });
-Composite.add(world, [a, b, constraint]);
-// —— ⑦ soft multi
-a = Bodies.polygon(300, 400, 4, 20);
-b = Bodies.polygon(400, 400, 3, 30);
-constraint = Constraint.create({ bodyA: a, pointA: { x: -10, y: -10 }, bodyB: b, pointB: { x: -10, y: -7 }, stiffness: 0.001 });
-Composite.add(world, [a, b, constraint]);
-// —— ⑧ damped soft multi
-a = Bodies.polygon(500, 400, 6, 30);
-b = Bodies.polygon(600, 400, 7, 60);
-constraint = Constraint.create({ bodyA: a, pointA: { x: -10, y: -10 }, bodyB: b, pointB: { x: -10, y: -10 }, stiffness: 0.001, damping: 0.1 });
-Composite.add(world, [a, b, constraint]);
-
-// 四面静态墙
-Composite.add(world, [
-    Bodies.rectangle(400, 0, 800, 50, { isStatic: true }),
-    Bodies.rectangle(400, 600, 800, 50, { isStatic: true }),
-    Bodies.rectangle(800, 300, 50, 600, { isStatic: true }),
-    Bodies.rectangle(0, 300, 50, 600, { isStatic: true })
-]);
-
-var mouse = Mouse.create(render.canvas),
-    mouseConstraint = MouseConstraint.create(engine, {
-        mouse: mouse,
-        constraint: { angularStiffness: 0, render: { visible: false } }
-    });
-Composite.add(world, mouseConstraint);
-render.mouse = mouse;
-Render.lookAt(render, { min: { x: 0, y: 0 }, max: { x: 800, y: 600 } });</pre>
-      </details>
-      <p class="phys__hint" data-i18n="physics_hint">拖拽 · 滚动 · 点击</p>
-    </section>
-
-    <!-- 05 · Selected works — grown in this garden -->
-    <!-- 04.5 · Storm — 暴风雨事件章（全幅闪电 + 后续批次接真雷声） -->
-    <section class="storm" id="storm" data-chapter="04.5" data-chapter-name="STORM" aria-label="暴风雨过境">
-      <canvas class="lg-box" data-lightning data-hue="268" data-speed="0.6" data-intensity="1.35" data-size="0.9"></canvas>
-      <div class="storm__caption">
-        <p class="storm__t" data-split>暴风雨过境</p>
-        <p class="storm__s">光在裂缝里放电。整座温室，屏住呼吸。</p>
-      </div>
-    </section>
-
-    <section class="sec" id="works" data-chapter="05" data-chapter-name="WORKS">
-      <header class="sec__head">
-        <span class="sec__idx">05</span>
-        <div>
-          <p class="sec__en">Selected Works · Grown in this garden</p>
-          <h2 class="section__cn" data-split data-i18n="works_title">花园作品</h2>
-        </div>
-      </header>
-      <div class="works">
-        <article class="work reveal-item" data-glare>
-          <div class="work__media">
-            <img class="work__img" src="assets/img/v94-work-notes.webp" alt="AI Agent Handbook — knowledge atlas grown in a dark greenhouse" loading="lazy" decoding="async">
-            <svg class="work__art" viewBox="0 0 360 225" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path class="art-line" pathLength="1" d="M104 36h116v152H104z"/>
-              <path class="art-line" pathLength="1" d="M126 72h72M126 98h72M126 124h44"/>
-              <path class="art-line" pathLength="1" d="M238 158c-30-4-46-24-46-52 28 2 48 22 50 50-2 2-2 2-4 2z"/>
-              <path class="art-line" pathLength="1" d="M244 158c26 6 44-6 52-28"/>
-              <path class="art-line" pathLength="1" d="M74 96c-16 16-14 40 4 54"/>
-              <circle class="art-dot" cx="286" cy="66" r="4"/>
-              <circle class="art-dot" cx="70" cy="60" r="3"/>
-            </svg>
+    <section class="chap left" id="ch-letter" aria-labelledby="ch-letter-t">
+      <div class="card">
+        <div class="kicker">Chapter IV · Leave a letter</div>
+        <h2 id="ch-letter-t">Write to the gardener</h2>
+        <p>One line is enough. Your letter is folded into the soil and waits for you on your next visit — a flower that keeps growing while you are away.</p>
+        <form class="form" id="letter-form" novalidate>
+          <div class="row">
+            <label for="f-name">Your name</label>
+            <input id="f-name" name="name" type="text" maxlength="24" placeholder="Vera" autocomplete="name">
           </div>
-          <div class="work__body">
-            <span class="work__idx">W.01</span>
-            <h3 class="work__t" data-i18n="w1_t">AI Agent 手册 · Handbook</h3>
-            <p class="work__p" data-i18n="w1_p">从原理到生产的一本花园地图册：LLM 与注意力、Agent 循环、工具协议、记忆与 RAG、规划、多智能体、评估与安全。</p>
-            <ul class="work__tags"><li>LLM</li><li>Agent</li><li>Docs</li></ul>
-            <a class="work__link" href="https://github.com/funny8kids/ai-agent-handbook" target="_blank" rel="noopener" data-magnetic data-i18n="w_link">了解此项目 ↗</a>
+          <div class="row">
+            <label for="f-line">A line to plant</label>
+            <input id="f-line" name="line" type="text" maxlength="72" placeholder="Something you would like to remember.">
           </div>
-        </article>
-        <article class="work work--flip reveal-item" data-glare>
-          <div class="work__media">
-            <img class="work__img" src="assets/img/v94-work-physics.webp" alt="Auto DevOps — pipeline anchors and chains sculpture" loading="lazy" decoding="async">
-            <svg class="work__art" viewBox="0 0 360 225" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path class="art-line" pathLength="1" d="M44 198h272"/>
-              <circle class="art-dot" cx="118" cy="48" r="5"/>
-              <path class="art-line" pathLength="1" d="M118 54l-22 70"/>
-              <path class="art-line" pathLength="1" d="M74 124h44v44H74z"/>
-              <path class="art-line" pathLength="1" d="M212 48c0 30 30 30 30 60s-30 30-30 60"/>
-              <circle class="art-dot" cx="212" cy="172" r="15"/>
-              <path class="art-line" pathLength="1" d="M284 92l32 56h-64z"/>
-            </svg>
-          </div>
-          <div class="work__body">
-            <span class="work__idx">W.02</span>
-            <h3 class="work__t" data-i18n="w2_t">Auto DevOps · 智能运维</h3>
-            <p class="work__p" data-i18n="w2_p">AI 驱动的智能运维管理平台：像温室的自动灌溉一样，让部署、监控与自愈在 TypeScript 管道里安静运转。</p>
-            <ul class="work__tags"><li>TypeScript</li><li>DevOps</li><li>AI</li></ul>
-            <a class="work__link" href="https://github.com/funny8kids/Auto-DevOps" target="_blank" rel="noopener" data-magnetic data-i18n="w_link">了解此项目 ↗</a>
-          </div>
-        </article>
-        <article class="work reveal-item" data-glare>
-          <div class="work__media">
-            <img class="work__img" src="assets/img/v94-work-lumen.webp" alt="Mars Rover 3D — rover orbiting luminous terrain" loading="lazy" decoding="async">
-            <svg class="work__art" viewBox="0 0 360 225" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <ellipse class="art-line" pathLength="1" cx="180" cy="112" rx="98" ry="40"/>
-              <ellipse class="art-line" pathLength="1" cx="180" cy="112" rx="46" ry="70" transform="rotate(28 180 112)"/>
-              <circle class="art-dot" cx="180" cy="112" r="6"/>
-              <circle class="art-dot" cx="272" cy="98" r="4"/>
-              <circle class="art-dot" cx="104" cy="140" r="3"/>
-              <path class="art-line" pathLength="1" d="M296 44l7 18 18 7-18 7-7 18-7-18-18-7 18-7z"/>
-              <path class="art-line" pathLength="1" d="M60 60c14-10 30-10 42 2"/>
-            </svg>
-          </div>
-          <div class="work__body">
-            <span class="work__idx">W.03</span>
-            <h3 class="work__t" data-i18n="w3_t">Mars Rover 3D · 火星车</h3>
-            <p class="work__p" data-i18n="w3_p">浏览器里的红色星球：Three.js 渲染的火星车与地表漫游，把「探索」种进这座紫色温室的另一端。</p>
-            <ul class="work__tags"><li>Three.js</li><li>3D</li><li>WebGL</li></ul>
-            <a class="work__link" href="https://github.com/funny8kids/mars-rover-3d" target="_blank" rel="noopener" data-magnetic data-i18n="w_link">了解此项目 ↗</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- 05.5 · Interlude — cinematic full-bleed parallax -->
-    <section class="interlude reveal-item" id="interlude" aria-label="Interlude">
-      <div class="interlude__frame">
-        <div class="scene-bg scene-bg--veil" aria-hidden="true"><div class="au-veil" data-aurora data-color-stops="#8B5CF6,#E879F9,#C4B5FD" data-amplitude="1.15" data-blend="0.55" data-speed="1">
-            <canvas></canvas>
-          </div></div>
-        <img class="interlude__img" src="assets/img/v94-interlude.webp" alt="Night glass greenhouse filled with drifting violet petals and a shaft of light" decoding="async">
-        <div class="interlude__grade" aria-hidden="true"></div>
-        <div class="interlude__caption">
-          <h2 class="interlude__t" data-split data-i18n="interlude_t">Grown in the dark</h2>
-          <p class="interlude__sub" data-i18n="interlude_sub">黑暗，是这座温室最深的底色</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 06 · Lumen Bloom — 3D 签名物体（借鉴 ciaoenergy 主展品思路） -->
-    <section class="sec sec--bloom3d" id="bloom3dSec" data-chapter="06" data-chapter-name="LUMEN BLOOM">
-      <header class="sec__head">
-        <span class="sec__idx">06</span>
-        <div>
-          <p class="sec__en">Lumen Bloom · interactive 3D specimen</p>
-          <h2 class="section__cn" data-split>光之标本</h2>
-        </div>
-      </header>
-      <div class="b3d__stage">
-        <div class="b3d__glow" aria-hidden="true"><div class="pm-box" data-plasma data-color="#E879F9" data-speed="1" data-scale="1" data-opacity="1.35" data-iterations="32" data-target-fps="30" data-render-scale="0.6">
-            <canvas></canvas>
-          </div></div>
-        <canvas id="bloom3d" aria-label="可交互的 3D 玻璃紫罗兰标本"></canvas>
-        <p class="b3d__hint" aria-hidden="true">拖拽甩动 · 松手惯性 · 光标视差</p>
-      </div>
-    </section>
-
-    <!-- 07 · Gallery — React Bits animations, ported -->
-    <section class="sec sec--bleed" id="gallery" data-chapter="07" data-chapter-name="GALLERY">
-      <header class="sec__head">
-        <span class="sec__idx">07</span>
-        <div>
-          <p class="sec__en">React Bits · Animations, studied &amp; ported</p>
-          <h2 class="section__cn" data-split>动效陈列廊</h2>
-        </div>
-      </header>
-
-      <div class="gal__grid">
-        <article class="gal__cell gal__cell--wide reveal-item" id="specimenCell" data-glare>
-          <p class="gal__tag">&lt;Specimen Cabinet · glTF /&gt;</p>
-          <div class="spec__stage"><canvas id="specimenCanvas" data-specimen aria-label="真实 3D 植物标本：勋章菊与盆栽"></canvas></div>
-          <p class="gal__note">Poly Haven CC0 真实扫描植物：勋章菊 × 盆栽，draco 压缩 glTF + 摄影棚 IBL，入视口才加载。</p>
-        </article>
-
-        <article class="gal__cell gal__cell--wide reveal-item" data-spotlight>
-          <p class="gal__tag">&lt;Spotlight /&gt;</p>
-          <div class="gal__demo" data-truefocus data-speed="2.2">every greenhouse is built from small impossible lights</div>
-          <p class="gal__note">光标扫过之处，聚光灯点亮句子——逐词对焦、景深虚化。</p>
-        </article>
-
-        <article class="gal__cell reveal-item" data-glare data-tilt>
-          <p class="gal__tag">&lt;GlareHover /&gt;</p>
-          <h3 class="gal__t">倾斜 · 反光</h3>
-          <p class="gal__note">悬停这张卡：3D 倾随指针，斜向高光扫过表面。</p>
-        </article>
-
-        
-
-        <article class="gal__cell gal__cell--tall reveal-item" id="pixelCell">
-          <p class="gal__tag">&lt;PixelTransition /&gt;</p>
-          <img class="gal__pixel" src="assets/img/v94-gallery-macro.webp" alt="Violet petal macro with dew drops" data-pixel loading="lazy" decoding="async">
-          <p class="gal__note">像素马赛克在视口内逐格溶解成照片。</p>
-        </article>
-
-        <article class="gal__cell reveal-item" data-glare data-tilt>
-          <p class="gal__tag">&lt;Magnet /&gt;</p>
-          <button class="gal__magnet" type="button" data-magnetic>被吸引的按钮</button>
-          <p class="gal__note">磁吸：指针靠近时元素被牵引，松手弹回。</p>
-        </article>
-
-        <article class="gal__cell gal__cell--wide reveal-item" data-glare data-tilt>
-          <p class="gal__tag">&lt;SplashCursor / 风场光标&gt;</p>
-          <h3 class="gal__t">光标的涟漪</h3>
-          <p class="gal__note">首屏 WebGL 花瓣场即同款思路：光标=风，点击=冲击波，全站常驻。</p>
-        </article>
-
-        <article class="gal__cell reveal-item" id="countCell">
-          <p class="gal__tag">&lt;AnimatedCounter /&gt;</p>
-          <div class="gal__count" data-countup="99.8" data-suffix=" fps">0</div>
-          <p class="gal__note">入视口起跳的数字滚动，缓出收敛。</p>
-        </article>
-
-        
-
-        
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;DecryptedText /&gt;</p>
-          <h3 class="gal__t gal__decrypt" data-decrypt="view" data-sequential="true">LUMEN VIOLA</h3>
-          <p class="gal__note">入视口逐字解密——官方同字符集、同 50ms 步进。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;BlurText /&gt;</p>
-          <p class="bt-line" data-blurtext data-delay="90">iridescence, physics and whitespace bloom together</p>
-          <p class="gal__note">逐词从模糊中落位：blur 10→5→0 两段关键帧。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;ShinyText /&gt;</p>
-          <p><span class="shiny-text gal__shiny">GROWN IN THE DARK · SHINE WITHIN</span></p>
-          <p class="gal__note">渐变流光文字——纯 CSS background-position，零 JS 开销。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;RotatingText /&gt;</p>
-          <h3 class="gal__t">一座 <span data-rotate="温室|标本|信号|花期" data-rotate-interval="2000">温室</span></h3>
-          <p class="gal__note">字符级轮播进出场，离屏与后台自动暂停。</p>
-        </article>
-
-        
-
-        
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;TextType /&gt;</p>
-          <p class="tt-demo" data-typewriter="在暗处生长|向光而开|把安静留给屏幕" data-typing-speed="55" data-deleting-speed="30" data-pause-duration="1800"></p>
-          <p class="gal__note">打字机循环：输入·停顿·删除·换句，光标呼吸闪烁。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;CircularText /&gt;</p>
-          <div class="ct-demo" data-circular="LUMEN VIOLA · GROWN IN THE DARK · " data-spin="18"></div>
-          <p class="gal__note">环形旋转字：悬停 4 倍速，离屏与后台自动暂停。</p>
-        </article>
-
-
-        
-
-        
-<article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;Lottie · Violet Bloom /&gt;</p>
-          <div class="gal__lottie" data-lottie="assets/lottie/violet-bloom.json"></div>
-          <p class="gal__note">text-to-lottie 技能产出：90 帧无缝呼吸绽放，官方 Skottie 播放器逐帧验证，离屏自动暂停。</p>
-        </article>
-
-        
-
-        
-
-
-        
-<article class="gal__cell gal__cell--wide reveal-item">
-          <p class="gal__tag">&lt;Beams / 光柱&gt;</p>
-          <div class="beams-box"><img class="gal__still" src="assets/img/stills/beams.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方 r3f 版以 vanilla three.js 等价移植：Physical ShaderLib 注入 cnoise 顶点位移，12 束光柱明暗流动。</p>
-        </article>
-
-        
-
-
-        
-
-        
-<article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;FoldText / 折纸展开&gt;</p>
-          <div class="fl-block" data-fold="花开有时" data-fold-split="char" data-hinge="bottom" data-crease="0.5" data-size="44"></div>
-          <p class="gal__note">官方 3D 铰链折字：每字沿底边绕 X 轴翻折入场，折痕阴影随角度衰减。</p>
-        </article>
-
-        
-
-
-        
-<article class="gal__cell gal__cell--wide reveal-item">
-          <p class="gal__tag">&lt;MaskedHeading / 影像题字&gt;</p>
-          <div class="mh-cell" data-maskhead="LUMEN VIOLA 花开有时" data-src="assets/img/v94-gallery-macro.webp" data-fill="1.3" data-parallax="26" data-drift="18" data-bright="1.85" data-sat="1.2"></div>
-          <p class="gal__note">官方字形剪切影像标题：字内流动真实照片，指针视差 + 缓慢漂移，入屏逐词升起。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;ParticleText / 粒子聚字&gt;</p>
-          <div class="pt-cell" data-particle="紫罗兰" data-color="#f5f2ff" data-color-light="#2a1f45" data-highlight="#8b5cf6" data-psize="2.2" data-size="clamp(2.6rem,8vw,5rem)"></div>
-          <p class="gal__note">官方画布采样聚字：数千粒子从四散到聚拢成字，光标斥力拨开星尘。</p>
-        </article>
-
-        
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;StrokeText / 描边书写&gt;</p>
-          <div class="st-cell" data-stroketext="VIOLA" data-fsize="96" data-tracking="6" data-trigger="hover"></div>
-          <p class="gal__note">官方 SVG 笔画描摹：悬停即逐字书写轮廓，随后色彩擦除式填充。</p>
-        </article>
-
-        
-
-        
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;Grainient / 颗粒渐变场&gt;</p>
-          <div class="gr-box"><img class="gal__still" src="assets/img/stills/grainient.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方 GLSL3 颗粒渐变场逐行原样：Perlin 旋转 + 正弦翘曲 + 电影颗粒，亮色主题自动切换墨水混色。</p>
-        </article>
-
-        <article class="gal__cell gal__cell--wide reveal-item">
-          <p class="gal__tag">&lt;Iridescence / 虹彩干涉&gt;</p>
-          <div class="ic-box"><img class="gal__still" src="assets/img/stills/iridescence.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方八重余弦干涉场 GLSL 原样：指针推动光程差，紫罗兰虹彩随视线流动。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;LiquidChrome / 液态铬面&gt;</p>
-          <div class="lc-box"><img class="gal__still" src="assets/img/stills/liquidchrome.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方九采样抗锯齿液态场 GLSL 原样：正弦折射的紫色金属液面，指针激起涟漪。</p>
-        </article>
-
-
-        
-<article class="gal__cell gal__cell--wide reveal-item">
-          <p class="gal__tag">&lt;Waves / 游动波纹&gt;</p>
-          <div class="wv-box"><img class="gal__still" src="assets/img/stills/waves.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方 Perlin 线阵 + 弹簧-摩擦光标扰动逐行原样：一千多个质点在波面下缓慢洄游。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;Orb / 呼吸光球&gt;</p>
-          <div class="ob-box"><img class="gal__still" src="assets/img/stills/orb.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方 simplex 噪声光球原样：色带沿边缘轮转，悬停时球面泛起涟漪并缓缓自转。</p>
-        </article>
-
-        
-
-        
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;GhostFibers / 幽灵纤维&gt;</p>
-          <div class="gf-box"><img class="gal__still" src="assets/img/stills/ghostfibers.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方多层极坐标扭曲纤维原样：夜光菌丝般的辉光在暗场中缓慢蔓延，两主题均保持深空底色。</p>
-        </article>
-
-        
-
-        <article class="gal__cell gal__cell--wide reveal-item">
-          <p class="gal__tag">&lt;Topography / 等高线地貌&gt;</p>
-          <div class="tp-box"><img class="gal__still" src="assets/img/stills/topography.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方四组贝塞尔相位场原样：等高线如地形般缓慢形变，鼠标是一枚抬起地面的热力。</p>
-        </article>
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;Threads / 丝流&gt;</p>
-          <div class="th-box"><img class="gal__still" src="assets/img/stills/threads.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方 40 行柏林丝流原样：40 条曲线沿噪声场摆动，光标如指腹划过丝束激起涟漪。</p>
-        </article>
-
-        
-
-        
-
-        
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;Lightfall / 落星光&gt;</p>
-          <div class="lf-box"><img class="gal__still" src="assets/img/stills/lightfall.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方 Shadertoy 移植原样：39 步球面行进的虫洞视角，星迹沿螺旋角环坠落、随光标泛出晕团。</p>
-        </article>
-
-        <article class="gal__cell reveal-item">
-          <p class="gal__tag">&lt;WebThreads / 光丝&gt;</p>
-          <div class="wt-box"><img class="gal__still" src="assets/img/stills/webthreads.webp" alt="" loading="lazy" decoding="async"></div>
-          <p class="gal__note">官方 GLSL300es 原样：6 条相位错开的丝在 SDF 辉光里交缠，pinch 点被光标牵引左右偏摆。</p>
-        </article>
-
-        
-
-        
-
-        
-
-        
-          
-
-        
-</div>
-    </section>
-
-    <!-- 08 · Bloom — pinned verse -->
-    <section class="bloom" id="bloom" data-chapter="08" data-chapter-name="BLOOM">
-      <div class="scene-bg" aria-hidden="true"><div class="gx-sky" data-galaxy data-hue-shift="190" data-saturation="0.5" data-glow="0.35" data-twinkle="0.4" data-rotation-speed="0.06" data-repulsion-strength="2.5">
-            <canvas></canvas>
-          </div></div>
-      <div class="bloom__pin">
-        <div class="bloom__inner">
-          <p class="bloom__line" data-bloom-line="1" data-i18n="exp_l1">在最安静的时刻</p>
-          <p class="bloom__line bloom__line--serif" data-bloom-line="2" data-i18n="exp_l2">轻轻盛开</p>
-          <p class="bloom__p" data-bloom-line="3" data-i18n="exp_p">LUMEN VIOLA 不追逐喧闹。它邀请你放慢一拍——看清虹彩、物理与留白如何共同完成一场小型演出。</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 09 · Field notes -->
-    <section class="sec" id="notes" data-chapter="09" data-chapter-name="NOTES">
-      <div class="scene-bg scene-bg--notes" aria-hidden="true"><div class="dth-box" data-dither data-wave-color="#B497CF" data-bg-color="#0D0620" data-color-num="4" data-pixel-size="2"></div></div>
-      <header class="sec__head">
-        <span class="sec__idx">09</span>
-        <div>
-          <p class="sec__en">Field Notes</p>
-          <h2 class="section__cn" data-split data-i18n="notes_title">园中手记</h2>
-        </div>
-      </header>
-      <div class="notes__grid">
-        <blockquote class="notes__quote reveal-item">
-          <p data-i18n="notes_quote">把界面做成一座会呼吸的温室：<br>留白是空地，动效是微风，物理是真实的重量。</p>
-          <cite data-i18n="notes_quote_by">— LUMEN VIOLA · 设计备忘</cite>
-        </blockquote>
-        <article class="note reveal-item" data-glare>
-          <header><span>N.01</span><time>2026</time></header>
-          <h3 data-i18n="n1_t">一束冷色信号</h3>
-          <p data-i18n="n1_p">全站几乎单色紫。唯一的青只出现在光标与 HUD——破局点克制到一次就够。</p>
-        </article>
-        <article class="note reveal-item" data-glare>
-          <header><span>N.02</span><time>2026</time></header>
-          <h3 data-i18n="n2_t">有目的的动效</h3>
-          <p data-i18n="n2_p">每一次出现都回答一个问题：用户该看向哪里？少了干扰，多了叙事。</p>
-        </article>
-        <article class="note reveal-item" data-glare>
-          <header><span>N.03</span><time>2026</time></header>
-          <h3 data-i18n="n3_t">一个签名时刻</h3>
-          <p data-i18n="n3_p">整页只留一处「失控」——物理花园。花瓣砸在标题上，比任何形容词都诚实。</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- 10 · Visit -->
-    <section class="sec sec--visit" id="visit" data-chapter="10" data-chapter-name="VISIT">
-      <div class="scene-bg" aria-hidden="true"><div class="dot-grid" data-dotgrid data-dot-size="14" data-gap="26" data-proximity="130" data-base-color="#3B2A63" data-active-color="#C4B5FD">
-            <canvas></canvas>
-          </div></div>
-      <div class="visit__box reveal-item" data-spotlight>
-        <p class="sec__en">Visit</p>
-        <h2 class="visit__title section__cn" data-split data-i18n="visit_title">欢迎来访</h2>
-        <p class="visit__lead" data-i18n="visit_lead">温室永远半掩着门。若你想聊聊设计、代码，或只是分享一句园中所见——</p>
-        <a class="star-border" href="mailto:dominicjamil404@gmail.com" data-magnetic data-cursor="mail">
-          <i class="star-border__b" aria-hidden="true"></i><i class="star-border__t" aria-hidden="true"></i>
-          <span class="star-border__in visit__mail">dominicjamil404@gmail.com</span>
-        </a>
-        <div class="visit__links">
-          <a href="https://github.com/funny8kids" target="_blank" rel="noopener" data-magnetic>GitHub ↗</a>
-          <a href="#top" data-magnetic data-i18n="visit_top">回到入口</a>
-        </div>
+          <button class="link solid" id="plant" type="submit">Plant it</button>
+          <p class="sent" id="sent" role="status"></p>
+          <p class="tip" id="kept"></p>
+        </form>
+        <p><a class="link" href="mailto:funny8kids@proton.me" style="margin-right:1.5rem">Email the gardener ↗</a><a class="link" href="https://github.com/funny8kids" target="_blank" rel="noopener">GitHub ↗</a></p>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <span>LUMEN&nbsp;VIOLA <em>Garden</em></span>
-    <span>© <span id="year">2026</span> · <span data-i18n="footer_tag">以生物荧光紫罗兰之光打造</span></span>
-    <details class="credits">
-      <summary data-i18n="footer_credits">CREDITS · 外部资源与许可</summary>
-      <ul>
-        <li><a href="https://polyhaven.com/a/studio_small_08" rel="noopener" target="_blank">Studio Small 08</a> — HDRI 环境光 · Poly Haven · <b>CC0</b></li>
-        <li><a href="https://polyhaven.com/a/flower_gazania" rel="noopener" target="_blank">Flower Gazania</a> / <a href="https://polyhaven.com/a/potted_plant_02" rel="noopener" target="_blank">Potted Plant 02</a> — 3D 标本 · Poly Haven · <b>CC0</b></li>
-        <li><a href="https://freesound.org/s/669113/" rel="noopener" target="_blank">Wind</a> · <a href="https://freesound.org/s/554581/" rel="noopener" target="_blank">Rain</a> · <a href="https://freesound.org/s/338091/" rel="noopener" target="_blank">Thunder</a> · <a href="https://freesound.org/s/243011/" rel="noopener" target="_blank">Bees</a> · <a href="https://freesound.org/s/256251/" rel="noopener" target="_blank">Wine Glass</a> — 环境音 · Freesound · <b>CC0</b></li>
-        <li><a href="https://github.com/lxgw/LxgwWenKai" rel="noopener" target="_blank">霞鹜文楷 LXGW WenKai</a>（子集化 woff2）· <b>SIL OFL 1.1</b></li>
-        <li><a href="https://github.com/adobe-fonts/source-han-serif" rel="noopener" target="_blank">思源宋体 Source Han Serif / Noto Serif SC</a>（子集化 woff2）· <b>SIL OFL 1.1</b></li>
-        <li><a href="https://fontshare.com" rel="noopener" target="_blank">Clash Display</a> · <b>Fontshare License（免费商用）</b>；<a href="https://fonts.google.com/specimen/Instrument+Serif" rel="noopener" target="_blank">Instrument Serif</a>、ZCOOL XiaoWei、STIX Two — <b>SIL OFL</b></li>
-        <li><a href="https://threejs.org" rel="noopener" target="_blank">three.js</a> <b>MIT</b> · <a href="https://gsap.com" rel="noopener" target="_blank">GSAP + SplitText/ScrambleText/ScrollTrigger</a> <b>标准许可</b>（GSAP 3.13+ 免费）· <a href="https://matterjs.com" rel="noopener" target="_blank">matter.js</a> <b>MIT</b> · <a href="https://github.com/darkroomengineering/aniso" rel="noopener" target="_blank">Lenis</a> <b>MIT</b> · <a href="https://airbnb.io/lottie/" rel="noopener" target="_blank">lottie-web</a> <b>MIT</b></li>
-        <li><a href="https://reactbits.dev" rel="noopener" target="_blank">React Bits</a> 系列组件的原生移植 · <b>MIT</b> · The GSAP animation engine is a special gift. Please share it.</li>
-      </ul>
-    </details>
-  </footer>
-
-  <script defer src="assets/vendor/gsap.min.js"></script>
-  <script defer src="assets/vendor/SplitText.min.js"></script>
-  <script defer src="assets/vendor/ScrollTrigger.min.js"></script>
-  <script defer src="assets/vendor/lenis.min.js"></script>
-  <script>
-  /* 批次C · WebGL 全链幕后加载:vn:ready(幕布揭开)后才拉 three/reactbits/petals/logoloop;
-     matter/lottie/gallery/bloom3d 进章节前 500px 才拉。降级兜底:5.5s 强制启动、IO 缺失全量加载 */
-  (function () {
-    'use strict';
-    var glReady = false, glQueue = [];
-    function loadSeq(urls, done) {
-      if (!urls.length) { done && done(); return; }
-      var s = document.createElement('script');
-      s.src = urls[0];
-      var next = function () { loadSeq(urls.slice(1), done); };
-      s.onload = next; s.onerror = next;
-      document.head.appendChild(s);
-    }
-    function bootGL() {
-      if (glReady) return;
-      glReady = true;
-      loadSeq(['assets/vendor/three.slim.js?v=123', 'assets/js/reactbits.js?v=124', 'assets/js/petals3d.js?v=123', 'assets/js/logoloop.js?v=114'], function () {
-        glQueue.forEach(function (f) { f(); }); glQueue = [];
-      });
-    }
-    addEventListener('vn:ready', function () { setTimeout(bootGL, 120); }, { once: true });
-    setTimeout(bootGL, 5500);
-    function whenGL(fn) { if (window.__vnRB) { fn(); return; } glQueue.push(fn); }
-    var jobs = [
-      { sel: '#physics', libs: ['assets/vendor/matter.min.js', 'assets/js/physics-garden.js?v=120'] },
-      { sel: '#gallery', libs: ['assets/vendor/lottie_light.min.js', 'assets/js/reactbits.gallery.js?v=124'] },
-      { sel: '#bloom3dSec', libs: ['assets/js/bloom3d.js?v=124'] },
-    ];
-    function runJob(j) { whenGL(function () { loadSeq(j.libs); }); }
-    /* 链接着色器会强制 ANGLE 同步编译，三个 3D 章节合计约 2.5s 主线程占用。
-       这段成本无法消除、只能挑时机：提前 1800px 触发，但真正装载等到滚动停稳的间隙，
-       用户连续划过时就不会被它冻住；3s 兜底保证远早于揭示时刻。 */
-    var vnScrollAt = -1e9;
-    addEventListener('scroll', function () { vnScrollAt = performance.now(); }, { passive: true });
-    function runJobIdle(j) {
-      if (j.__fired) return;
-      j.__fired = 1;
-      var t0 = performance.now();
-      (function wait() {
-        var now = performance.now();
-        if (now - vnScrollAt > 400 || now - t0 > 3000) { runJob(j); return; }
-        setTimeout(wait, 120);
-      })();
-    }
-    if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (en) {
-        en.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          io.unobserve(e.target);
-          runJobIdle(e.target.__vnJob);
-        });
-      }, { rootMargin: '1800px 0px' });
-      jobs.forEach(function (j) {
-        var el = document.querySelector(j.sel);
-        if (!el) { runJobIdle(j); return; }
-        el.__vnJob = j;
-        io.observe(el);
-      });
-    } else { jobs.forEach(runJobIdle); }
-  })();
-  </script>
-  <script defer src="assets/js/cinema.js?v=114"></script>
-  <script defer src="assets/js/main.js?v=127"></script>
+  <script src="assets/vendor/three.min.js"></script>
+  <script src="assets/vendor/gsap.min.js"></script>
+  <script src="assets/vendor/gltf-loaders.js"></script>
+  <script src="assets/vendor/meshopt-decoder.js"></script>
+  <script src="assets/vendor/lenis.min.js"></script>
+  <script src="audio.js"></script>
+  <script src="slice.js"></script>
 </body>
 </html>

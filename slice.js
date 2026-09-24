@@ -80,15 +80,18 @@
   const camera = new T.PerspectiveCamera(40, 1, 0.1, 200);
   // cinematic start: high in the mist
   const START = { x: 0, y: 30, z: 40 };
-  // The door lens stands 7 units up, not 4.2. At eye height the mown page in front of the name is a
-  // 60-pixel-row sliver seen at 9.7° depression, and any headline 5 units tall standing at its near
-  // edge covers it whole — which is what rim16 measured (0 of 60 rows of the disc's own footprint fall
-  // outside the name's box at the old height). Raising the lens is the only lever that widens the
-  // band rather than sliding it: the band's height is atan(h/d_near) − atan(h/d_far), so it grows with
-  // h while the pitch, and therefore the mist above the horizon, stay where they were.
-  const END = { x: 0, y: 7.0, z: 15 };
+  // 4.2 is the gate-validated door height and it stays, for a reason measured this session. Raising the
+  // lens to 7.0 does widen the ground band the way the geometry says it should (the band's height is
+  // atan(h/d_near) − atan(h/d_far), so it grows with h while pitch only slides it): the disc's projected
+  // footprint went 26,306 -> 41,670 px and the mist above the horizon lost ~34 rows. What it did NOT do
+  // is make the page read. Coverage of that footprint held at 10.25% (rim19, measured at the new root
+  // URL), i.e. the same share as the shipped 10.32% — the extra ground is real in pixels but not in
+  // proportion, and the door's grounding deficit is a COLOURING problem (the mown page is authored to
+  // match the meadow's value on purpose), not a camera problem. Reverted; see AWWWARDS-SCORECARD
+  // ADDENDUM 19's retraction.
+  const END = { x: 0, y: 4.2, z: 15 };
   camera.position.set(START.x, START.y, START.z);
-  const look = new T.Vector3(0, 0.14, -17);
+  const look = new T.Vector3(0, 0.6, -6);
   const lookTarget = look.clone();
 
   /* ---------- the walk: one waypoint per chapter ---------- */
@@ -100,7 +103,7 @@
   // from knee height so the sedge stands against the mist; the long border is a plan, which is the
   // only angle its length reads from; the small round bed is met low and off-centre, walking-up-to.
   const WAY = [
-    { p: [0, 7.0, 15], l: [0, 0.14, -17] },
+    { p: [0, 4.2, 15], l: [0, 0.6, -6] },
     { p: [-3.6, 5.0, 8.4], l: [-9.0, 1.1, 4.2] },
     { p: [4.4, 9.4, 1.0], l: [10.4, 0.5, -6.0] },
     { p: [-3.2, 2.9, -9.2], l: [-9.2, 1.0, -14.4] },
@@ -560,7 +563,7 @@
   if (window.VNMESH) loader.setMeshoptDecoder(window.VNMESH.MeshoptDecoder);
   if (window.VNGLTF.DRACOLoader) {
     const draco = new window.VNGLTF.DRACOLoader();
-    draco.setDecoderPath('../assets/vendor/draco/'); loader.setDRACOLoader(draco);
+    draco.setDecoderPath('assets/vendor/draco/'); loader.setDRACOLoader(draco);
   }
 
   /* ---------- golden-angle field ---------- */
@@ -581,7 +584,7 @@
   // already follows (Grass_Tuft's 7280 verts became Grass_field's 440), taken one step further: the
   // blooms nearest the walk keep the authored field plant, every bloom beyond them keeps the same
   // same plant sampled 6x7 instead of 10x12 (564 tris, same five petals, same cup and nod, same
-  // vertex-colour gradient — world/pipeline/gen_violet_far.py). Nothing is taken out of the garden:
+  // vertex-colour gradient — pipeline/gen_violet_far.py). Nothing is taken out of the garden:
   // near + far is exactly COUNT, and a distant bloom is under 24 px, where the rows that were
   // dropped are sub-pixel.
   // How many, not how far: a radius made the worst frame a coin toss, because the sow's own randomness
@@ -771,7 +774,7 @@
   // twice, once nearest-the-walk first and once farthest-first, so hero.count = K with
   // coarse.count = SCOUNT - K covers every tuft exactly once at any K. Its plant is Grass_field sampled
   // at three along-blade spans instead of five (132 triangles against 220 —
-  // world/pipeline/gen_grass_far.py): eleven blades and the cross-blade bend stay, because a tuft twenty
+  // pipeline/gen_grass_far.py): eleven blades and the cross-blade bend stay, because a tuft twenty
   // metres out is forty pixels tall and a shorter blade creases. It waits for its own GLB like the hero
   // band does, and until that arrives the lean preset demotes nothing rather than planting a flower.
   const swardFar = new T.InstancedMesh(geo, swardMat, SCOUNT);
@@ -1882,7 +1885,7 @@
     }, undefined, () => { /* keep procedural fallback */ });
   });
   // The far band of the meadow is the same plant authored by the same generator at a coarser grid
-  // (world/pipeline/gen_violet_far.py), so the tier change is a sampling change and not a different
+  // (pipeline/gen_violet_far.py), so the tier change is a sampling change and not a different
   // flower. It is loaded outside SPECIES because it is a tier of one species, not a species.
   loader.load('assets/models/Violet_far.glb', (g) => {
     const gg = standGeo(g, true);
@@ -1897,7 +1900,7 @@
     sward.visible = true;
   }, undefined, () => { /* the meadow keeps its own flowers */ });
   // ... and the same tier doctrine one plant over: the sward's coarse sample, kept by
-  // world/pipeline/gen_grass_far.py at eleven blades and three along-blade spans instead of five.
+  // pipeline/gen_grass_far.py at eleven blades and three along-blade spans instead of five.
   loader.load('assets/models/Grass_field_far.glb', (g) => {
     const gg = standGeo(g, false);
     if (!gg) return;
@@ -1963,17 +1966,20 @@
 
   /* ---------- extruded type on stems: 字体挤出成茎 ---------- */
   const typeRow = new T.Group();
-  // The name is planted INSIDE the mown page, not in front of it. It used to stand at z=-9, six units
-  // clear of the clearing's near edge at z=-12.4, so the whole disc lay behind it and the headline ate
-  // it (rim14/rim15: 10.3% of the disc's own footprint survived, and the only way to "recover" the rest
-  // was to take away the letters' depth authority — a false green). At z=-17 the near line's feet sit
-  // inside the circle and the page reads around them.
+  // The name stands at z=-9, six units in front of the clearing's near edge (z=-12.4), so the mown page
+  // lies behind it and the headline eats it: 10.3% of the disc's own projected footprint survives the
+  // letters (rim14/rim15), and the only ways to "recover" the rest took away the letters' depth
+  // authority — a false green, measured at −25,455 letter pixels for +21,975 disc pixels.
   //
-  // -17 and not further: the asset is planted in depth (near line +1.3, far line -2.7 from the row
-  // origin), so at z=-19 the far line's stems stood at z=-22.8..-23.3 — inside the keeper's lamp glass
-  // (Mesh#64, z -23.36..-23.04, x -3.46), i.e. the headline wore a protagonist as a hat. rim16b sweeps
-  // that boundary: at h=7 the name clears the lamp by 1.97 units at z=-17 and by 0.85 at z=-18.
-  typeRow.position.set(0, 0, -17);
+  // Planting it INSIDE the page was tried and is recorded here as rejected, so nobody re-runs it blind:
+  // at z=-17 the near line's feet do sit inside the circle, and coverage of the (larger) footprint came
+  // back at 10.25% — the same share as the shipped stance, for a frame that reads worse. Pushing it to
+  // z=-19 did reach 20.01%, and also put the far line's stems (the asset is planted in depth: near line
+  // +1.3, far line -2.7 from the row origin) at z=-22.8..-23.3, i.e. THROUGH the keeper's lamp glass
+  // (Mesh#64, z -23.36..-23.04, x -3.46) — the headline wearing a protagonist as a hat. rim16b bounds
+  // it: at lens height 7 the name clears the lamp by 1.97 at z=-17 and by 0.85 at z=-18. So the door's
+  // grounding gap is not a camera problem; it is the mown page's authored value (see ADDENDUM 19).
+  typeRow.position.set(0, 0, -9);
   typeRow.visible = false;
   scene.add(typeRow);
   // A name planted in a lawn must make the lawn answer it: the same cool light the key carries, laid
@@ -1997,7 +2003,7 @@
     const m = new T.Mesh(new T.CircleGeometry(1, 44),
       new T.MeshBasicMaterial({ map: tex, transparent: true, blending: T.AdditiveBlending, depthWrite: false, opacity: 0, fog: false }));
     m.rotation.x = -Math.PI / 2;
-    m.position.set(0, 0.022, -17);
+    m.position.set(0, 0.022, -9);
     m.renderOrder = 1;
     scene.add(m);
     return m;
@@ -2062,10 +2068,11 @@
   const ROW_POOL = isMobile ? 0.34 : 0.5;
   if (!isMobile) {
     rowLight = new T.PointLight(0xdce6ff, 0, 34, 2);
-    // Hangs just in front of the row's mid-depth (the name spans z -12.9..-21.1 here), so both planted
-    // lines get the same flux instead of a near-line flashbulb. Its reach is 34 units, so it stops
-    // short of the keeper's lamp at z=-23.4 — the name's sun must not light the next chapter's subject.
-    rowLight.position.set(-2.8, 9.0, -16.5);
+    // Carries the row's own +2.5 z offset, so the key hangs 1.2 units in front of the near line
+    // (z=-7.7) rather than between the two planted lines: raking from one side is what keeps one flank
+    // of each glyph ink-dark, and a lamp centred on the row's mid-depth would sit as close to the lawn
+    // as to the faces.
+    rowLight.position.set(-2.8, 9.0, -6.5);
     scene.add(rowLight);
   }
   let typeReady = false, typeShown = false, rowW = 1, rowH = 1, rowScale = 1.5;
@@ -2126,7 +2133,7 @@
   // The letter's last frame used to land on empty grass — 「落园绽放」 had no carrier, so the
   // sixty seconds ended without a subject. This is that carrier: the desk she was writing at
   // when the sentence broke off, left standing in the meadow. Modelled in Blender as 149 named
-  // objects and baked by world/pipeline/gen_desk_export.py into ONE drawable — 18.5k triangles,
+  // objects and baked by pipeline/gen_desk_export.py into ONE drawable — 18.5k triangles,
   // 424 KB meshopt'd — because 149 materials would have been 149 draw calls for a prop that has
   // to hold ~300 px, and gltf-transform's join folds a multi-material GLB into one grey slot.
   const deskRow = new T.Group();
@@ -2209,7 +2216,7 @@
   // sixty seconds could not clear the 300 px subject bar with any camera move: the desk is 1.65 m
   // WIDE and only 1.16 m tall, so the taller it was made, the smaller it got on screen. The carrier
   // 「落园绽放」 was always missing is a person — 1.652 m of her, authored in
-  // world/pipeline/gen_keeper.py as one vertex-coloured mesh (10,666 tris, 49 KB after meshopt).
+  // pipeline/gen_keeper.py as one vertex-coloured mesh (10,666 tris, 49 KB after meshopt).
   //
   // The stance is solved against the reveal station (WAY[6], p[-2.99,2.15,-26.03]), not picked:
   // 5.62 m from the eye, so the lens's 0.728*d frame puts her at 436 px; 3.05 m from the keeper's
@@ -2763,7 +2770,7 @@
     }
     typeRow.scale.set(rowScale, 0.001, rowScale);
     tl.to(ui, { opacity: 0, duration: 0.45, ease: 'power1.in' }, 0)
-      .to(lookTarget, { y: look.y + 0.8, duration: 1.2, ease: 'power2.inOut' }, 0.2)
+      .to(lookTarget, { y: look.y + 0.5, duration: 1.2, ease: 'power2.inOut' }, 0.2)
       .to(typeRow.scale, { y: rowScale, duration: 2.4, ease: 'power3.out' }, 0.2)
       .to(rl, { intensity: ROW_LUX, duration: 1.7, ease: 'power2.out' }, 0.2)
       .to(rowPool.material, { opacity: ROW_POOL, duration: 1.7, ease: 'power2.out' }, 0.2)
