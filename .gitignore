@@ -24,3 +24,13 @@ __pycache__/
 *.pyc
 *.blend1
 *.blend.bak-*
+
+# The delivered figure source: 92.5 MB, 1.47 M triangles and three 4096^2 PNGs. A static host has no
+# business carrying it, and pipeline/vc_bake_source.cjs reads it to start the chain that ends as
+# assets/models/VioletHero.glb (see the comment in pipeline/compress.sh for the whole route), so it is
+# authoring input like a .blend and stays out of the tree.
+/violet.glb
+
+# Candidate cuts for the re-cut sweep, served so the site-camera gates can name the file they graded
+# (?fig=_sweep/...). Scratch output, never shipped.
+/_sweep/

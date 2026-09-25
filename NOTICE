@@ -1,0 +1,33 @@
+NOTICE — provenance of the character cameo in "Violet Garden"
+=============================================================
+
+This repository hosts a non-commercial web experience. It includes a stylized
+cameo of an existing anime character. The following is stated plainly so that no
+reader — a platform, a juror, or a rights holder — has to infer it.
+
+WHAT THE CAMEO IS
+  A single 3D figure appears at the end of the piece. She was produced by an
+  image-to-3D conversion of fan artwork of the character, then rebuilt for this
+  scene: the conversion's texture atlas was sampled per source triangle and
+  re-baked as per-vertex colour (pipeline/vc_bake_source.cjs), collapsed to
+  90,000 triangles in Blender (pipeline/violet_convert.py), and compressed with
+  meshopt at 16-bit vertex colour (pipeline/compress.sh).
+
+NO ORIGINALITY IS CLAIMED FOR THE CHARACTER
+  Character design, likeness, and the underlying artwork belong to their rights
+  holder. This repository does not claim "original character design", does not
+  claim original geometry, texture, or artwork for the figure, and does not
+  claim a licence of any kind. The figure is a fan tribute.
+
+WHAT IS ORIGINAL TO THIS REPOSITORY
+  The garden, the ink-and-type system, the letter beats, the shaders, the
+  procedural flora, the writing desk, the grounding, the accessibility layer,
+  and all written content are authored for this project. Only the figure's
+  likeness and her painted surface derive from third-party source art.
+
+Naming discipline in the product itself: the official franchise title never
+appears in <title>, og:title, alt text, ARIA labels, tags, or in-scene
+signature — she is signed "the Garden Keeper". The homage is disclosed in
+/archive's credits block and here.
+
+Everything else in this repository is offered under the terms in LICENSE.

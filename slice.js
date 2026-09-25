@@ -2188,6 +2188,7 @@
         // Same trap as the type row: quantized integer positions make applyMatrix4 a silent
         // no-op, so dequantize to float before baking the node transform.
         const m = new T.Mesh(bakeQuantized(o.geometry, o.matrixWorld), deskMat);
+        m.name = 'WritingDesk';
         m.castShadow = false; m.receiveShadow = false;
         deskRow.add(m);
         deskMeshes.push(m);
@@ -2215,8 +2216,16 @@
   // The desk has been standing in the meadow with nobody at it. That is why the last frame of the
   // sixty seconds could not clear the 300 px subject bar with any camera move: the desk is 1.65 m
   // WIDE and only 1.16 m tall, so the taller it was made, the smaller it got on screen. The carrier
-  // 「落园绽放」 was always missing is a person — 1.652 m of her, authored in
-  // pipeline/gen_keeper.py as one vertex-coloured mesh (10,666 tris, 49 KB after meshopt).
+  // 「落园绽放」 was always missing is a person — 1.652 m of her. The shipped cut is 90,000 triangles /
+  // 1,443,160 bytes, authored as a 1.47 M-tri textured conversion and rebuilt for the garden by
+  // pipeline/vc_bake_source.cjs (paint sampled inside each source triangle) plus
+  // pipeline/violet_vc_convert.py (collapse so the colour interpolates), then meshopt at 16-bit colour.
+  // 90 k is an art floor, not a budget pick: the dark-fleck ruler on her white skirt
+  // reads a 30 px worst tear here against 993 px at 60 k — a 33x opening — while the frame's p999
+  // triangle barely moves across the same step, so face counts are blind to what breaks at 60 k.
+  // Her bytes are the bar that does price her: the 2.91 MB 200 k cut breaks the site's own
+  // single-asset ceiling outright, and a per-asset face cap was never arguable for her mesh anyway
+  // (collapsing below ~33 k triangles destroys the colour islands — see pipeline/violet_weld_cut.py).
   //
   // The stance is solved against the reveal station (WAY[6], p[-2.99,2.15,-26.03]), not picked:
   // 5.62 m from the eye, so the lens's 0.728*d frame puts her at 436 px; 3.05 m from the keeper's
@@ -2231,7 +2240,12 @@
   const FIG_AT = { x: -5.60, z: -21.20, yaw: 2.10, s: 1.0, lamp: [-3.3, 2.25, -23.2], h: 1.652 };
   // 0.95, NOT the desk's 2.6. That 2.6 was tuned for an asset whose vertex bake is dark and which
   // sits 5.5 m out in fog; the same constant on a face with skin colours in it makes her a lamp in
-  // the shape of a girl. Swept against the corner's own luma ratio like desk_k_sweep did.
+  // the shape of a girl. Worth saying plainly what this number is NOT: it was never swept on THIS
+  // bake. The sweep that exists (`desk_k_sweep`, carried over when she was the procedural keeper) moved
+  // cloth luma only 103.6 -> 111.5 across K = 0.45..1.15, i.e. it was nearly inert there, so it says
+  // nothing about a delivered body with a 0.994 luma span in its vertex colours. The claim that settles
+  // her exposure is the panel's own lit/unlit ratio bar, and it is open until that gate reads green on
+  // this asset.
   const FIG_MOON_K = 0.95;
   const figGroup = new T.Group();
   figGroup.position.set(FIG_AT.x, 0, FIG_AT.z);
@@ -2296,16 +2310,43 @@
     mat.customProgramCacheKey = () => 'figwind+moon';
     return mat;
   }
+  // Vertex colours, and deliberately no map. The delivered figure arrives as a 4096² PBR texture on
+  // 1.47 M triangles, and that atlas is a per-triangle mosaic rather than a laid-out sheet — roughly
+  // eleven texels per source triangle. Decimating destroys the UV↔triangle correspondence the mosaic
+  // depends on, so per-fragment sampling of it at any budget the garden can carry is leopard print.
+  // The paint therefore travels per vertex: `pipeline/vc_bake_source.cjs` samples the interior of each
+  // SOURCE triangle (centroid plus the three edge midpoints, averaged in sRGB and area-weighted onto
+  // that triangle's own vertices), `pipeline/violet_vc_convert.py` decimates the mesh in Blender so the
+  // colour attribute interpolates with it, and meshopt carries COLOR_0 at 16 bits
+  // (`pipeline/compress.sh --quantize-color 16`). The earlier route — UV neighbourhood sampling in
+  // `pipeline/violet_convert.py` — is the one that produced leopard print and is kept only as a record
+  // of a falsified hypothesis. Per-vertex paint also keeps moonify's `totalEmissiveRadiance *= vColor`
+  // alive: the navy jacket, the gloves and her hair stay dark while the chemise and her face take light.
   const figMat = moonify(windifyFig(new T.MeshStandardMaterial({
     vertexColors: true, roughness: 0.62, metalness: 0.0, side: T.DoubleSide
   })), FIG_MOON_K, 'figwind+moon');
   let figRequested = false, figReady = false, figMesh = null;
+  // Candidate grading hook for the re-cut sweep: the instruments must judge each cut at the real
+  // end-shot camera without overwriting the shipped asset between runs, because a gate that grades
+  // whatever file happens to be on disk cannot say which candidate produced the number.
+  // Restricted to _sweep/ so the parameter can never become a general "load any URL as the hero" switch.
+  function figUrl() {
+    const q = new URLSearchParams(location.search).get('fig');
+    return q && q.startsWith('_sweep/') && q.endsWith('.glb') ? q : 'assets/models/VioletHero.glb';
+  }
   function requestFig() {
-    loader.load('assets/models/GardenKeeper.glb', (g) => {
+    loader.load(figUrl(), (g) => {
       g.scene.updateMatrixWorld(true);
       g.scene.traverse(o => {
         if (!o.isMesh || figMesh) return;
         const m = new T.Mesh(bakeQuantized(o.geometry, o.matrixWorld), figMat);
+        // Named for the instruments, not for the renderer: perf_world's triangle ledger buckets by
+        // (o.name || o.type), so an unnamed hero hides inside a `Mesh` bucket shared with the desk and
+        // every other unlabelled mesh, and a budget red can only be attributed by subtraction.
+        m.name = 'VioletHero';
+        // Prove which candidate this frame belongs to: a gate that reports a number without naming
+        // the file it loaded cannot tell a re-cut from the asset it was supposed to replace.
+        m.userData.figUrl = figUrl();
         m.castShadow = false; m.receiveShadow = false;
         figGroup.add(m);
         figMesh = m;
@@ -2319,18 +2360,29 @@
   }
   // Her own grounding, on the desk's own doctrine (see groundTheDesk): a person standing in uncut
   // sward with nothing under her is the grey-loaf failure one size up, and no light in this scene
-  // casts a shadow, so the ground has to say she is there. Cells come off her actual low vertices,
-  // so re-authoring the hem or the boots moves the stain with them; it is a field of small collars
-  // rather than one disc, and it falls away from the keeper's lamp, which is this corner's only key.
+  // casts a shadow, so the ground has to say she is there.
+  //
+  // Two elements, because a hooped skirt and a four-legged desk touch the world differently. The
+  // collars are the desk's idea — cells off her actual low vertices, so re-authoring the boots moves
+  // them. But the delivered figure's hem projection measured 43 cells below y=0.30 against 5 below
+  // y=0.12: the skirt hangs twenty centimetres clear of the grass all the way round and only the
+  // boot tips meet it, so a contact field alone is five pennies under a one-metre dress. What grounds
+  // a skirt is the mass of cloth taking the lamp out of the grass beneath it, and that is one soft
+  // pool sized to the hem's own silhouette. Both fall away from the keeper's lamp, this corner's key.
   const figGround = { stat: null, mesh: null };
   function groundTheKeeper() {
     if (!figMesh) return;
     figMesh.geometry.computeBoundingBox();
     const bb = figMesh.geometry.boundingBox, CELL = 0.10, cells = new Map();
     const p = figMesh.geometry.attributes.position;
+    const hem = [], skirt = [];
     let lowN = 0;
     for (let i = 0; i < p.count; i++) {
       const y = p.getY(i);
+      if (y > 0.90) continue;   // her waist: everything below it is the cloth that shades the ground
+      skirt.push(p.getX(i), p.getZ(i), y);
+      if (y > 0.30) continue;
+      hem.push(p.getX(i), p.getZ(i));
       if (y > 0.12) continue;
       lowN++;
       const k = Math.round(p.getX(i) / CELL) + ',' + Math.round(p.getZ(i) / CELL);
@@ -2355,7 +2407,36 @@
       dummy.updateMatrix(); shade.setMatrixAt(i++, dummy.matrix);
     });
     shade.instanceMatrix.needsUpdate = true;
-    shade.renderOrder = 1;
+    shade.renderOrder = 2;
+    // The pool: the dress's own footprint, thrown by the lamp's own elevation. It used to be sized off
+    // the y < 0.30 band — which is almost only the two boots — and that produced a 0.363 x 0.341 m
+    // ellipse under a garment whose measured XZ span is 0.963 x 1.022 m: a puddle a quarter narrower
+    // than the dress standing over it, which is the grey-loaf failure wearing a shade decal. Everything
+    // below her waist is cloth between this corner's key light and its grass, so the outline comes from
+    // that band, projected along the away-from-lamp axis and across it.
+    let sx = 0, sz = 0, syc = 0;
+    const sn = skirt.length / 3;
+    for (let k = 0; k < skirt.length; k += 3) { sx += skirt[k]; sz += skirt[k + 1]; syc += skirt[k + 2]; }
+    sx /= sn; sz /= sn; syc /= sn;
+    let aS = 0, aT = 0;
+    for (let k = 0; k < skirt.length; k += 3) {
+      const dx = skirt[k] - sx, dz = skirt[k + 1] - sz;
+      const along = Math.abs(dx * ux + dz * uz), across = Math.abs(-dx * uz + dz * ux);
+      if (along > aS) aS = along; if (across > aT) aT = across;
+    }
+    // A cloth edge at height h under a lamp H metres up and D metres out throws that edge D·h/(H−h)
+    // away from the light. The far side of the shade therefore sits there while the near side stays
+    // under her feet, so the union is an ellipse centred half-way along the throw: long on the shadow
+    // axis by the throw itself, round across it. 0.11 m in one direction was a guess at this.
+    const off = sn ? syc * kl / Math.max(0.4, FIG_AT.lamp[1] - syc) : 0;
+    const poolGeo = new T.CircleGeometry(1, 44);
+    poolGeo.rotateX(-Math.PI / 2);
+    const pool = new T.Mesh(poolGeo,
+      new T.MeshBasicMaterial({ map: aoTex(), color: 0x000000, transparent: true, opacity: 0.30, depthWrite: false, fog: false }));
+    pool.scale.set(aS + off / 2, 1, aT);
+    pool.position.set(sx + ux * off / 2, 0.024, sz + uz * off / 2);
+    pool.rotation.y = Math.atan2(-uz, ux);
+    pool.renderOrder = 1;
     // Her own group, never a child of figGroup: the composition gates traverse the figure and project
     // what they find, and a ground decal in that cloud would add 0.2 m of "keeper" below her feet and
     // break a silhouette bar it was never part of (the desk learned that the hard way).
@@ -2363,14 +2444,16 @@
     g.position.set(FIG_AT.x, 0, FIG_AT.z);
     g.rotation.y = figGroup.rotation.y;
     g.scale.setScalar(FIG_AT.s);
-    g.add(shade);
+    g.add(pool, shade);
     scene.add(g);
     figGround.mesh = shade;
-    figGround.stat = { cells: n, lowVerts: lowN, lowBand: 0.12,
+    figGround.stat = { cells: n, lowVerts: lowN, lowBand: 0.12, hemVerts: hem.length / 2, hemBand: 0.30,
+      skirtVerts: sn, skirtBand: 0.90, clothY: +syc.toFixed(3), throw: +off.toFixed(3),
+      pool: [+(aS + off / 2).toFixed(3), +aT.toFixed(3)],
       span: [+(bb.max.x - bb.min.x).toFixed(3), +(bb.max.y - bb.min.y).toFixed(3), +(bb.max.z - bb.min.z).toFixed(3)] };
   }
   // Armed with the desk, never earlier: she is only ever looked at from the keeper's corner onward,
-  // and 49 KB + one draw must not compete with the garden's own first load.
+  // and 1.4 MB + one draw must not compete with the garden's own first load.
   function armFig() {
     if (figRequested) return;
     const w = window.__vnWorld;
